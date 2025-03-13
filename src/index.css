@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 210 100% 40%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -35,19 +36,12 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -96,6 +90,32 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-blue text-white font-medium px-6 py-3 rounded-md hover:bg-brand-blue-dark transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-brand-blue border border-brand-blue font-medium px-6 py-3 rounded-md hover:bg-brand-blue/5 transition-colors;
+  }
+  
+  .heading-xl {
+    @apply text-4xl md:text-5xl font-bold tracking-tight;
+  }
+  
+  .heading-lg {
+    @apply text-3xl md:text-4xl font-bold;
+  }
+  
+  .heading-md {
+    @apply text-2xl md:text-3xl font-semibold;
+  }
+  
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 }
