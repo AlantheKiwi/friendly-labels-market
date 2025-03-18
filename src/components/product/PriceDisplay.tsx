@@ -10,11 +10,14 @@ interface PriceDisplayProps {
 const PriceDisplay: React.FC<PriceDisplayProps> = ({ selectedQuantity }) => {
   if (!selectedQuantity) return null;
   
+  // Check if it's the specific quantity that needs a fixed price
+  const shouldUseFixedPrice = selectedQuantity.id === "qty-3" && selectedQuantity.amount === 2000;
+  
   return (
     <div className="flex items-center justify-between mb-6">
       <div>
         <span className="text-3xl font-bold text-brand-blue">
-          ${selectedQuantity.price.toFixed(2)}
+          {shouldUseFixedPrice ? "$110.00" : `$${selectedQuantity.price.toFixed(2)}`}
         </span>
         {selectedQuantity.discountPercent > 0 && (
           <span className="text-gray-500 line-through ml-2">
