@@ -41,9 +41,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           ) : (
             <>
               <p className="text-gray-500 text-sm mb-4 line-clamp-2">
-                {product.sizes.length > 0 
-                  ? `Available in ${product.sizes.length} size${product.sizes.length > 1 ? 's' : ''}`
-                  : ''}
+                Available Size 101x149
               </p>
               
               <div className="flex items-baseline justify-between">
