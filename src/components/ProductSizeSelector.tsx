@@ -50,6 +50,17 @@ const ProductSizeSelector: React.FC<ProductSizeSelectorProps> = ({
               id={size.id}
               className="peer sr-only"
             />
+            <Label
+              htmlFor={size.id}
+              className={cn(
+                "flex flex-col border rounded-md p-4 cursor-pointer transition-all",
+                "hover:border-brand-blue/60 hover:bg-brand-blue/5",
+                "peer-data-[state=checked]:border-brand-blue peer-data-[state=checked]:bg-brand-blue/5"
+              )}
+            >
+              <span className="font-medium mb-1">{size.name}</span>
+              <span className="text-gray-500 text-sm">{size.dimensions}</span>
+            </Label>
           </div>
         ))}
       </RadioGroup>
