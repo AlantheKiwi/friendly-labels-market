@@ -121,8 +121,8 @@ export const products: Product[] = [
       {
         id: "qty-2",
         amount: 1000,
-        price: 44.99,
-        basePrice: 49.98,
+        price: 57.99,
+        basePrice: 64.99,
         discountPercent: 10,
         isPopular: true
       },
