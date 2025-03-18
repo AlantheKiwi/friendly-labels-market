@@ -51,7 +51,11 @@ const ProductQuantitySelector: React.FC<ProductQuantitySelectorProps> = ({
           >
             <CardContent className="p-4">
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xl font-bold">{quantity.amount.toLocaleString()}</span>
+                <span className="text-xl font-bold">
+                  {selectedQuantityId === quantity.id && quantity.amount === 1000 && quantity.id === "qty-1" 
+                    ? "Small" 
+                    : quantity.amount.toLocaleString()}
+                </span>
                 {selectedQuantityId === quantity.id && (
                   <span className="bg-brand-blue rounded-full p-1">
                     <Check className="h-4 w-4 text-white" />
