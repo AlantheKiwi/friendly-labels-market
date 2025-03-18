@@ -24,7 +24,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-lg">
         <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
           <img
-            src={product.imageUrl}
+            src={product.imageUrl !== "/placeholder.svg" ? product.imageUrl : "/lovable-uploads/b244118b-edda-4ebc-9ee8-5ccac70f30dc.png"}
             alt={product.name}
             className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
           />

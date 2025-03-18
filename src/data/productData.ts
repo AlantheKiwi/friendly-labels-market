@@ -7,7 +7,7 @@ export const products: Product[] = [
     name: "Direct Thermal Labels",
     slug: "direct-thermal-labels",
     description: "High-quality direct thermal labels, perfect for shipping, barcode labeling, and product identification. Compatible with all standard thermal printers.",
-    imageUrl: "/placeholder.svg",
+    imageUrl: "/lovable-uploads/b244118b-edda-4ebc-9ee8-5ccac70f30dc.png",
     category: "Thermal Labels",
     popularUses: [
       "Shipping labels",
@@ -80,7 +80,7 @@ export const products: Product[] = [
     name: "Shipping Labels",
     slug: "shipping-labels",
     description: "Premium shipping labels designed specifically for e-commerce and logistics. Optimized for NZ Post and courier services across New Zealand.",
-    imageUrl: "/placeholder.svg",
+    imageUrl: "/lovable-uploads/b244118b-edda-4ebc-9ee8-5ccac70f30dc.png",
     category: "Shipping Labels",
     popularUses: [
       "Online store orders",
@@ -140,7 +140,7 @@ export const products: Product[] = [
     name: "Barcode Labels",
     slug: "barcode-labels",
     description: "High-definition barcode labels perfect for retail, inventory management, and product tracking applications.",
-    imageUrl: "/placeholder.svg",
+    imageUrl: "/lovable-uploads/b244118b-edda-4ebc-9ee8-5ccac70f30dc.png",
     category: "Barcode Labels",
     popularUses: [
       "Retail price tags",
@@ -200,7 +200,7 @@ export const products: Product[] = [
     name: "Custom Labels",
     slug: "custom-labels",
     description: "Bespoke thermal labels manufactured to your exact specifications. Perfect for unique requirements and special applications.",
-    imageUrl: "/placeholder.svg",
+    imageUrl: "/lovable-uploads/b244118b-edda-4ebc-9ee8-5ccac70f30dc.png",
     category: "Custom Labels",
     popularUses: [
       "Special size requirements",
