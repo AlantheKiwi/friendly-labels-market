@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
@@ -125,7 +126,7 @@ const ProductPage = () => {
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <span className="text-3xl font-bold text-brand-blue">
-                        $110.00
+                        ${selectedQuantity?.price.toFixed(2)}
                       </span>
                       {selectedQuantity?.discountPercent > 0 && (
                         <span className="text-gray-500 line-through ml-2">
