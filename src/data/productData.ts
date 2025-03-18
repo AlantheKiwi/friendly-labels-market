@@ -1,3 +1,4 @@
+
 import { Product } from "@/types";
 
 export const products: Product[] = [
@@ -99,7 +100,7 @@ export const products: Product[] = [
       {
         id: "size-1",
         name: "Standard",
-        dimensions: "100mm x 150mm",
+        dimensions: "101mm x 149mm",
         sortOrder: 1
       },
       {
