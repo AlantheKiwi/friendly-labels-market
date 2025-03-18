@@ -59,7 +59,7 @@ const ProductQuantitySelector: React.FC<ProductQuantitySelectorProps> = ({
                 )}
               </div>
               <div className="flex justify-between items-baseline mb-1">
-                <span className="text-2xl font-bold text-brand-blue">$110.00</span>
+                <span className="text-2xl font-bold text-brand-blue">${quantity.price.toFixed(2)}</span>
                 {quantity.discountPercent > 0 && (
                   <span className="text-sm line-through text-gray-400">
                     ${quantity.basePrice.toFixed(2)}
