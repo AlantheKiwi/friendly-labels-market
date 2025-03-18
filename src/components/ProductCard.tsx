@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { Product } from "@/types";
@@ -18,7 +19,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   return <Link to={`/products/${product.slug}`}>
       <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-lg">
         <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
-          <img src={product.imageUrl !== "/placeholder.svg" ? product.imageUrl : "/lovable-uploads/b244118b-edda-4ebc-9ee8-5ccac70f30dc.png"} alt={product.name} className="h-full w-full transition-transform duration-500 hover:scale-105 object-cover" />
+          <img src={product.imageUrl !== "/placeholder.svg" ? product.imageUrl : "/lovable-uploads/b244118b-edda-4ebc-9ee8-5ccac70f30dc.png"} alt={product.name} className="h-full w-full transition-transform duration-500 hover:scale-120 object-cover" />
         </div>
         <CardContent className="p-5">
           <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
