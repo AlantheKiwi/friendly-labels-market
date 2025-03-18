@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Check, Truck, BadgeCheck, RefreshCw } from "lucide-react";
 import ProductSizeSelector from "@/components/ProductSizeSelector";
 import ProductQuantitySelector from "@/components/ProductQuantitySelector";
-import { getProductBySlug } from "@/data/products";
+import { getProductBySlug } from "@/data/productUtils";
 import { useCart } from "@/context/CartContext";
 import CallToAction from "@/components/CallToAction";
 import { useToast } from "@/hooks/use-toast";

@@ -2,7 +2,7 @@
 import React from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { products } from "@/data/products";
+import { products } from "@/data/productData";
 import ProductGrid from "@/components/ProductGrid";
 import CallToAction from "@/components/CallToAction";
 import { Separator } from "@/components/ui/separator";

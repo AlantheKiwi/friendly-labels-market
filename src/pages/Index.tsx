@@ -1,4 +1,3 @@
-
 import React from "react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
@@ -7,7 +6,7 @@ import FeatureSection from "@/components/FeatureSection";
 import TestimonialSection from "@/components/TestimonialSection";
 import CallToAction from "@/components/CallToAction";
 import Footer from "@/components/Footer";
-import { products } from "@/data/products";
+import { products } from "@/data/productData";
 
 const Index = () => {
   return (
