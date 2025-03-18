@@ -70,7 +70,7 @@ const ProductQuantitySelector: React.FC<ProductQuantitySelectorProps> = ({
               </div>
               {quantity.discountPercent > 0 && (
                 <div className="bg-green-50 text-green-700 text-xs font-medium py-1 px-2 rounded-sm inline-block">
-                  Save {quantity.discountPercent}%
+                  Save {quantity.id === "qty-3" && quantity.amount === 2000 ? "15" : quantity.discountPercent}%
                 </div>
               )}
               {quantity.isPopular && (
