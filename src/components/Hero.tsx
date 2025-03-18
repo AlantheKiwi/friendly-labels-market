@@ -42,11 +42,11 @@ const Hero: React.FC = () => {
           
           <div className="hidden md:block relative">
             <div className="aspect-square relative bg-white rounded-lg shadow-lg p-6 transform rotate-3">
-              <img alt="Thermal printer labels" className="w-full h-full object-cover rounded" src="/lovable-uploads/bffa3899-aa28-4e2b-b49d-f919de9bee0a.jpg" />
+              <img alt="Thermal printer labels" src="/lovable-uploads/07073e16-ba8e-49c2-8e5c-c514e8fafbd2.jpg" className="w-full h-full rounded object-scale-down" />
             </div>
             <div className="absolute -bottom-8 -left-8 bg-white p-4 rounded-lg shadow-lg transform -rotate-6 w-40">
               <div className="text-sm font-semibold mb-1">Bulk Orders</div>
-              <div className="text-brand-blue font-bold">Save up to 30%</div>
+              <div className="text-brand-blue font-bold">Save up to 15%</div>
             </div>
             <div className="absolute -top-4 -right-4 bg-brand-blue text-white p-4 rounded-full shadow-lg w-20 h-20 flex items-center justify-center">
               <div className="text-center">
