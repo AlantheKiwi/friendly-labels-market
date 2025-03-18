@@ -1,12 +1,9 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Truck, BadgeCheck, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
-
 const Hero: React.FC = () => {
-  return (
-    <div className="relative bg-gradient-to-r from-brand-blue/5 to-brand-blue/10 overflow-hidden">
+  return <div className="relative bg-gradient-to-r from-brand-blue/5 to-brand-blue/10 overflow-hidden">
       <div className="container-custom py-12 md:py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="relative z-10">
@@ -45,11 +42,7 @@ const Hero: React.FC = () => {
           
           <div className="hidden md:block relative">
             <div className="aspect-square relative bg-white rounded-lg shadow-lg p-6 transform rotate-3">
-              <img
-                src="/placeholder.svg"
-                alt="Thermal printer labels"
-                className="w-full h-full object-cover rounded"
-              />
+              <img alt="Thermal printer labels" className="w-full h-full object-cover rounded" src="/lovable-uploads/bffa3899-aa28-4e2b-b49d-f919de9bee0a.jpg" />
             </div>
             <div className="absolute -bottom-8 -left-8 bg-white p-4 rounded-lg shadow-lg transform -rotate-6 w-40">
               <div className="text-sm font-semibold mb-1">Bulk Orders</div>
@@ -65,8 +58,6 @@ const Hero: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Hero;
