@@ -1,4 +1,3 @@
-
 import { Product } from "@/types";
 
 export const products: Product[] = [
@@ -140,7 +139,7 @@ export const products: Product[] = [
     name: "Barcode Labels",
     slug: "barcode-labels",
     description: "High-definition barcode labels perfect for retail, inventory management, and product tracking applications.",
-    imageUrl: "/lovable-uploads/b244118b-edda-4ebc-9ee8-5ccac70f30dc.png",
+    imageUrl: "/lovable-uploads/40dd8d58-9c2c-4de6-a990-ee3956f82e08.png",
     category: "Barcode Labels",
     popularUses: [
       "Retail price tags",
