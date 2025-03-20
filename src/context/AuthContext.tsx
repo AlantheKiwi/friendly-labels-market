@@ -33,13 +33,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           // Redirect if on login or register page
           const currentPath = window.location.pathname;
-          if (currentPath === "/auth/login" || currentPath === "/auth/register") {
+          if (currentPath === "/auth/login" || currentPath === "/auth/register" || currentPath === "/") {
             if (roles.isClient) {
+              console.log("Auth state change - redirecting client to dashboard");
               navigate("/client/dashboard");
             } else if (roles.isAdmin) {
+              console.log("Auth state change - redirecting admin to dashboard");
               navigate("/admin/dashboard");
-            } else {
-              navigate("/");
             }
           }
         } else {
@@ -60,6 +60,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const roles = await checkUserRoles(currentSession.user.id);
         setIsAdmin(roles.isAdmin);
         setIsClient(roles.isClient);
+        
+        // Redirect based on roles if on homepage
+        if (window.location.pathname === "/") {
+          if (roles.isClient) {
+            console.log("Initial load - redirecting client to dashboard");
+            navigate("/client/dashboard");
+          } else if (roles.isAdmin) {
+            console.log("Initial load - redirecting admin to dashboard");
+            navigate("/admin/dashboard");
+          }
+        }
       }
       
       setIsLoading(false);

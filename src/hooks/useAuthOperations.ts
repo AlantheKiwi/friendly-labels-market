@@ -32,14 +32,19 @@ export const useAuthOperations = () => {
       if (data.user) {
         const roles = await checkUserRoles(data.user.id);
         
+        // Always redirect clients to their dashboard
         if (roles.isClient) {
+          console.log("Redirecting client to dashboard");
           navigate("/client/dashboard");
         } else if (roles.isAdmin) {
+          console.log("Redirecting admin to dashboard");
           navigate("/admin/dashboard");
         } else {
+          console.log("No specific role, redirecting to home");
           navigate("/");
         }
       } else {
+        console.log("No user data, redirecting to home");
         navigate("/");
       }
     } catch (error) {
