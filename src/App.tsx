@@ -30,10 +30,10 @@ import ClientDashboardPage from "./pages/client/ClientDashboardPage";
 import ClientOrdersPage from "./pages/client/ClientOrdersPage";
 import ClientQueriesPage from "./pages/client/ClientQueriesPage";
 
-// Create a new QueryClient instance inside the component
+// Create a client
+const queryClient = new QueryClient();
+
 const App = () => {
-  const queryClient = new QueryClient();
-  
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
