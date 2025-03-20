@@ -17,11 +17,14 @@ const PrintersPage = () => {
   const handlePrintCatalog = useCallback(() => {
     if (pdfCatalogRef.current) {
       // Call useReactToPrint with the proper configuration
-      useReactToPrint({
+      const printCatalog = useReactToPrint({
         documentTitle: "Thermal_Printers_Catalog",
         onAfterPrint: () => console.log("PDF catalog generated successfully"),
         content: () => pdfCatalogRef.current,
-      })();
+      });
+      
+      // Execute the print function
+      printCatalog();
     }
   }, [pdfCatalogRef]);
 
