@@ -1,6 +1,6 @@
 
 import { Product } from "@/types";
-import { productList } from "./products";
+import { productList } from "./products/index";
 
 export const getProductBySlug = (slug: string): Product | undefined => {
   return productList.find(product => product.slug === slug);

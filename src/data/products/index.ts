@@ -11,3 +11,6 @@ export const productList: Product[] = [
   barcodeLabels,
   customLabels
 ];
+
+// Also export it as products for backward compatibility
+export const products = productList;
