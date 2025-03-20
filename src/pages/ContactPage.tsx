@@ -29,7 +29,7 @@ const ContactPage = () => {
                   <PhoneCall className="text-brand-blue w-5 h-5 mt-1 mr-3" />
                   <div>
                     <p className="font-medium text-gray-700">Phone</p>
-                    <p className="text-gray-600">(+61) 1800 123 456</p>
+                    <p className="text-gray-600">020 4114 9601</p>
                     <p className="text-gray-600">Monday to Friday, 9am to 5pm AEST</p>
                   </div>
                 </div>
@@ -38,8 +38,8 @@ const ContactPage = () => {
                   <Mail className="text-brand-blue w-5 h-5 mt-1 mr-3" />
                   <div>
                     <p className="font-medium text-gray-700">Email</p>
-                    <p className="text-gray-600">info@insightai.com.au</p>
-                    <p className="text-gray-600">support@insightai.com.au</p>
+                    <p className="text-gray-600">sales@servicelabels.co.nz</p>
+                    <p className="text-gray-600">support@servicelabels.co.nz</p>
                   </div>
                 </div>
                 
@@ -47,10 +47,9 @@ const ContactPage = () => {
                   <MapPin className="text-brand-blue w-5 h-5 mt-1 mr-3" />
                   <div>
                     <p className="font-medium text-gray-700">Office</p>
-                    <p className="text-gray-600">Suite 123, Level 45</p>
-                    <p className="text-gray-600">101 Collins Street</p>
-                    <p className="text-gray-600">Melbourne VIC 3000</p>
-                    <p className="text-gray-600">Australia</p>
+                    <p className="text-gray-600">Unit 2/1 Doric Way</p>
+                    <p className="text-gray-600">Islington, Christchurch</p>
+                    <p className="text-gray-600">New Zealand</p>
                   </div>
                 </div>
                 
