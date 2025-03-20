@@ -20,7 +20,7 @@ const Hero: React.FC = () => {
               <Button asChild size="lg" className="btn-primary">
                 <Link to="/products">Shop Now <ArrowRight className="ml-2 h-5 w-5" /></Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="btn-secondary">
+              <Button asChild variant="outline" size="lg" className="btn-secondary text-brand-blue hover:text-white">
                 <Link to="/custom-quote">Request Custom Quote</Link>
               </Button>
             </div>
