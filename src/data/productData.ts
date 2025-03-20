@@ -54,7 +54,7 @@ export const products: Product[] = [
       {
         id: "qty-2",
         amount: 1000,
-        price: 22.99,
+        price: 22.86, // Updated: basePrice * (1 - 12/100) = 25.98 * 0.88 = 22.86
         basePrice: 25.98,
         discountPercent: 12,
         isPopular: true
@@ -62,14 +62,14 @@ export const products: Product[] = [
       {
         id: "qty-3",
         amount: 2000,
-        price: 41.99,
+        price: 41.57, // Updated: basePrice * (1 - 20/100) = 51.96 * 0.80 = 41.57
         basePrice: 51.96,
         discountPercent: 20
       },
       {
         id: "qty-4",
         amount: 5000,
-        price: 94.99,
+        price: 94.86, // Updated: basePrice * (1 - 27/100) = 129.95 * 0.73 = 94.86
         basePrice: 129.95,
         discountPercent: 27
       }
@@ -121,7 +121,7 @@ export const products: Product[] = [
       {
         id: "qty-2",
         amount: 1000,
-        price: 57.99,
+        price: 58.49, // Updated: basePrice * (1 - 10/100) = 64.99 * 0.90 = 58.49
         basePrice: 64.99,
         discountPercent: 10,
         isPopular: true
@@ -129,7 +129,7 @@ export const products: Product[] = [
       {
         id: "qty-3",
         amount: 2000,
-        price: 84.99,
+        price: 84.97, // Updated: basePrice * (1 - 15/100) = 99.96 * 0.85 = 84.97
         basePrice: 99.96,
         discountPercent: 15
       }
@@ -182,14 +182,14 @@ export const products: Product[] = [
       {
         id: "qty-2",
         amount: 2000,
-        price: 74.99,
+        price: 75.18, // Updated: basePrice * (1 - 6/100) = 79.98 * 0.94 = 75.18
         basePrice: 79.98,
         discountPercent: 6
       },
       {
         id: "qty-3",
         amount: 5000,
-        price: 174.99,
+        price: 173.96, // Updated: basePrice * (1 - 13/100) = 199.95 * 0.87 = 173.96
         basePrice: 199.95,
         discountPercent: 13
       }

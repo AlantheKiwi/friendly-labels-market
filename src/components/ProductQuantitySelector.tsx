@@ -45,14 +45,14 @@ const ProductQuantitySelector: React.FC<ProductQuantitySelectorProps> = ({
               <div className="flex justify-between items-baseline mb-1">
                 <div>
                   <span className="text-2xl font-bold text-brand-blue">
-                    {quantity.id === "qty-3" && quantity.amount === 2000 ? "$110.00" : `$${quantity.price.toFixed(2)}`}
+                    {quantity.id === "qty-3" && quantity.amount === 2000 && quantity.price === 41.57 ? "$41.57" : `$${quantity.price.toFixed(2)}`}
                   </span>
                   <span className="text-xs text-gray-500 ml-1">Ex GST</span>
                 </div>
                 {quantity.discountPercent > 0}
               </div>
               {quantity.discountPercent > 0 && <div className="bg-green-50 text-green-700 text-xs font-medium py-1 px-2 rounded-sm inline-block">
-                  Save {quantity.id === "qty-3" && quantity.amount === 2000 ? "15" : quantity.discountPercent}%
+                  Save {quantity.discountPercent}%
                 </div>}
               {quantity.isPopular && <div className="absolute top-0 right-0 bg-brand-blue text-white text-xs py-1 px-2 rounded-br-sm rounded-tl-md">
                   Popular

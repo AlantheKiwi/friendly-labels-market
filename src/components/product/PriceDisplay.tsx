@@ -15,7 +15,7 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({
   return <div className="flex items-center justify-between mb-6">
       <div>
         <span className="text-3xl font-bold text-brand-blue">
-          {shouldUseFixedPrice ? "$110.00" : `$${selectedQuantity.price.toFixed(2)}`}
+          {shouldUseFixedPrice ? "$41.57" : `$${selectedQuantity.price.toFixed(2)}`}
         </span>
         <span className="text-sm text-gray-500 ml-1">Ex GST</span>
         {selectedQuantity.discountPercent > 0}
