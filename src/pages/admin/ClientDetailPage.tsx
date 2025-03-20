@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -113,8 +112,6 @@ const ClientDetailPage = () => {
                 <div>
                   <h3 className="text-lg font-medium mb-2">Contact Information</h3>
                   <p><span className="font-medium">Name:</span> {clientData.first_name} {clientData.last_name}</p>
-                  {/* Use optional chaining to safely access the email property */}
-                  <p><span className="font-medium">Email:</span> {clientData.email || 'N/A'}</p>
                   <p><span className="font-medium">Phone:</span> {clientData.phone || 'N/A'}</p>
                 </div>
                 <div>
