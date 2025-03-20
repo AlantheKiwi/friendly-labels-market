@@ -1,17 +1,22 @@
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Menu, X, Printer, User, LogIn } from "lucide-react";
+import { ShoppingCart, Menu, X, Printer, User, LogIn, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import CartSidebar from "./CartSidebar";
 
 const Header: React.FC = () => {
   const { itemCount } = useCart();
-  const { user, signOut, isClient } = useAuth();
+  const { user, signOut, isClient, isAdmin } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+
+  // Check if currently on client dashboard or not
+  const isOnClientDashboard = location.pathname.startsWith('/client/');
+  const isOnAdminDashboard = location.pathname.startsWith('/admin/');
 
   return (
     <header className="sticky top-0 bg-white border-b border-gray-200 z-50">
@@ -44,14 +49,21 @@ const Header: React.FC = () => {
             {user ? (
               isClient ? (
                 <Button variant="outline" className="flex items-center gap-2" size="sm" asChild>
-                  <Link to="/client/dashboard">
+                  <Link to={isOnClientDashboard ? "/client/dashboard" : "/client/dashboard"}>
                     <User className="h-4 w-4" />
                     <span className="hidden sm:inline">My Account</span>
                   </Link>
                 </Button>
+              ) : isAdmin ? (
+                <Button variant="outline" className="flex items-center gap-2" size="sm" asChild>
+                  <Link to={isOnAdminDashboard ? "/admin/dashboard" : "/admin/dashboard"}>
+                    <User className="h-4 w-4" />
+                    <span className="hidden sm:inline">Admin Panel</span>
+                  </Link>
+                </Button>
               ) : (
                 <Button variant="outline" className="flex items-center gap-2" onClick={signOut} size="sm">
-                  <User className="h-4 w-4" />
+                  <LogOut className="h-4 w-4" />
                   <span className="hidden sm:inline">Logout</span>
                 </Button>
               )
@@ -132,6 +144,15 @@ const Header: React.FC = () => {
                 >
                   <User className="h-4 w-4" />
                   My Account
+                </Link>
+              ) : isAdmin && user ? (
+                <Link
+                  to="/admin/dashboard"
+                  className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <User className="h-4 w-4" />
+                  Admin Panel
                 </Link>
               ) : !user && (
                 <Link

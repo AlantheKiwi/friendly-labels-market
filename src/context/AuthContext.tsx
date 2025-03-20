@@ -27,26 +27,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Function to check user roles
+  const checkUserRoles = async (userId: string) => {
+    try {
+      const { data: adminRole } = await supabase.rpc('has_role', {
+        user_id: userId,
+        role: 'admin'
+      });
+      
+      const { data: clientRole } = await supabase.rpc('has_role', {
+        user_id: userId,
+        role: 'client'
+      });
+      
+      setIsAdmin(!!adminRole);
+      setIsClient(!!clientRole);
+    } catch (error) {
+      console.error("Error checking roles:", error);
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
+        console.log("Auth state changed:", event, currentSession?.user?.id);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
         if (currentSession?.user) {
-          const { data: adminRole } = await supabase.rpc('has_role', {
-            user_id: currentSession.user.id,
-            role: 'admin'
-          });
+          await checkUserRoles(currentSession.user.id);
           
-          const { data: clientRole } = await supabase.rpc('has_role', {
-            user_id: currentSession.user.id,
-            role: 'client'
-          });
-          
-          setIsAdmin(!!adminRole);
-          setIsClient(!!clientRole);
+          // Redirect if on login or register page
+          const currentPath = window.location.pathname;
+          if (currentPath === "/auth/login" || currentPath === "/auth/register") {
+            const { data: clientRole } = await supabase.rpc('has_role', {
+              user_id: currentSession.user.id,
+              role: 'client'
+            });
+            
+            const { data: adminRole } = await supabase.rpc('has_role', {
+              user_id: currentSession.user.id,
+              role: 'admin'
+            });
+            
+            if (clientRole) {
+              navigate("/client/dashboard");
+            } else if (adminRole) {
+              navigate("/admin/dashboard");
+            } else {
+              navigate("/");
+            }
+          }
         } else {
           setIsAdmin(false);
           setIsClient(false);
@@ -62,18 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(currentSession?.user ?? null);
       
       if (currentSession?.user) {
-        const { data: adminRole } = await supabase.rpc('has_role', {
-          user_id: currentSession.user.id,
-          role: 'admin'
-        });
-        
-        const { data: clientRole } = await supabase.rpc('has_role', {
-          user_id: currentSession.user.id,
-          role: 'client'
-        });
-        
-        setIsAdmin(!!adminRole);
-        setIsClient(!!clientRole);
+        await checkUserRoles(currentSession.user.id);
       }
       
       setIsLoading(false);
@@ -82,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   const signIn = async (email: string, password: string) => {
     try {
