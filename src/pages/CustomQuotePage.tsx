@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
@@ -9,33 +8,25 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Mail } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-
 const CustomQuotePage = () => {
   const navigate = useNavigate();
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // In a real app, we would send the form data to a server
     toast({
       title: "Quote Request Submitted",
-      description: "We'll get back to you within 24 hours with a custom quote.",
+      description: "We'll get back to you within 24 hours with a custom quote."
     });
-    
+
     // Reset form or redirect
     navigate("/");
   };
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 py-12">
         <div className="container-custom">
-          <Button
-            variant="ghost"
-            className="mb-6"
-            onClick={() => navigate(-1)}
-          >
+          <Button variant="ghost" className="mb-6" onClick={() => navigate(-1)}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
           </Button>
 
@@ -78,29 +69,17 @@ const CustomQuotePage = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="labelSize">Label Size Requirements*</Label>
-                  <Input
-                    id="labelSize"
-                    placeholder="e.g., 50mm x 25mm, 100mm x 150mm"
-                    required
-                  />
+                  <Input id="labelSize" placeholder="e.g., 50mm x 25mm, 100mm x 150mm" required />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="quantity">Estimated Quantity*</Label>
-                  <Input
-                    id="quantity"
-                    placeholder="e.g., 1000, 5000, 10000+"
-                    required
-                  />
+                  <Input id="quantity" placeholder="e.g., 1000, 5000, 10000+" required />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="details">Additional Details</Label>
-                  <Textarea
-                    id="details"
-                    placeholder="Please provide any specific requirements, deadline, or other information that will help us prepare your custom quote."
-                    className="min-h-[150px]"
-                  />
+                  <Textarea id="details" placeholder="Please provide any specific requirements, deadline, or other information that will help us prepare your custom quote." className="min-h-[150px]" />
                 </div>
 
                 <Button type="submit" className="w-full">
@@ -115,9 +94,7 @@ const CustomQuotePage = () => {
                 Contact our team directly for specialized support.
               </p>
               <div className="flex justify-center gap-4">
-                <Button variant="outline" onClick={() => window.location.href = "tel:0800123456"}>
-                  Call Us: 0800 123 456
-                </Button>
+                <Button variant="outline" onClick={() => window.location.href = "tel:0800123456"}>Call Us: 022 657 8662</Button>
                 <Button variant="outline" onClick={() => window.location.href = "mailto:info@thermallabelsnz.co.nz"}>
                   Email Us
                 </Button>
@@ -127,8 +104,6 @@ const CustomQuotePage = () => {
         </div>
       </main>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default CustomQuotePage;
