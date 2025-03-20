@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -12,23 +12,66 @@ import CustomerInformationForm from "@/components/checkout/CustomerInformationFo
 import PaymentMethodSelector from "@/components/checkout/PaymentMethodSelector";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import EmptyCart from "@/components/checkout/EmptyCart";
+import { CustomerInfo } from "@/types";
 
 const CheckoutPage = () => {
-  const { items } = useCart();
+  const { items, subtotal, clearCart } = useCart();
   const navigate = useNavigate();
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState("stripe");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("stripe");
+  const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
+  
+  // Shipping cost calculation (simplified)
+  const shippingCost = 9.99;
+  
+  // GST calculation (15% in New Zealand)
+  const gstRate = 0.15;
+  const gstAmount = (subtotal + shippingCost) * gstRate;
+  
+  // Total including GST
+  const total = subtotal + shippingCost + gstAmount;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent, formData: CustomerInfo) => {
     e.preventDefault();
+    setCustomerInfo(formData);
     
-    // In a real app, we would process the order here
+    // Generate order number
+    const orderNumber = `ORD-${Date.now().toString().slice(-6)}`;
+    const orderDate = new Date().toLocaleDateString('en-NZ', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    // Prepare order data for the invoice
+    const orderData = {
+      orderNumber,
+      orderDate,
+      customerInfo: formData,
+      items: items.map(item => ({
+        productId: item.productId,
+        productName: item.productName,
+        quantity: item.quantity,
+        price: item.price,
+        dimensions: item.dimensions
+      })),
+      paymentMethod: selectedPaymentMethod,
+      subtotal,
+      shipping: shippingCost,
+      gst: gstAmount,
+      total
+    };
+    
+    // Show toast
     toast({
       title: "Order Submitted",
       description: "Your order has been placed successfully.",
     });
     
-    // Redirect to a thank you page or order confirmation
-    navigate("/thank-you");
+    // Clear cart
+    clearCart();
+    
+    // Navigate to thank you page with order data
+    navigate("/thank-you", { state: { orderData } });
   };
 
   if (items.length === 0) {
