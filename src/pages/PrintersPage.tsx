@@ -16,7 +16,7 @@ const PrintersPage = () => {
           <div className="container-custom">
             <h1 className="heading-lg text-center mb-4">Thermal Printers</h1>
             <p className="text-center text-gray-600 max-w-2xl mx-auto">
-              Premium Thermal Printers from Trusted Brands – Available Through Our Reseller Partnership.
+              Premium Thermal Printers from Trusted Brands.
             </p>
           </div>
         </div>
@@ -28,12 +28,6 @@ const PrintersPage = () => {
               All Printers ({printers.length})
             </h2>
             <PrinterGrid printers={printers} />
-          </div>
-          
-          <div className="bg-gray-50 border border-gray-100 rounded-lg p-6 text-center mt-12">
-            <p className="text-gray-700 font-medium">
-              We are an authorized reseller of Accurate Labels NZ.
-            </p>
           </div>
         </div>
 

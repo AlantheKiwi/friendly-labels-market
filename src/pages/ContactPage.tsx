@@ -39,7 +39,6 @@ const ContactPage = () => {
                   <div>
                     <p className="font-medium text-gray-700">Email</p>
                     <p className="text-gray-600">sales@servicelabels.co.nz</p>
-                    <p className="text-gray-600">support@servicelabels.co.nz</p>
                   </div>
                 </div>
                 
