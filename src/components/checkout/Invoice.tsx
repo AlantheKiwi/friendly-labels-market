@@ -52,8 +52,9 @@ const Invoice: React.FC<InvoiceProps> = ({ orderData }) => {
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
-    content: () => invoiceRef.current,
     documentTitle: `Invoice-${orderData.orderNumber}`,
+    // The ref points to the element to be printed
+    content: () => invoiceRef.current,
   });
 
   const handleEmail = () => {
@@ -84,7 +85,7 @@ const Invoice: React.FC<InvoiceProps> = ({ orderData }) => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={handlePrint}
+                onClick={() => handlePrint()}
                 className="flex items-center"
               >
                 <Printer className="h-4 w-4 mr-2" />
