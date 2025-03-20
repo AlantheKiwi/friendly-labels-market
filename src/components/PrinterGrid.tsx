@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Printer } from "@/types";
 import PrinterCard from "./PrinterCard";
 
@@ -8,13 +8,6 @@ interface PrinterGridProps {
 }
 
 const PrinterGrid: React.FC<PrinterGridProps> = ({ printers }) => {
-  useEffect(() => {
-    console.log("Rendering printers:", printers);
-    printers.forEach(printer => {
-      console.log(`Printer: ${printer.name}, Image path: ${printer.imageUrl}`);
-    });
-  }, [printers]);
-
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
       {printers.length === 0 ? (

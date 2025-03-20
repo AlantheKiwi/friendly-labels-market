@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Printer } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,12 +30,10 @@ const PrinterCard: React.FC<PrinterCardProps> = ({ printer }) => {
 
   // Get image source with fallback to Unsplash images
   const getImageSrc = () => {
-    // First try URL from printer data
-    if (printer.imageUrl) {
-      return printer.imageUrl;
+    if (imageError) {
+      return fallbackImages[printer.id] || "";
     }
-    // Then use fallback
-    return fallbackImages[printer.id] || "";
+    return printer.imageUrl;
   };
 
   return (
