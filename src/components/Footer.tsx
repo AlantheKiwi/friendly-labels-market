@@ -11,17 +11,7 @@ const Footer: React.FC = () => {
             <p className="text-gray-600 mb-4">
               Premium labels with next-day delivery across New Zealand. Trusted by businesses nationwide.
             </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-gray-600 hover:text-brand-blue transition-colors">
-                <Facebook size={20} />
-              </a>
-              <a href="#" className="text-gray-600 hover:text-brand-blue transition-colors">
-                <Instagram size={20} />
-              </a>
-              <a href="#" className="text-gray-600 hover:text-brand-blue transition-colors">
-                <Linkedin size={20} />
-              </a>
-            </div>
+            
           </div>
 
           <div>
