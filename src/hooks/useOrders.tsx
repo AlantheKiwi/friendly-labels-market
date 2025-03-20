@@ -8,6 +8,7 @@ export const useOrders = (isAdmin: boolean) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
+    id: "",
     client_id: "",
     order_number: "",
     product_name: "",
@@ -15,6 +16,7 @@ export const useOrders = (isAdmin: boolean) => {
     price: "",
     status: "pending"
   });
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: ["orders"],
@@ -80,6 +82,42 @@ export const useOrders = (isAdmin: boolean) => {
     }
   });
 
+  const updateOrderMutation = useMutation({
+    mutationFn: async (orderData: typeof formData) => {
+      const { data, error } = await supabase
+        .from("orders")
+        .update({
+          client_id: orderData.client_id,
+          order_number: orderData.order_number,
+          product_name: orderData.product_name,
+          quantity: parseInt(orderData.quantity),
+          price: parseFloat(orderData.price),
+          status: orderData.status
+        })
+        .eq('id', orderData.id)
+        .select();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      resetForm();
+      setIsEditMode(false);
+      toast({
+        title: "Success",
+        description: "Order updated successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to update order: ${error.message}`,
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData((prev) => ({
@@ -97,6 +135,7 @@ export const useOrders = (isAdmin: boolean) => {
 
   const resetForm = () => {
     setFormData({
+      id: "",
       client_id: "",
       order_number: "",
       product_name: "",
@@ -104,17 +143,35 @@ export const useOrders = (isAdmin: boolean) => {
       price: "",
       status: "pending"
     });
+    setIsEditMode(false);
+  };
+
+  const editOrder = (order: any) => {
+    setFormData({
+      id: order.id,
+      client_id: order.client_id,
+      order_number: order.order_number,
+      product_name: order.product_name,
+      quantity: order.quantity.toString(),
+      price: order.price.toString(),
+      status: order.status
+    });
+    setIsEditMode(true);
   };
 
   return {
     orders,
     clients,
     formData,
+    isEditMode,
     isLoading: ordersLoading || clientsLoading,
-    isPending: addOrderMutation.isPending,
+    isPending: addOrderMutation.isPending || updateOrderMutation.isPending,
     handleInputChange,
     handleSelectChange,
     addOrder: addOrderMutation.mutate,
-    resetForm
+    updateOrder: updateOrderMutation.mutate,
+    editOrder,
+    resetForm,
+    setIsEditMode
   };
 };

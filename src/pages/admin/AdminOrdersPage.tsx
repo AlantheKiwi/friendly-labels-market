@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import OrdersTable from "@/components/admin/orders/OrdersTable";
 import OrderSearch from "@/components/admin/orders/OrderSearch";
 import AddOrderDialog from "@/components/admin/orders/AddOrderDialog";
+import EditOrderDialog from "@/components/admin/orders/EditOrderDialog";
 import OrderStatusBadge from "@/components/admin/orders/OrderStatusBadge";
 import { useOrders } from "@/hooks/useOrders";
 
@@ -17,25 +18,41 @@ const AdminOrdersPage = () => {
   const { isAdmin, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
   const {
     orders,
     clients,
     formData,
+    isEditMode,
     isLoading,
     isPending,
     handleInputChange,
     handleSelectChange,
     addOrder,
+    updateOrder,
+    editOrder,
+    setIsEditMode,
     resetForm
   } = useOrders(isAdmin);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     addOrder(formData);
-    setIsDialogOpen(false);
+    setIsAddDialogOpen(false);
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateOrder(formData);
+    setIsEditDialogOpen(false);
+  };
+
+  const handleEditOrderClick = (order: any) => {
+    editOrder(order);
+    setIsEditDialogOpen(true);
   };
 
   const getStatusBadge = (status: string) => {
@@ -64,6 +81,13 @@ const AdminOrdersPage = () => {
     }
   }, [isAdmin, authLoading, navigate, toast]);
 
+  // Reset form when dialogs are closed
+  useEffect(() => {
+    if (!isAddDialogOpen && !isEditDialogOpen) {
+      resetForm();
+    }
+  }, [isAddDialogOpen, isEditDialogOpen]);
+
   if (authLoading || isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -83,7 +107,7 @@ const AdminOrdersPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Order Management</h1>
-            <Button onClick={() => setIsDialogOpen(true)}>
+            <Button onClick={() => setIsAddDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" /> Add New Order
             </Button>
           </div>
@@ -103,6 +127,7 @@ const AdminOrdersPage = () => {
               <OrdersTable 
                 orders={filteredOrders || []} 
                 getStatusBadge={getStatusBadge} 
+                onEditOrder={handleEditOrderClick}
               />
             </CardContent>
           </Card>
@@ -110,10 +135,21 @@ const AdminOrdersPage = () => {
       </main>
 
       <AddOrderDialog 
-        isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        isOpen={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
         clients={clients || []}
-        onSubmit={handleSubmit}
+        onSubmit={handleAddSubmit}
+        formData={formData}
+        handleInputChange={handleInputChange}
+        handleSelectChange={handleSelectChange}
+        isSubmitting={isPending}
+      />
+
+      <EditOrderDialog 
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        clients={clients || []}
+        onSubmit={handleEditSubmit}
         formData={formData}
         handleInputChange={handleInputChange}
         handleSelectChange={handleSelectChange}
