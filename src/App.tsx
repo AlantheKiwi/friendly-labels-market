@@ -25,6 +25,7 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminClientsPage from "./pages/admin/AdminClientsPage";
 import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
 import AdminQuotesPage from "./pages/admin/AdminQuotesPage";
+import ClientDetailPage from "./pages/admin/ClientDetailPage";
 import CookieBanner from "./components/CookieBanner";
 import ClientDashboardPage from "./pages/client/ClientDashboardPage";
 import ClientOrdersPage from "./pages/client/ClientOrdersPage";
@@ -99,6 +100,14 @@ const App = () => {
                   element={
                     <ProtectedRoute requireAdmin>
                       <AdminClientsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/clients/:clientId" 
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <ClientDetailPage />
                     </ProtectedRoute>
                   } 
                 />

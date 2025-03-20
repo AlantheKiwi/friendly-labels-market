@@ -1,18 +1,18 @@
-
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useNavigate, Link } from "react-router-dom";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Table as TableIcon, Grid } from "lucide-react";
 import AdminHeader from "@/components/admin/AdminHeader";
 import { useAuth } from "@/context/AuthContext";
-import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import ClientsGrid from "@/components/admin/clients/ClientsGrid";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const AdminClientsPage = () => {
   const { isAdmin, isLoading: authLoading } = useAuth();
@@ -21,6 +21,7 @@ const AdminClientsPage = () => {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -38,7 +39,6 @@ const AdminClientsPage = () => {
     }));
   };
 
-  // Fetch clients
   const { data: clients, isLoading: clientsLoading } = useQuery({
     queryKey: ["clients"],
     queryFn: async () => {
@@ -53,10 +53,8 @@ const AdminClientsPage = () => {
     enabled: !!isAdmin
   });
 
-  // Add new client
   const addClientMutation = useMutation({
     mutationFn: async (clientData: typeof formData) => {
-      // First, create the user in Auth
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: clientData.email,
         password: clientData.password,
@@ -71,7 +69,6 @@ const AdminClientsPage = () => {
       
       if (authError) throw authError;
       
-      // Then, assign the client role
       if (authData.user) {
         const { error: roleError } = await supabase
           .from("user_roles")
@@ -112,7 +109,6 @@ const AdminClientsPage = () => {
     addClientMutation.mutate(formData);
   };
 
-  // Filter clients based on search term
   const filteredClients = clients?.filter(client => {
     if (!searchTerm) return true;
     const searchLower = searchTerm.toLowerCase();
@@ -158,23 +154,40 @@ const AdminClientsPage = () => {
             </Button>
           </div>
           
-          <div className="mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="Search clients..."
-                className="pl-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+          <div className="bg-white p-4 rounded-md shadow-sm mb-6">
+            <div className="flex gap-4 items-center">
+              <div className="relative flex-grow">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Search clients..."
+                  className="pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="flex space-x-1 bg-gray-100 p-1 rounded-md">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "table" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("table")}
+                >
+                  <TableIcon className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
           
-          <Card>
-            <CardHeader>
-              <CardTitle>Clients</CardTitle>
-            </CardHeader>
-            <CardContent>
+          {viewMode === "grid" ? (
+            <ClientsGrid clients={filteredClients || []} />
+          ) : (
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -193,11 +206,8 @@ const AdminClientsPage = () => {
                       <TableCell>{client.phone || 'N/A'}</TableCell>
                       <TableCell>{new Date(client.created_at).toLocaleDateString()}</TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm" className="mr-2">
-                          Edit
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          View
+                        <Button variant="outline" size="sm" className="mr-2" asChild>
+                          <Link to={`/admin/clients/${client.id}`}>View</Link>
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -211,8 +221,8 @@ const AdminClientsPage = () => {
                   )}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
+            </div>
+          )}
         </div>
       </main>
 
