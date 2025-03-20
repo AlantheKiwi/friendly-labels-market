@@ -94,7 +94,9 @@ const CustomQuotePage = () => {
                 Contact our team directly for specialized support.
               </p>
               <div className="flex justify-center gap-4">
-                <Button variant="outline" onClick={() => window.location.href = "tel:0800123456"}>Call Us: 022 657 8662</Button>
+                <Button variant="outline" onClick={() => window.location.href = "tel:0800123456"}>
+                  Call Us: 0800 123 456
+                </Button>
                 <Button variant="outline" onClick={() => window.location.href = "mailto:info@thermallabelsnz.co.nz"}>
                   Email Us
                 </Button>
