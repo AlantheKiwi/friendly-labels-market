@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CallToAction from "@/components/CallToAction";
@@ -7,6 +7,10 @@ import { printers } from "@/data/printerData";
 import PrinterGrid from "@/components/PrinterGrid";
 
 const PrintersPage = () => {
+  useEffect(() => {
+    console.log("Printer data loaded:", printers);
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -22,7 +26,7 @@ const PrintersPage = () => {
 
         <div className="container-custom py-12">
           <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-6">All Printers</h2>
+            <h2 className="text-2xl font-bold mb-6">All Printers ({printers.length})</h2>
             <PrinterGrid printers={printers} />
           </div>
         </div>

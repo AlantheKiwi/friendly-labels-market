@@ -1,26 +1,43 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Printer } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface PrinterCardProps {
   printer: Printer;
 }
 
 const PrinterCard: React.FC<PrinterCardProps> = ({ printer }) => {
+  const [imageError, setImageError] = useState(false);
+
+  const handleImageError = () => {
+    console.error(`Failed to load image for ${printer.name}`);
+    setImageError(true);
+  };
+
   return (
     <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-lg">
-      <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
-        <img 
-          src={printer.imageUrl} 
-          alt={printer.name} 
-          className="h-full w-full object-contain p-4"
-          loading="lazy"
-        />
-      </div>
+      <AspectRatio ratio={4/3} className="bg-gray-100">
+        {imageError ? (
+          <div className="flex h-full w-full flex-col items-center justify-center p-4 text-gray-400">
+            <AlertCircle className="h-12 w-12 mb-2" />
+            <p className="text-center text-sm">Image unavailable</p>
+            <p className="text-center text-xs">{printer.name}</p>
+          </div>
+        ) : (
+          <img 
+            src={printer.imageUrl} 
+            alt={printer.name} 
+            className="h-full w-full object-contain p-4"
+            loading="lazy"
+            onError={handleImageError}
+          />
+        )}
+      </AspectRatio>
       <CardContent className="p-5">
         <h3 className="font-semibold text-lg mb-2">{printer.name}</h3>
         
