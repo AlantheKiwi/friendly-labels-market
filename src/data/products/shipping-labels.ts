@@ -47,8 +47,8 @@ export const shippingLabels: Product = {
     {
       id: "qty-2",
       amount: 1000,
-      price: 58.49,
-      basePrice: 64.99,
+      price: 44.99,
+      basePrice: 49.98,
       discountPercent: 10,
       isPopular: true
     },
