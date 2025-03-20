@@ -14,9 +14,9 @@ const PrintersPage = () => {
   const pdfCatalogRef = useRef<HTMLDivElement>(null);
 
   const handlePrintCatalog = useReactToPrint({
-    content: () => pdfCatalogRef.current,
     documentTitle: "Thermal_Printers_Catalog",
     onAfterPrint: () => console.log("PDF catalog generated successfully"),
+    content: () => pdfCatalogRef.current,
   });
 
   return (
@@ -40,7 +40,7 @@ const PrintersPage = () => {
             </h2>
             
             <Button 
-              onClick={handlePrintCatalog}
+              onClick={() => handlePrintCatalog()}
               className="flex items-center gap-2"
             >
               <Download className="h-4 w-4" />
