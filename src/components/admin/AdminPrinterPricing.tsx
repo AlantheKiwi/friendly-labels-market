@@ -12,7 +12,7 @@ import { Search, Save, Check, RefreshCcw } from "lucide-react";
 const AdminPrinterPricing = () => {
   const [printerData, setPrinterData] = useState<PrinterType[]>(printers);
   const [searchQuery, setSearchQuery] = useState("");
-  const [editedPrices, setEditedPrices] = useState<Record<number, { price: number; originalPrice?: number }>>({});
+  const [editedPrices, setEditedPrices] = useState<Record<number, { price: number }>>({});
   const [savingIds, setSavingIds] = useState<number[]>([]);
   const { toast } = useToast();
 
@@ -21,21 +21,20 @@ const AdminPrinterPricing = () => {
     printer.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handlePriceChange = (printerId: number, field: 'price' | 'originalPrice', value: string) => {
+  const handlePriceChange = (printerId: number, value: string) => {
     const numericValue = parseFloat(value);
     if (isNaN(numericValue) && value !== "") return;
     
     setEditedPrices(prev => {
       const currentEdits = prev[printerId] || { 
-        price: printerData.find(p => p.id === printerId)?.price || 0,
-        originalPrice: printerData.find(p => p.id === printerId)?.originalPrice
+        price: printerData.find(p => p.id === printerId)?.price || 0
       };
       
       return {
         ...prev,
         [printerId]: {
           ...currentEdits,
-          [field]: value === "" ? 0 : numericValue
+          price: value === "" ? 0 : numericValue
         }
       };
     });
@@ -53,9 +52,6 @@ const AdminPrinterPricing = () => {
             if (editedPrices[printerId]) {
               if (editedPrices[printerId].price !== undefined) {
                 updatedPrinter.price = editedPrices[printerId].price;
-              }
-              if (editedPrices[printerId].originalPrice !== undefined) {
-                updatedPrinter.originalPrice = editedPrices[printerId].originalPrice;
               }
             }
             return updatedPrinter;
@@ -139,7 +135,6 @@ const AdminPrinterPricing = () => {
               <TableHead className="w-12">ID</TableHead>
               <TableHead>Printer Name</TableHead>
               <TableHead className="w-40">Price (NZD)</TableHead>
-              <TableHead className="w-40">Original Price</TableHead>
               <TableHead className="w-32">Status</TableHead>
               <TableHead className="w-32">Actions</TableHead>
             </TableRow>
@@ -169,36 +164,12 @@ const AdminPrinterPricing = () => {
                             : printer.price
                         }
                         onChange={(e) => 
-                          handlePriceChange(printer.id, 'price', e.target.value)
+                          handlePriceChange(printer.id, e.target.value)
                         }
                       />
                     )}
                   </TableCell>
                   <TableCell>
-                    {printer.onSale ? (
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={
-                          editedPrices[printer.id]?.originalPrice !== undefined
-                            ? editedPrices[printer.id].originalPrice
-                            : printer.originalPrice || 0
-                        }
-                        onChange={(e) => 
-                          handlePriceChange(printer.id, 'originalPrice', e.target.value)
-                        }
-                      />
-                    ) : (
-                      <span className="text-gray-500">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {printer.onSale && (
-                      <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
-                        On Sale
-                      </Badge>
-                    )}
                     {printer.contactForPrice && (
                       <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
                         Contact Only
@@ -229,7 +200,7 @@ const AdminPrinterPricing = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="text-center h-24 text-gray-500">
+                <TableCell colSpan={5} className="text-center h-24 text-gray-500">
                   No printers found matching your search.
                 </TableCell>
               </TableRow>

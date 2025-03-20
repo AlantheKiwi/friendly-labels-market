@@ -4,12 +4,14 @@ import { ProductQuantity } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+
 interface ProductQuantitySelectorProps {
   quantities: ProductQuantity[];
   selectedQuantityId: string;
   onSelectQuantity: (quantityId: string) => void;
   isCustom?: boolean;
 }
+
 const ProductQuantitySelector: React.FC<ProductQuantitySelectorProps> = ({
   quantities,
   selectedQuantityId,
@@ -29,6 +31,7 @@ const ProductQuantitySelector: React.FC<ProductQuantitySelectorProps> = ({
         </Card>
       </div>;
   }
+
   return <div className="mb-6">
       <h3 className="text-lg font-medium mb-3">Select Quantity</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -49,11 +52,7 @@ const ProductQuantitySelector: React.FC<ProductQuantitySelectorProps> = ({
                   </span>
                   <span className="text-xs text-gray-500 ml-1">Ex GST</span>
                 </div>
-                {quantity.discountPercent > 0}
               </div>
-              {quantity.discountPercent > 0 && <div className="bg-green-50 text-green-700 text-xs font-medium py-1 px-2 rounded-sm inline-block">
-                  Save {quantity.discountPercent}%
-                </div>}
               {quantity.isPopular && <div className="absolute top-0 right-0 bg-brand-blue text-white text-xs py-1 px-2 rounded-br-sm rounded-tl-md">
                   Popular
                 </div>}
@@ -62,4 +61,5 @@ const ProductQuantitySelector: React.FC<ProductQuantitySelectorProps> = ({
       </div>
     </div>;
 };
+
 export default ProductQuantitySelector;

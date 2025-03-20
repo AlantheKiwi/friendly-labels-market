@@ -48,16 +48,16 @@ export const barcodeLabels: Product = {
     {
       id: "qty-2",
       amount: 2000,
-      price: 75.18,
+      price: 79.98,
       basePrice: 79.98,
-      discountPercent: 6
+      discountPercent: 0
     },
     {
       id: "qty-3",
       amount: 5000,
-      price: 173.96,
+      price: 199.95,
       basePrice: 199.95,
-      discountPercent: 13
+      discountPercent: 0
     }
   ]
 };

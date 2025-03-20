@@ -100,9 +100,7 @@ export const printers: Printer[] = [
     id: 10,
     name: "Zebra ZD220t Thermal Transfer Printer 203dpi (USB)",
     description: "The Zebra ZD220t thermal transfer desktop printer offers reliable operation at an affordable price. Features 203dpi resolution and USB connectivity for simple setup and operation.",
-    price: 525.00,
-    originalPrice: 595.00,
-    onSale: true,
+    price: 595.00,
     gstIncluded: false,
     imageUrl: "https://www.accuratelabels.co.nz/wp-content/uploads/2022/08/ZD220t-Thermal-printer-Accurate-Labels-300x300.png",
     originalUrl: "https://www.accuratelabels.co.nz/product/zebra-zd220t-thermal-transfer-printer-203dpi-usb/"
@@ -111,9 +109,7 @@ export const printers: Printer[] = [
     id: 11,
     name: "Zebra ZD421 Direct Thermal Printer 203dpi (USB + LAN)",
     description: "The Zebra ZD421 direct thermal printer builds on the legacy ZD420 series with new features and capabilities. Includes USB and LAN connectivity with 203dpi print resolution.",
-    price: 795.00,
-    originalPrice: 825.00,
-    onSale: true,
+    price: 825.00,
     gstIncluded: false,
     imageUrl: "https://www.accuratelabels.co.nz/wp-content/uploads/2022/10/ZD-421-300x300.png",
     originalUrl: "https://www.accuratelabels.co.nz/product/zebra-zd421-direct-thermal-printer-203dpi-usb-lan/"
@@ -122,9 +118,7 @@ export const printers: Printer[] = [
     id: 12,
     name: "Zebra ZD421 Thermal Transfer Printer 203dpi (USB)",
     description: "The Zebra ZD421 thermal transfer printer delivers expanded capabilities and reliable operation. Features 203dpi resolution and USB connectivity for quality label printing.",
-    price: 725.00,
-    originalPrice: 785.00,
-    onSale: true,
+    price: 785.00,
     gstIncluded: false,
     imageUrl: "https://www.accuratelabels.co.nz/wp-content/uploads/2022/10/ZD-421-300x300.png",
     originalUrl: "https://www.accuratelabels.co.nz/product/zebra-zd421-thermal-transfer-printer-203dpi-usb/"

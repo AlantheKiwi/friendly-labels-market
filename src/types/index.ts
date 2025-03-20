@@ -11,7 +11,7 @@ export interface ProductQuantity {
   amount: number;
   price: number;
   basePrice: number;
-  discountPercent: number;
+  discountPercent: number; // Kept for backward compatibility, but will always be 0
   isPopular?: boolean;
 }
 

@@ -53,24 +53,24 @@ export const directLabels: Product = {
     {
       id: "qty-2",
       amount: 1000,
-      price: 22.86,
+      price: 25.98,
       basePrice: 25.98,
-      discountPercent: 12,
+      discountPercent: 0,
       isPopular: true
     },
     {
       id: "qty-3",
       amount: 2000,
-      price: 41.57,
+      price: 51.96,
       basePrice: 51.96,
-      discountPercent: 20
+      discountPercent: 0
     },
     {
       id: "qty-4",
       amount: 5000,
-      price: 94.83, // Corrected price: basePrice * (1 - discountPercent/100) = 129.95 * 0.73 = 94.83
+      price: 129.95,
       basePrice: 129.95,
-      discountPercent: 27
+      discountPercent: 0
     }
   ]
 };

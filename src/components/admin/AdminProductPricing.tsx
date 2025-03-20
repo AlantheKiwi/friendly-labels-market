@@ -13,7 +13,7 @@ const AdminProductPricing = () => {
   const [products, setProducts] = useState<Product[]>(productList);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [editedPrices, setEditedPrices] = useState<Record<string, Record<string, { price: number; basePrice: number }>>>({});
+  const [editedPrices, setEditedPrices] = useState<Record<string, Record<string, { price: number }>>>({});
   const [savingIds, setSavingIds] = useState<string[]>([]);
   const { toast } = useToast();
 
@@ -27,15 +27,14 @@ const AdminProductPricing = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const handlePriceChange = (productId: string, quantityId: string, field: 'price' | 'basePrice', value: string) => {
+  const handlePriceChange = (productId: string, quantityId: string, value: string) => {
     const numericValue = parseFloat(value);
     if (isNaN(numericValue) && value !== "") return;
     
     setEditedPrices(prev => {
       const productEdits = prev[productId] || {};
       const quantityEdits = productEdits[quantityId] || { 
-        price: 0,
-        basePrice: 0
+        price: 0
       };
       
       // Find the current product and quantity
@@ -44,15 +43,13 @@ const AdminProductPricing = () => {
       
       // Get the current values or use defaults
       const currentPrice = quantityEdits.price || quantity?.price || 0;
-      const currentBasePrice = quantityEdits.basePrice || quantity?.basePrice || 0;
       
       return {
         ...prev,
         [productId]: {
           ...productEdits,
           [quantityId]: {
-            price: field === 'price' ? (value === "" ? 0 : numericValue) : currentPrice,
-            basePrice: field === 'basePrice' ? (value === "" ? 0 : numericValue) : currentBasePrice
+            price: value === "" ? 0 : numericValue
           }
         }
       };
@@ -72,18 +69,13 @@ const AdminProductPricing = () => {
               ...product,
               quantities: product.quantities.map(qty => {
                 if (qty.id === quantityId && editedPrices[productId]?.[quantityId]) {
-                  const { price, basePrice } = editedPrices[productId][quantityId];
-                  
-                  // Calculate discount percentage
-                  const discountPercent = basePrice > 0 
-                    ? Math.round((1 - (price / basePrice)) * 100) 
-                    : 0;
+                  const { price } = editedPrices[productId][quantityId];
                   
                   return {
                     ...qty,
                     price,
-                    basePrice,
-                    discountPercent
+                    basePrice: price,
+                    discountPercent: 0
                   };
                 }
                 return qty;
@@ -204,8 +196,6 @@ const AdminProductPricing = () => {
               <TableHead>Product</TableHead>
               <TableHead>Quantity</TableHead>
               <TableHead className="w-40">Price (NZD)</TableHead>
-              <TableHead className="w-40">Base Price</TableHead>
-              <TableHead className="w-32">Discount %</TableHead>
               <TableHead className="w-32">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -215,7 +205,7 @@ const AdminProductPricing = () => {
                 product.isCustom 
                 ? [
                     <TableRow key={product.id} className="bg-gray-50">
-                      <TableCell colSpan={6}>
+                      <TableCell colSpan={4}>
                         <div className="flex items-center gap-2">
                           <Layers className="text-gray-500 h-4 w-4" />
                           <span className="font-semibold">{product.name}</span>
@@ -249,33 +239,9 @@ const AdminProductPricing = () => {
                               : quantity.price
                           }
                           onChange={(e) => 
-                            handlePriceChange(product.id, quantity.id, 'price', e.target.value)
+                            handlePriceChange(product.id, quantity.id, e.target.value)
                           }
                         />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={
-                            editedPrices[product.id]?.[quantity.id]?.basePrice !== undefined
-                              ? editedPrices[product.id][quantity.id].basePrice
-                              : quantity.basePrice
-                          }
-                          onChange={(e) => 
-                            handlePriceChange(product.id, quantity.id, 'basePrice', e.target.value)
-                          }
-                        />
-                      </TableCell>
-                      <TableCell>
-                        {quantity.discountPercent > 0 ? (
-                          <div className="bg-green-100 text-green-800 text-xs font-medium py-1 px-2 rounded text-center">
-                            {quantity.discountPercent}%
-                          </div>
-                        ) : (
-                          <div className="text-gray-500 text-center">0%</div>
-                        )}
                       </TableCell>
                       <TableCell>
                         <Button
@@ -302,7 +268,7 @@ const AdminProductPricing = () => {
               )
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="text-center h-24 text-gray-500">
+                <TableCell colSpan={4} className="text-center h-24 text-gray-500">
                   No products found matching your search.
                 </TableCell>
               </TableRow>
