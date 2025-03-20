@@ -30,102 +30,105 @@ import ClientDashboardPage from "./pages/client/ClientDashboardPage";
 import ClientOrdersPage from "./pages/client/ClientOrdersPage";
 import ClientQueriesPage from "./pages/client/ClientQueriesPage";
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <AuthProvider>
-        <TooltipProvider>
-          <CartProvider>
-            <Toaster />
-            <Sonner />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/products" element={<ProductsPage />} />
-              <Route path="/products/:slug" element={<ProductPage />} />
-              <Route path="/printers" element={<PrintersPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/thank-you" element={<ThankYouPage />} />
-              <Route path="/custom-quote" element={<CustomQuotePage />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
-              <Route path="/contact" element={<ContactPage />} />
-              
-              {/* Auth Routes */}
-              <Route path="/auth/login" element={<LoginPage />} />
-              <Route path="/auth/register" element={<RegisterPage />} />
-              
-              {/* Client Routes */}
-              <Route 
-                path="/client/dashboard" 
-                element={
-                  <ProtectedRoute requireClient>
-                    <ClientDashboardPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/client/orders" 
-                element={
-                  <ProtectedRoute requireClient>
-                    <ClientOrdersPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/client/queries" 
-                element={
-                  <ProtectedRoute requireClient>
-                    <ClientQueriesPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Admin Routes */}
-              <Route path="/admin/login" element={<AdminLoginPage />} />
-              <Route 
-                path="/admin/dashboard" 
-                element={
-                  <ProtectedRoute requireAdmin>
-                    <AdminDashboardPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/admin/clients" 
-                element={
-                  <ProtectedRoute requireAdmin>
-                    <AdminClientsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/admin/orders" 
-                element={
-                  <ProtectedRoute requireAdmin>
-                    <AdminOrdersPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/admin/quotes" 
-                element={
-                  <ProtectedRoute requireAdmin>
-                    <AdminQuotesPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Catch-all route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <CookieBanner />
-          </CartProvider>
-        </TooltipProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  </QueryClientProvider>
-);
+// Create a new QueryClient instance inside the component
+const App = () => {
+  const queryClient = new QueryClient();
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <TooltipProvider>
+            <CartProvider>
+              <Toaster />
+              <Sonner />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/products" element={<ProductsPage />} />
+                <Route path="/products/:slug" element={<ProductPage />} />
+                <Route path="/printers" element={<PrintersPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/thank-you" element={<ThankYouPage />} />
+                <Route path="/custom-quote" element={<CustomQuotePage />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/contact" element={<ContactPage />} />
+                
+                {/* Auth Routes */}
+                <Route path="/auth/login" element={<LoginPage />} />
+                <Route path="/auth/register" element={<RegisterPage />} />
+                
+                {/* Client Routes */}
+                <Route 
+                  path="/client/dashboard" 
+                  element={
+                    <ProtectedRoute requireClient>
+                      <ClientDashboardPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/client/orders" 
+                  element={
+                    <ProtectedRoute requireClient>
+                      <ClientOrdersPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/client/queries" 
+                  element={
+                    <ProtectedRoute requireClient>
+                      <ClientQueriesPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* Admin Routes */}
+                <Route path="/admin/login" element={<AdminLoginPage />} />
+                <Route 
+                  path="/admin/dashboard" 
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminDashboardPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/clients" 
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminClientsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/orders" 
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminOrdersPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/quotes" 
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminQuotesPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* Catch-all route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <CookieBanner />
+            </CartProvider>
+          </TooltipProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
