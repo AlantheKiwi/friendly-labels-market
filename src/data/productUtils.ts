@@ -1,13 +1,13 @@
 
 import { Product } from "@/types";
-import { products } from "./productData";
+import { productList } from "./products";
 
 export const getProductBySlug = (slug: string): Product | undefined => {
-  return products.find(product => product.slug === slug);
+  return productList.find(product => product.slug === slug);
 };
 
 export const getProductById = (id: string): Product | undefined => {
-  return products.find(product => product.id === id);
+  return productList.find(product => product.id === id);
 };
 
 // You can add more product-related utility functions here as needed
