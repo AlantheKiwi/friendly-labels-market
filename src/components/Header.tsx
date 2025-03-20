@@ -2,13 +2,15 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Menu, X, Printer } from "lucide-react";
+import { ShoppingCart, Menu, X, Printer, User, LogIn } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import CartSidebar from "./CartSidebar";
 
 const Header: React.FC = () => {
   const { itemCount } = useCart();
+  const { user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -37,7 +39,32 @@ const Header: React.FC = () => {
             </Link>
           </nav>
 
-          <div className="flex items-center">
+          <div className="flex items-center gap-3">
+            {/* Client Login/Account Button */}
+            {user ? (
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2" 
+                onClick={signOut}
+                size="sm"
+              >
+                <User className="h-4 w-4" />
+                <span className="hidden sm:inline">Logout</span>
+              </Button>
+            ) : (
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2" 
+                size="sm"
+                asChild
+              >
+                <Link to="/auth/login">
+                  <LogIn className="h-4 w-4" />
+                  <span className="hidden sm:inline">Login</span>
+                </Link>
+              </Button>
+            )}
+
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" className="relative">
@@ -98,6 +125,16 @@ const Header: React.FC = () => {
               >
                 Contact
               </Link>
+              {!user && (
+                <Link
+                  to="/auth/login"
+                  className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <LogIn className="h-4 w-4" />
+                  Login
+                </Link>
+              )}
             </nav>
           </div>
         )}
