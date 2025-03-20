@@ -14,8 +14,8 @@ interface CallToActionProps {
 }
 
 const CallToAction: React.FC<CallToActionProps> = ({
-  title = "Ready to Order Your Thermal Labels?",
-  description = "Get high-quality thermal printer labels delivered across New Zealand with next-day shipping.",
+  title = "Ready to Order Your Labels?",
+  description = "Get high-quality printer labels delivered across New Zealand with next-day shipping.",
   buttonText = "Shop Now",
   buttonLink = "/products",
   secondaryButtonText = "Request Custom Quote",

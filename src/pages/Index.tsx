@@ -47,7 +47,7 @@ const Index = () => {
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Choose Your Labels</h3>
                 <p className="text-gray-600">
-                  Select from our range of thermal labels and customize your order.
+                  Select from our range of labels and customize your order.
                 </p>
               </div>
               

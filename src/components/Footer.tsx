@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { PhoneCall, Mail, MapPin, Facebook, Instagram, Linkedin } from "lucide-react";
@@ -7,7 +8,7 @@ const Footer: React.FC = () => {
       <div className="container-custom">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
-            <h3 className="font-bold text-lg mb-4">Printer Labels NZ</h3>
+            <h3 className="font-bold text-lg mb-4">Service Labels NZ</h3>
             <p className="text-gray-600 mb-4">
               Premium labels with next-day delivery across New Zealand. Trusted by businesses nationwide.
             </p>
@@ -18,7 +19,7 @@ const Footer: React.FC = () => {
             <h3 className="font-bold text-lg mb-4">Products</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/products/direct-thermal-labels" className="text-gray-600 hover:text-brand-blue transition-colors">
+                <Link to="/products/direct-labels" className="text-gray-600 hover:text-brand-blue transition-colors">
                   Direct Labels
                 </Link>
               </li>
@@ -85,7 +86,7 @@ const Footer: React.FC = () => {
               </li>
               <li className="flex items-start">
                 <Mail size={20} className="mr-2 text-brand-blue flex-shrink-0 mt-1" />
-                <span className="text-gray-600">info@labelsnz.co.nz</span>
+                <span className="text-gray-600">info@servicelabels.co.nz</span>
               </li>
               <li className="flex items-start">
                 <MapPin size={20} className="mr-2 text-brand-blue flex-shrink-0 mt-1" />

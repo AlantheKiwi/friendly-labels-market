@@ -36,7 +36,12 @@ const ProductsPage = () => {
           <Separator className="my-12" />
 
           {/* Products by category */}
-          {Object.entries(categories).map(([category, categoryProducts]) => {})}
+          {Object.entries(categories).map(([category, categoryProducts]) => (
+            <div key={category} className="mb-12">
+              <h2 className="text-2xl font-bold mb-6">{category}</h2>
+              <ProductGrid products={categoryProducts} />
+            </div>
+          ))}
         </div>
 
         <CallToAction title="Can't Find What You're Looking For?" description="We offer custom label solutions tailored to your specific requirements." buttonText="Request Custom Quote" buttonLink="/custom-quote" secondaryButtonText="Contact Us" secondaryButtonLink="/contact" />

@@ -17,7 +17,7 @@ const Header: React.FC = () => {
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center">
             <div className="text-xl font-bold text-brand-blue">
-              Printer Labels <span className="text-brand-black">NZ</span>
+              Service Labels <span className="text-brand-black">NZ</span>
             </div>
           </Link>
 

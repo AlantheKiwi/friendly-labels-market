@@ -43,7 +43,7 @@ const Hero: React.FC = () => {
           
           <div className="hidden md:block relative">
             <div className="aspect-square relative bg-white rounded-lg shadow-lg p-6 transform rotate-3">
-              <img alt="Thermal printer labels" src="/lovable-uploads/07073e16-ba8e-49c2-8e5c-c514e8fafbd2.jpg" className="w-full h-full rounded object-scale-down" />
+              <img alt="Printer labels" src="/lovable-uploads/07073e16-ba8e-49c2-8e5c-c514e8fafbd2.jpg" className="w-full h-full rounded object-scale-down" />
             </div>
             <div className="absolute -bottom-8 -left-8 bg-white p-4 rounded-lg shadow-lg transform -rotate-6 w-40">
               <div className="text-sm font-semibold mb-1">Bulk Orders</div>
