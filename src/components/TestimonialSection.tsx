@@ -6,8 +6,8 @@ import { Star } from "lucide-react";
 const testimonials = [
   {
     quote: "The thermal labels we ordered arrived the next day as promised. The quality is excellent and our barcodes scan perfectly every time. Highly recommended!",
-    author: "Sarah Johnson",
-    company: "Kiwi Crafts Online",
+    author: "Michael Robertson",
+    company: "Auckland Packaging Ltd",
     rating: 5
   },
   {
