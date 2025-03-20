@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { PhoneCall, Mail, MapPin, Facebook, Instagram, Linkedin } from "lucide-react";
@@ -105,7 +104,7 @@ const Footer: React.FC = () => {
                 <MapPin size={20} className="mr-2 text-brand-blue flex-shrink-0 mt-1" />
                 <span className="text-gray-600">
                   Insight AI Systems Limited<br />
-                  Unit 1/1 Doric Way, Islington<br />
+                  Unit 2/1 Doric Way, Islington<br />
                   Christchurch, New Zealand
                 </span>
               </li>
