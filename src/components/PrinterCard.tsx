@@ -1,9 +1,8 @@
-
 import React, { useState } from "react";
 import { Printer } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, AlertCircle, BadgePercent } from "lucide-react";
+import { AlertCircle, BadgePercent } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
@@ -115,15 +114,10 @@ const PrinterCard: React.FC<PrinterCardProps> = ({ printer }) => {
           )}
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-3 mt-4">
-          <Link to={`/contact?printer=${encodeURIComponent(printer.name)}`} className="flex-1">
+        <div className="flex justify-center mt-4">
+          <Link to={`/contact?printer=${encodeURIComponent(printer.name)}`} className="w-full">
             <Button className="w-full">Request Quote</Button>
           </Link>
-          <a href={printer.originalUrl} target="_blank" rel="noopener noreferrer" className="flex-1">
-            <Button variant="outline" className="w-full">
-              View Details <ExternalLink className="ml-1 h-4 w-4" />
-            </Button>
-          </a>
         </div>
       </CardContent>
     </Card>
