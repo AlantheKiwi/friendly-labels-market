@@ -30,6 +30,7 @@ export const useAuthOperations = () => {
       const { data } = await supabase.auth.getUser();
       
       if (data.user) {
+        console.log("User authenticated, checking roles for:", data.user.id);
         const roles = await checkUserRoles(data.user.id);
         
         // Always redirect clients to their dashboard
