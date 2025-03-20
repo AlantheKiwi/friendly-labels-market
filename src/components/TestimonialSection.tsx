@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star } from "lucide-react";
@@ -6,8 +5,8 @@ import { Star } from "lucide-react";
 const testimonials = [
   {
     quote: "The thermal labels we ordered arrived the next day as promised. The quality is excellent and our barcodes scan perfectly every time. Highly recommended!",
-    author: "Michael Robertson",
-    company: "Auckland Packaging Ltd",
+    author: "Sean Lange",
+    company: "Field Tek, Christchurch",
     rating: 5
   },
   {
