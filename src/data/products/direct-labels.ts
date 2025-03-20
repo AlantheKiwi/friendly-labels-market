@@ -68,7 +68,7 @@ export const directLabels: Product = {
     {
       id: "qty-4",
       amount: 5000,
-      price: 94.86,
+      price: 94.87, // Corrected price: basePrice * (1 - discountPercent/100) = 129.95 * 0.73 = 94.87
       basePrice: 129.95,
       discountPercent: 27
     }
