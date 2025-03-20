@@ -1,9 +1,8 @@
-
 import { Product } from "@/types";
 
 export const directLabels: Product = {
   id: "thermal-labels",
-  name: "Direct Labels",
+  name: "Thermal Direct Labels",
   slug: "direct-thermal-labels",
   description: "High-quality direct labels, perfect for shipping, barcode labeling, and product identification. Compatible with all standard thermal printers.",
   imageUrl: "/lovable-uploads/b244118b-edda-4ebc-9ee8-5ccac70f30dc.png",
