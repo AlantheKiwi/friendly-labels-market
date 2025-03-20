@@ -2,6 +2,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+// List of valid admin emails for validation purposes
+const VALID_ADMIN_EMAILS = [
+  "brendan@hyper.net.nz",
+  "alan@insight-ai-systems.com"
+];
+
 interface UseAdminAuthReturn {
   isAdmin: boolean;
   requirePasswordChange: boolean;
@@ -23,7 +29,10 @@ export const useAdminAuth = (): UseAdminAuthReturn => {
     const requireChange = localStorage.getItem("requirePasswordChange") === "true";
     const email = localStorage.getItem("adminEmail");
     
-    setIsAdmin(adminLoggedIn);
+    // Validate the email is in our allowed list of admin emails
+    const isValidAdmin = email && VALID_ADMIN_EMAILS.includes(email.toLowerCase());
+    
+    setIsAdmin(adminLoggedIn && isValidAdmin);
     setRequirePasswordChange(requireChange);
     setAdminEmail(email);
     setLoading(false);

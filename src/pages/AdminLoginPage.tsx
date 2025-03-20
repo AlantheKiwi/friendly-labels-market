@@ -10,6 +10,12 @@ import { Eye, EyeOff, Lock } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
+// Admin users configuration
+const ADMIN_USERS = {
+  "brendan@hyper.net.nz": "letmein1983!!",
+  "alan@insight-ai-systems.com": "letmein1983!!"  // Added new admin user with same initial password
+};
+
 const AdminLoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,14 +39,14 @@ const AdminLoginPage = () => {
       return;
     }
 
-    // Hard-coded admin credential check for demonstration
-    // In a real application, this should be handled securely on the server
-    if (email.toLowerCase() === "brendan@hyper.net.nz" && password === "letmein1983!!") {
+    // Check against admin users
+    const normalizedEmail = email.toLowerCase();
+    if (ADMIN_USERS[normalizedEmail] === password) {
       // Successful login
       setTimeout(() => {
-        // Store admin session (in a real app, use a more secure approach with JWTs)
+        // Store admin session
         localStorage.setItem("adminLoggedIn", "true");
-        localStorage.setItem("adminEmail", email.toLowerCase());
+        localStorage.setItem("adminEmail", normalizedEmail);
         localStorage.setItem("requirePasswordChange", "true");
         
         toast({
