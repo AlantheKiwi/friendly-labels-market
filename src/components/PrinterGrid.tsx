@@ -11,7 +11,7 @@ const PrinterGrid: React.FC<PrinterGridProps> = ({ printers }) => {
   useEffect(() => {
     console.log("Rendering printers:", printers);
     printers.forEach(printer => {
-      console.log(`Printer: ${printer.name}, Image URL: ${printer.imageUrl}`);
+      console.log(`Printer: ${printer.name}, Image path: ${printer.imageUrl}`);
     });
   }, [printers]);
 
