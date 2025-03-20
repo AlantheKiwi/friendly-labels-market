@@ -1,101 +1,43 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
-import { Eye, EyeOff, Lock } from "lucide-react";
+import { Eye, EyeOff, UserPlus } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 
-const AdminLoginPage = () => {
+const RegisterPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [company, setCompany] = useState("");
+  const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { signUp, user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { user, isAdmin } = useAuth();
 
   useEffect(() => {
-    if (user && isAdmin) {
-      navigate("/admin/dashboard");
+    if (user) {
+      navigate("/");
     }
-  }, [user, isAdmin, navigate]);
+  }, [user, navigate]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
+    
     try {
-      // First, attempt to sign in
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        toast({
-          title: "Login failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // Check if user has admin role
-      const { data: adminRole, error: roleError } = await supabase.rpc('has_role', {
-        user_id: data.user.id,
-        role: 'admin'
-      });
-
-      if (roleError) {
-        toast({
-          title: "Authentication error",
-          description: roleError.message,
-          variant: "destructive",
-        });
-        // Sign out since this is not an admin
-        await supabase.auth.signOut();
-        setIsLoading(false);
-        return;
-      }
-
-      if (!adminRole) {
-        toast({
-          title: "Access denied",
-          description: "You do not have administrator privileges",
-          variant: "destructive",
-        });
-        // Sign out since this is not an admin
-        await supabase.auth.signOut();
-        setIsLoading(false);
-        return;
-      }
-
-      // If initial password, require change
-      if (email === "brendan@hyper.net.nz" && password === "letmein1983!!" ||
-          email === "alan@insight-ai-systems.com" && password === "letmein1983!!") {
-        localStorage.setItem("requirePasswordChange", "true");
-      }
-
-      toast({
-        title: "Login successful",
-        description: "Welcome to the admin dashboard",
-      });
-      
-      navigate("/admin/dashboard");
-    } catch (err) {
-      console.error("Login error:", err);
-      toast({
-        title: "Login failed",
-        description: "An unexpected error occurred",
-        variant: "destructive",
+      await signUp(email, password, {
+        first_name: firstName,
+        last_name: lastName,
+        company,
+        phone
       });
     } finally {
       setIsLoading(false);
@@ -113,13 +55,53 @@ const AdminLoginPage = () => {
         <div className="w-full max-w-md px-4">
           <Card className="border-2 border-gray-200 shadow-lg">
             <CardHeader className="space-y-1 text-center">
-              <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
+              <CardTitle className="text-2xl font-bold">Register</CardTitle>
               <CardDescription>
-                Sign in to access the admin dashboard
+                Create a new account
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handleRegister} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="company">Company</Label>
+                  <Input
+                    id="company"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                  />
+                </div>
+                
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -127,10 +109,11 @@ const AdminLoginPage = () => {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@example.com"
+                    placeholder="name@example.com"
                     required
                   />
                 </div>
+                
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
@@ -156,6 +139,7 @@ const AdminLoginPage = () => {
                     </button>
                   </div>
                 </div>
+                
                 <Button
                   type="submit"
                   className="w-full"
@@ -164,20 +148,23 @@ const AdminLoginPage = () => {
                   {isLoading ? (
                     <span className="flex items-center justify-center">
                       <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
-                      Signing in...
+                      Creating account...
                     </span>
                   ) : (
                     <span className="flex items-center justify-center">
-                      <Lock className="mr-2 h-4 w-4" /> Sign in
+                      <UserPlus className="mr-2 h-4 w-4" /> Register
                     </span>
                   )}
                 </Button>
               </form>
             </CardContent>
-            <CardFooter className="text-center text-sm text-gray-500">
-              <p className="w-full">
-                This is a secure area. Unauthorized access is prohibited.
-              </p>
+            <CardFooter className="flex flex-col space-y-2">
+              <div className="text-center text-sm">
+                <span className="text-gray-500">Already have an account? </span>
+                <Link to="/auth/login" className="text-blue-600 hover:underline">
+                  Sign in
+                </Link>
+              </div>
             </CardFooter>
           </Card>
         </div>
@@ -187,4 +174,4 @@ const AdminLoginPage = () => {
   );
 };
 
-export default AdminLoginPage;
+export default RegisterPage;

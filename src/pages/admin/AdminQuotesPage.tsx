@@ -1,49 +1,48 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Search } from "lucide-react";
 import AdminHeader from "@/components/admin/AdminHeader";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-
-// Sample quote data for demonstration
-const DEMO_QUOTES = [
-  { id: "QUO-1001", client: "Auckland Printing Co", date: "2023-08-10", validUntil: "2023-09-10", total: 1250.00, status: "Approved" },
-  { id: "QUO-1002", client: "Wellington Labels Ltd", date: "2023-08-12", validUntil: "2023-09-12", total: 785.50, status: "Pending" },
-  { id: "QUO-1003", client: "Christchurch Packaging", date: "2023-08-14", validUntil: "2023-09-14", total: 2175.00, status: "Expired" },
-];
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminQuotesPage = () => {
-  const { isAdmin, loading } = useAdminAuth();
+  const { isAdmin, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  React.useEffect(() => {
-    if (!loading && !isAdmin) {
-      toast({
-        title: "Access Denied",
-        description: "Please log in to access the admin dashboard",
-        variant: "destructive",
-      });
-      navigate("/admin/login");
-    }
-  }, [isAdmin, loading, navigate, toast]);
+  // Fetch clients for the dropdown
+  const { data: clients, isLoading: clientsLoading } = useQuery({
+    queryKey: ["clientsList"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name, company");
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!isAdmin
+  });
 
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 rounded-full border-4 border-brand-blue border-t-transparent animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return null; // Will redirect via useEffect
-  }
+  // Sample quote data for demonstration (we'll implement real quotes later)
+  const DEMO_QUOTES = [
+    { id: "QUO-1001", client: "Auckland Printing Co", date: "2023-08-10", validUntil: "2023-09-10", total: 1250.00, status: "Approved" },
+    { id: "QUO-1002", client: "Wellington Labels Ltd", date: "2023-08-12", validUntil: "2023-09-12", total: 785.50, status: "Pending" },
+    { id: "QUO-1003", client: "Christchurch Packaging", date: "2023-08-14", validUntil: "2023-09-14", total: 2175.00, status: "Expired" },
+  ];
 
   // Function to get badge variant based on status
   const getStatusBadge = (status: string) => {
@@ -59,6 +58,41 @@ const AdminQuotesPage = () => {
     }
   };
 
+  // Filter quotes based on search term
+  const filteredQuotes = DEMO_QUOTES.filter(quote => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      quote.id.toLowerCase().includes(searchLower) ||
+      quote.client.toLowerCase().includes(searchLower)
+    );
+  });
+
+  React.useEffect(() => {
+    if (!authLoading && !isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "Please log in to access the admin dashboard",
+        variant: "destructive",
+      });
+      navigate("/admin/login");
+    }
+  }, [isAdmin, authLoading, navigate, toast]);
+
+  const isLoading = authLoading || clientsLoading;
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null; // Will redirect via useEffect
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <AdminHeader />
@@ -66,9 +100,21 @@ const AdminQuotesPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Quote Management</h1>
-            <Button>
+            <Button onClick={() => setIsDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" /> Create New Quote
             </Button>
+          </div>
+          
+          <div className="mb-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Input
+                placeholder="Search quotes..."
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
           </div>
           
           <Card>
@@ -89,7 +135,7 @@ const AdminQuotesPage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {DEMO_QUOTES.map((quote) => (
+                  {filteredQuotes.map((quote) => (
                     <TableRow key={quote.id}>
                       <TableCell className="font-medium">{quote.id}</TableCell>
                       <TableCell>{quote.client}</TableCell>
@@ -113,6 +159,91 @@ const AdminQuotesPage = () => {
           </Card>
         </div>
       </main>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create New Quote</DialogTitle>
+            <DialogDescription>
+              Create a new quote for a client.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={(e) => e.preventDefault()}>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="client">Client</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a client" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients?.map((client) => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.first_name} {client.last_name} {client.company && `(${client.company})`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quoteNumber">Quote Number</Label>
+                <Input
+                  id="quoteNumber"
+                  placeholder="e.g., QUO-1004"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="validityDays">Validity (days)</Label>
+                  <Input
+                    id="validityDays"
+                    type="number"
+                    min="1"
+                    defaultValue="30"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="total">Total (NZD)</Label>
+                  <Input
+                    id="total"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select defaultValue="pending">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                    <SelectItem value="expired">Expired</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" onClick={() => {
+                toast({
+                  title: "Quote Created",
+                  description: "The quote has been created successfully"
+                });
+                setIsDialogOpen(false);
+              }}>
+                Create Quote
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

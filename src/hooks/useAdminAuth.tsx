@@ -1,12 +1,8 @@
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-// List of valid admin emails for validation purposes
-const VALID_ADMIN_EMAILS = [
-  "brendan@hyper.net.nz",
-  "alan@insight-ai-systems.com"
-];
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 
 interface UseAdminAuthReturn {
   isAdmin: boolean;
@@ -17,41 +13,34 @@ interface UseAdminAuthReturn {
 }
 
 export const useAdminAuth = (): UseAdminAuthReturn => {
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const { user, isAdmin: isAdminFromContext, isLoading, signOut } = useAuth();
   const [requirePasswordChange, setRequirePasswordChange] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [adminEmail, setAdminEmail] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
-    // Check local storage for admin status
-    const adminLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
+    // Check local storage for password change requirement
     const requireChange = localStorage.getItem("requirePasswordChange") === "true";
-    const email = localStorage.getItem("adminEmail");
-    
-    // Validate the email is in our allowed list of admin emails
-    const isValidAdmin = email && VALID_ADMIN_EMAILS.includes(email.toLowerCase());
-    
-    setIsAdmin(adminLoggedIn && isValidAdmin);
     setRequirePasswordChange(requireChange);
-    setAdminEmail(email);
-    setLoading(false);
   }, []);
 
   const logout = () => {
-    localStorage.removeItem("adminLoggedIn");
-    localStorage.removeItem("adminEmail");
-    localStorage.removeItem("requirePasswordChange");
-    setIsAdmin(false);
-    setAdminEmail(null);
-    navigate("/");
+    signOut().then(() => {
+      localStorage.removeItem("requirePasswordChange");
+      navigate("/");
+      
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
+    });
   };
 
   return {
-    isAdmin,
+    isAdmin: isAdminFromContext,
     requirePasswordChange,
-    loading,
-    adminEmail,
+    loading: isLoading,
+    adminEmail: user?.email || null,
     logout
   };
 };

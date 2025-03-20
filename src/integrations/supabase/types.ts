@@ -9,16 +9,157 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      orders: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          order_number: string
+          price: number
+          product_name: string
+          quantity: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          order_number: string
+          price: number
+          product_name: string
+          quantity: number
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          order_number?: string
+          price?: number
+          product_name?: string
+          quantity?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          company: string | null
+          created_at: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      queries: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          message: string
+          resolved_at: string | null
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          message: string
+          resolved_at?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          resolved_at?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "queries_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          user_id: string
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      user_role: "admin" | "client"
     }
     CompositeTypes: {
       [_ in never]: never
