@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -8,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "react-router-dom";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -21,6 +22,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 const ContactForm = () => {
   const { toast } = useToast();
+  const location = useLocation();
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -32,6 +34,17 @@ const ContactForm = () => {
       message: "",
     },
   });
+
+  // Check for printer parameter in URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const printer = params.get("printer");
+    
+    if (printer) {
+      form.setValue("subject", `Quote Request: ${printer}`);
+      form.setValue("message", `I would like to request a quote for the ${printer}. Please provide pricing and availability information.`);
+    }
+  }, [location.search, form]);
 
   function onSubmit(data: FormValues) {
     console.log(data);

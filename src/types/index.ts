@@ -1,4 +1,3 @@
-
 export interface ProductSize {
   id: string;
   name: string;
@@ -58,4 +57,14 @@ export interface PaymentMethod {
   id: string;
   name: string;
   icon: string;
+}
+
+export interface Printer {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  gstIncluded: boolean;
+  imageUrl: string;
+  originalUrl: string;
 }
