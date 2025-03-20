@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Truck, BadgeCheck, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
+
 const Hero: React.FC = () => {
   return <div className="relative bg-gradient-to-r from-brand-blue/5 to-brand-blue/10 overflow-hidden">
       <div className="container-custom py-12 md:py-20">
@@ -20,7 +21,7 @@ const Hero: React.FC = () => {
               <Button asChild size="lg" className="btn-primary">
                 <Link to="/products">Shop Now <ArrowRight className="ml-2 h-5 w-5" /></Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="btn-secondary text-brand-blue hover:text-white">
+              <Button asChild variant="outline" size="lg" className="bg-white text-brand-blue font-medium border border-brand-blue hover:bg-brand-blue hover:text-white transition-colors rounded-md px-6 py-3">
                 <Link to="/custom-quote">Request Custom Quote</Link>
               </Button>
             </div>
@@ -61,4 +62,5 @@ const Hero: React.FC = () => {
       </div>
     </div>;
 };
+
 export default Hero;
