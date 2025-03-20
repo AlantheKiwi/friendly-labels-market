@@ -1,4 +1,3 @@
-
 import React from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -6,7 +5,6 @@ import { products } from "@/data/productData";
 import ProductGrid from "@/components/ProductGrid";
 import CallToAction from "@/components/CallToAction";
 import { Separator } from "@/components/ui/separator";
-
 const ProductsPage = () => {
   // Group products by category
   const categories = products.reduce((acc, product) => {
@@ -16,9 +14,7 @@ const ProductsPage = () => {
     acc[product.category].push(product);
     return acc;
   }, {} as Record<string, typeof products>);
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1">
         <div className="bg-gradient-to-r from-brand-blue/5 to-brand-blue/10 py-12">
@@ -39,26 +35,12 @@ const ProductsPage = () => {
           <Separator className="my-12" />
 
           {/* Products by category */}
-          {Object.entries(categories).map(([category, categoryProducts]) => (
-            <div key={category} className="mb-12">
-              <h2 className="text-2xl font-bold mb-6">{category}</h2>
-              <ProductGrid products={categoryProducts} />
-            </div>
-          ))}
+          {Object.entries(categories).map(([category, categoryProducts]) => {})}
         </div>
 
-        <CallToAction
-          title="Can't Find What You're Looking For?"
-          description="We offer custom thermal label solutions tailored to your specific requirements."
-          buttonText="Request Custom Quote"
-          buttonLink="/custom-quote"
-          secondaryButtonText="Contact Us"
-          secondaryButtonLink="/contact"
-        />
+        <CallToAction title="Can't Find What You're Looking For?" description="We offer custom thermal label solutions tailored to your specific requirements." buttonText="Request Custom Quote" buttonLink="/custom-quote" secondaryButtonText="Contact Us" secondaryButtonLink="/contact" />
       </main>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default ProductsPage;
