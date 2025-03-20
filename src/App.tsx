@@ -18,6 +18,9 @@ import TermsOfService from "./pages/TermsOfService";
 import ContactPage from "./pages/ContactPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
+import AdminClientsPage from "./pages/admin/AdminClientsPage";
+import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
+import AdminQuotesPage from "./pages/admin/AdminQuotesPage";
 import CookieBanner from "./components/CookieBanner";
 
 const queryClient = new QueryClient();
@@ -44,6 +47,9 @@ const App = () => (
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
             <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+            <Route path="/admin/clients" element={<AdminClientsPage />} />
+            <Route path="/admin/orders" element={<AdminOrdersPage />} />
+            <Route path="/admin/quotes" element={<AdminQuotesPage />} />
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />

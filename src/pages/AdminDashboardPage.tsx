@@ -9,24 +9,19 @@ import AdminImageUpload from "@/components/admin/AdminImageUpload";
 import AdminPrinterPricing from "@/components/admin/AdminPrinterPricing";
 import AdminProductPricing from "@/components/admin/AdminProductPricing";
 import AdminPasswordChange from "@/components/admin/AdminPasswordChange";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 const AdminDashboardPage = () => {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const { isAdmin, requirePasswordChange, loading, adminEmail } = useAdminAuth();
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if the user is logged in as admin
-    const adminLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
-    const requirePasswordChange = localStorage.getItem("requirePasswordChange") === "true";
-    
-    setIsAdmin(adminLoggedIn);
+    // Set password change requirement based on auth
     setShowPasswordChange(requirePasswordChange);
-    setLoading(false);
     
-    if (!adminLoggedIn) {
+    if (!loading && !isAdmin) {
       toast({
         title: "Access Denied",
         description: "Please log in to access the admin dashboard",
@@ -34,7 +29,7 @@ const AdminDashboardPage = () => {
       });
       navigate("/admin/login");
     }
-  }, [navigate, toast]);
+  }, [isAdmin, requirePasswordChange, loading, navigate, toast]);
 
   const handlePasswordChangeComplete = () => {
     setShowPasswordChange(false);

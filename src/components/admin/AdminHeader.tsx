@@ -1,35 +1,57 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, Settings, User, Users, ShoppingCart, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
+import { cn } from "@/lib/utils";
 
 const AdminHeader = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const adminEmail = localStorage.getItem("adminEmail") || "Admin";
-
-  const handleLogout = () => {
-    // Clear admin session
-    localStorage.removeItem("adminLoggedIn");
-    localStorage.removeItem("adminEmail");
-    
-    toast({
-      title: "Logged out",
-      description: "You have been logged out successfully",
-    });
-    
-    navigate("/");
-  };
+  const { adminEmail, logout } = useAdminAuth();
 
   return (
     <header className="bg-brand-blue text-white shadow-md">
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <Settings className="h-6 w-6" />
-            <h1 className="text-xl font-bold">Service Labels Admin</h1>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <Settings className="h-6 w-6" />
+              <h1 className="text-xl font-bold">Service Labels Admin</h1>
+            </div>
+            
+            <NavigationMenu className="hidden md:flex">
+              <NavigationMenuList className="bg-brand-blue text-white">
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/20 focus:bg-white/20 data-[state=open]:bg-white/20">
+                    CRM
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent className="bg-white rounded-md shadow-lg p-2 w-[240px]">
+                    <ul className="grid gap-1 p-1">
+                      <ListItem href="/admin/clients" title="Clients" icon={<Users className="h-4 w-4" />}>
+                        Manage customer information
+                      </ListItem>
+                      <ListItem href="/admin/orders" title="Orders" icon={<ShoppingCart className="h-4 w-4" />}>
+                        Track and manage orders
+                      </ListItem>
+                      <ListItem href="/admin/quotes" title="Quotes" icon={<FileText className="h-4 w-4" />}>
+                        Create and manage quotes
+                      </ListItem>
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
           </div>
           
           <div className="flex items-center space-x-4">
@@ -41,7 +63,7 @@ const AdminHeader = () => {
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={handleLogout}
+              onClick={logout}
               className="bg-white/10 hover:bg-white/20 border-white/20"
             >
               <LogOut className="h-4 w-4 mr-2" />
@@ -53,5 +75,38 @@ const AdminHeader = () => {
     </header>
   );
 };
+
+// Component for the navigation menu items
+const ListItem = React.forwardRef<
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a"> & { 
+    icon?: React.ReactNode;
+    title: string;
+  }
+>(({ className, title, icon, children, ...props }, ref) => {
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <a
+          ref={ref}
+          className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            className
+          )}
+          {...props}
+        >
+          <div className="flex items-center gap-2 text-sm font-medium leading-none">
+            {icon}
+            <span>{title}</span>
+          </div>
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+            {children}
+          </p>
+        </a>
+      </NavigationMenuLink>
+    </li>
+  );
+});
+ListItem.displayName = "ListItem";
 
 export default AdminHeader;
