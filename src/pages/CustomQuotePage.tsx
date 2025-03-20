@@ -78,7 +78,7 @@ const CustomQuotePage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="details">Additional Details</Label>
+                  
                   <Textarea id="details" placeholder="Please provide any specific requirements, deadline, or other information that will help us prepare your custom quote." className="min-h-[150px]" />
                 </div>
 
