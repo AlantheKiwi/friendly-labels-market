@@ -45,7 +45,7 @@ const ProductQuantitySelector: React.FC<ProductQuantitySelectorProps> = ({
               <div className="flex justify-between items-baseline mb-1">
                 <div>
                   <span className="text-2xl font-bold text-brand-blue">
-                    {quantity.id === "qty-3" && quantity.amount === 2000 && quantity.price === 41.57 ? "$41.57" : `$${quantity.price.toFixed(2)}`}
+                    ${quantity.price.toFixed(2)}
                   </span>
                   <span className="text-xs text-gray-500 ml-1">Ex GST</span>
                 </div>
