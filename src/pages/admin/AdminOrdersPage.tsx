@@ -31,7 +31,6 @@ const AdminOrdersPage = () => {
     status: "pending"
   });
 
-  // Fetch orders with client information
   const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: ["orders"],
     queryFn: async () => {
@@ -49,7 +48,6 @@ const AdminOrdersPage = () => {
     enabled: !!isAdmin
   });
 
-  // Fetch clients for the dropdown
   const { data: clients, isLoading: clientsLoading } = useQuery({
     queryKey: ["clientsList"],
     queryFn: async () => {
@@ -63,7 +61,6 @@ const AdminOrdersPage = () => {
     enabled: !!isAdmin
   });
 
-  // Add new order
   const addOrderMutation = useMutation({
     mutationFn: async (orderData: typeof formData) => {
       const { data, error } = await supabase
@@ -126,7 +123,6 @@ const AdminOrdersPage = () => {
     addOrderMutation.mutate(formData);
   };
 
-  // Function to get badge variant based on status
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
       case "completed":
@@ -140,7 +136,6 @@ const AdminOrdersPage = () => {
     }
   };
 
-  // Filter orders based on search term
   const filteredOrders = orders?.filter(order => {
     if (!searchTerm) return true;
     const searchLower = searchTerm.toLowerCase();
@@ -230,7 +225,7 @@ const AdminOrdersPage = () => {
                       <TableCell>{order.product_name}</TableCell>
                       <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
                       <TableCell>{order.quantity}</TableCell>
-                      <TableCell>${parseFloat(order.price).toFixed(2)}</TableCell>
+                      <TableCell>${parseFloat(order.price.toString()).toFixed(2)}</TableCell>
                       <TableCell>{getStatusBadge(order.status)}</TableCell>
                       <TableCell>
                         <Button variant="outline" size="sm">
