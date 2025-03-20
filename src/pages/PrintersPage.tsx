@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CallToAction from "@/components/CallToAction";
@@ -7,10 +7,6 @@ import { printers } from "@/data/printerData";
 import PrinterGrid from "@/components/PrinterGrid";
 
 const PrintersPage = () => {
-  useEffect(() => {
-    console.log("Printer data loaded:", printers);
-  }, []);
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -19,7 +15,7 @@ const PrintersPage = () => {
           <div className="container-custom">
             <h1 className="heading-lg text-center mb-4">Thermal Printers</h1>
             <p className="text-center text-gray-600 max-w-2xl mx-auto">
-              Premium Thermal Printers from Trusted Brands – Now Available Through Our Reseller Partnership.
+              Premium Thermal Printers from Trusted Brands – Available Through Our Reseller Partnership.
             </p>
           </div>
         </div>

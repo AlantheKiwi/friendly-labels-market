@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Printer } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,7 +14,9 @@ const fallbackImages: Record<number, string> = {
   3: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&h=600",
   4: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=800&h=600",
   5: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&h=600",
-  6: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&h=600&q=80"
+  6: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&h=600&q=80",
+  7: "https://images.unsplash.com/photo-1533310266320-f7f9f6067419?auto=format&fit=crop&w=800&h=600&q=80",
+  8: "https://images.unsplash.com/photo-1563770660941-10971f1f61a8?auto=format&fit=crop&w=800&h=600&q=80"
 };
 
 interface PrinterCardProps {
