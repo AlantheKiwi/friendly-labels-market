@@ -1,3 +1,4 @@
+
 export interface ProductSize {
   id: string;
   name: string;
@@ -64,6 +65,10 @@ export interface Printer {
   name: string;
   description: string;
   price: number;
+  priceRange?: string;
+  originalPrice?: number;
+  onSale?: boolean;
+  contactForPrice?: boolean;
   gstIncluded: boolean;
   imageUrl: string;
   originalUrl: string;

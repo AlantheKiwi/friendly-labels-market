@@ -3,9 +3,10 @@ import React, { useState } from "react";
 import { Printer } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, AlertCircle } from "lucide-react";
+import { ExternalLink, AlertCircle, BadgePercent } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Badge } from "@/components/ui/badge";
 
 // Fallback image using Unsplash placeholders
 const fallbackImages: Record<number, string> = {
@@ -16,7 +17,11 @@ const fallbackImages: Record<number, string> = {
   5: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&h=600",
   6: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&h=600&q=80",
   7: "https://images.unsplash.com/photo-1533310266320-f7f9f6067419?auto=format&fit=crop&w=800&h=600&q=80",
-  8: "https://images.unsplash.com/photo-1563770660941-10971f1f61a8?auto=format&fit=crop&w=800&h=600&q=80"
+  8: "https://images.unsplash.com/photo-1563770660941-10971f1f61a8?auto=format&fit=crop&w=800&h=600&q=80",
+  9: "https://images.unsplash.com/photo-1581092921461-39b9d347a569?auto=format&fit=crop&w=800&h=600&q=80",
+  10: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&h=600&q=80",
+  11: "https://images.unsplash.com/photo-1601445638532-3c6f6c3aa1d6?auto=format&fit=crop&w=800&h=600&q=80",
+  12: "https://images.unsplash.com/photo-1563502321-4e4f507445e7?auto=format&fit=crop&w=800&h=600&q=80"
 };
 
 interface PrinterCardProps {
@@ -41,7 +46,12 @@ const PrinterCard: React.FC<PrinterCardProps> = ({ printer }) => {
 
   return (
     <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-lg">
-      <AspectRatio ratio={4/3} className="bg-gray-100">
+      <AspectRatio ratio={4/3} className="bg-gray-100 relative">
+        {printer.onSale && (
+          <Badge className="absolute top-2 right-2 bg-red-500 text-white">
+            <BadgePercent className="h-3 w-3 mr-1" /> Sale
+          </Badge>
+        )}
         {imageError ? (
           <div className="flex h-full w-full flex-col items-center justify-center p-4 text-gray-400">
             <AlertCircle className="h-12 w-12 mb-2" />
@@ -59,19 +69,50 @@ const PrinterCard: React.FC<PrinterCardProps> = ({ printer }) => {
         )}
       </AspectRatio>
       <CardContent className="p-5">
-        <h3 className="font-semibold text-lg mb-2">{printer.name}</h3>
+        <h3 className="font-semibold text-lg mb-2 line-clamp-2">{printer.name}</h3>
         
         <p className="text-gray-600 text-sm mb-4 line-clamp-3">
           {printer.description}
         </p>
         
         <div className="flex items-baseline mb-4">
-          <span className="text-xl font-bold text-brand-blue">
-            ${printer.price.toFixed(2)}
-          </span>
-          <span className="text-gray-500 text-sm ml-1">
-            {printer.gstIncluded ? 'Incl. GST' : 'Excl. GST'}
-          </span>
+          {printer.contactForPrice ? (
+            <span className="text-xl font-bold text-brand-blue">
+              {printer.priceRange}
+            </span>
+          ) : printer.onSale ? (
+            <div className="flex flex-col">
+              <div className="flex items-center">
+                <span className="text-xl font-bold text-brand-blue mr-2">
+                  ${printer.price.toFixed(2)}
+                </span>
+                <span className="text-gray-500 text-sm line-through">
+                  ${printer.originalPrice?.toFixed(2)}
+                </span>
+              </div>
+              <span className="text-gray-500 text-sm">
+                {printer.gstIncluded ? 'Incl. GST' : 'Excl. GST'}
+              </span>
+            </div>
+          ) : printer.priceRange ? (
+            <div className="flex flex-col">
+              <span className="text-xl font-bold text-brand-blue">
+                {printer.priceRange}
+              </span>
+              <span className="text-gray-500 text-sm">
+                {printer.gstIncluded ? 'Incl. GST' : 'Excl. GST'}
+              </span>
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              <span className="text-xl font-bold text-brand-blue">
+                ${printer.price.toFixed(2)}
+              </span>
+              <span className="text-gray-500 text-sm">
+                {printer.gstIncluded ? 'Incl. GST' : 'Excl. GST'}
+              </span>
+            </div>
+          )}
         </div>
         
         <div className="flex flex-col sm:flex-row gap-3 mt-4">
@@ -80,7 +121,7 @@ const PrinterCard: React.FC<PrinterCardProps> = ({ printer }) => {
           </Link>
           <a href={printer.originalUrl} target="_blank" rel="noopener noreferrer" className="flex-1">
             <Button variant="outline" className="w-full">
-              View Original <ExternalLink className="ml-1 h-4 w-4" />
+              View Details <ExternalLink className="ml-1 h-4 w-4" />
             </Button>
           </a>
         </div>

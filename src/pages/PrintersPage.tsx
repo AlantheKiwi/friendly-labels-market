@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import CallToAction from "@/components/CallToAction";
 import { printers } from "@/data/printerData";
 import PrinterGrid from "@/components/PrinterGrid";
+import { Printer } from "lucide-react";
 
 const PrintersPage = () => {
   return (
@@ -22,8 +23,17 @@ const PrintersPage = () => {
 
         <div className="container-custom py-12">
           <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-6">All Printers ({printers.length})</h2>
+            <h2 className="text-2xl font-bold mb-6 flex items-center">
+              <Printer className="mr-2 h-5 w-5 text-brand-blue" />
+              All Printers ({printers.length})
+            </h2>
             <PrinterGrid printers={printers} />
+          </div>
+          
+          <div className="bg-gray-50 border border-gray-100 rounded-lg p-6 text-center mt-12">
+            <p className="text-gray-700 font-medium">
+              We are an authorized reseller of Accurate Labels NZ.
+            </p>
           </div>
         </div>
 
