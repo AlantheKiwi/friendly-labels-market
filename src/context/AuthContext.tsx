@@ -103,16 +103,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       // Get user roles after sign in to determine redirect
-      const { user } = await supabase.auth.getUser();
+      const { data: userData } = await supabase.auth.getUser();
       
-      if (user) {
+      if (userData.user) {
         const { data: clientRole } = await supabase.rpc('has_role', {
-          user_id: user.id,
+          user_id: userData.user.id,
           role: 'client'
         });
         
         const { data: adminRole } = await supabase.rpc('has_role', {
-          user_id: user.id,
+          user_id: userData.user.id,
           role: 'admin'
         });
         
