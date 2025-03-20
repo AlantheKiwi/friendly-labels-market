@@ -1,4 +1,3 @@
-
 import React from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -18,7 +17,7 @@ const PrivacyPolicy = () => {
               <strong>Trading Name:</strong> Service Labels NZ<br />
               <strong>Parent Company:</strong> Insight AI Systems Limited<br />
               <strong>Address:</strong> Unit 2/1 Doric Way, Islington, Christchurch, New Zealand<br />
-              <strong>Phone:</strong> 020 4114 9601<br />
+              <strong>Phone:</strong> 022 657 8662<br />
               <strong>Website:</strong> <a href="https://www.servicelabels.co.nz" className="text-brand-blue hover:underline">https://www.servicelabels.co.nz</a>
             </p>
             
@@ -77,7 +76,7 @@ const PrivacyPolicy = () => {
             <p>If you have any questions about this Privacy Policy, please contact us at:</p>
             <p>
               Email: <a href="mailto:sales@servicelabels.co.nz" className="text-brand-blue hover:underline">sales@servicelabels.co.nz</a><br />
-              Phone: 020 4114 9601
+              Phone: 022 657 8662
             </p>
           </div>
         </div>

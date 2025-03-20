@@ -119,7 +119,7 @@ const Invoice: React.FC<InvoiceProps> = ({ orderData }) => {
                 <p>Unit 2/1 Doric Way</p>
                 <p>Islington, Christchurch</p>
                 <p>New Zealand</p>
-                <p>Phone: 020 4114 9601</p>
+                <p>Phone: 022 657 8662</p>
                 <p>Email: sales@servicelabels.co.nz</p>
               </div>
               <div className="text-right">

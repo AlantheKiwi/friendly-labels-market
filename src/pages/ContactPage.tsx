@@ -29,7 +29,7 @@ const ContactPage = () => {
                   <PhoneCall className="text-brand-blue w-5 h-5 mt-1 mr-3" />
                   <div>
                     <p className="font-medium text-gray-700">Phone</p>
-                    <p className="text-gray-600">020 4114 9601</p>
+                    <p className="text-gray-600">022 657 8662</p>
                     <p className="text-gray-600">Monday to Friday, 9am to 5pm AEST</p>
                   </div>
                 </div>
