@@ -1,13 +1,9 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { PhoneCall, Mail, MapPin, Facebook, Instagram, Linkedin } from "lucide-react";
-
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
-
-  return (
-    <footer className="bg-gray-100 pt-12 pb-6">
+  return <footer className="bg-gray-100 pt-12 pb-6">
       <div className="container-custom">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
@@ -95,7 +91,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-3">
               <li className="flex items-start">
                 <PhoneCall size={20} className="mr-2 text-brand-blue flex-shrink-0 mt-1" />
-                <span className="text-gray-600">0800 123 456</span>
+                <span className="text-gray-600">020 4114 9106</span>
               </li>
               <li className="flex items-start">
                 <Mail size={20} className="mr-2 text-brand-blue flex-shrink-0 mt-1" />
@@ -129,8 +125,6 @@ const Footer: React.FC = () => {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
