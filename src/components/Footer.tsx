@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { PhoneCall, Mail, MapPin, Facebook, Instagram, Linkedin } from "lucide-react";
@@ -39,9 +38,7 @@ const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/bulk-ordering" className="text-gray-600 hover:text-brand-blue transition-colors">
-                  Bulk Ordering
-                </Link>
+                
               </li>
             </ul>
           </div>
@@ -70,9 +67,7 @@ const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/faq" className="text-gray-600 hover:text-brand-blue transition-colors">
-                  FAQs
-                </Link>
+                
               </li>
             </ul>
           </div>
@@ -106,10 +101,10 @@ const Footer: React.FC = () => {
               © {currentYear} Insight AI Systems Limited. All rights reserved.
             </p>
             <div className="flex space-x-6">
-              <Link to="/terms-of-service" className="text-gray-600 text-sm hover:text-brand-blue transition-colors">
+              <Link to="/terms" className="text-gray-600 text-sm hover:text-brand-blue transition-colors">
                 Terms of Service
               </Link>
-              <Link to="/privacy-policy" className="text-gray-600 text-sm hover:text-brand-blue transition-colors">
+              <Link to="/privacy" className="text-gray-600 text-sm hover:text-brand-blue transition-colors">
                 Privacy Policy
               </Link>
             </div>
