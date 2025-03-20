@@ -17,17 +17,43 @@ export const useOrders = (isAdmin: boolean) => {
     status: "pending"
   });
   const [isEditMode, setIsEditMode] = useState(false);
+  const [filters, setFilters] = useState({
+    status: "all",
+    dateFrom: null as Date | null,
+    dateTo: null as Date | null
+  });
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: ["orders"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("orders")
         .select(`
           *,
           client:profiles(id, first_name, last_name, company)
-        `)
-        .order("created_at", { ascending: false });
+        `);
+      
+      // Apply status filter if not "all"
+      if (filters.status !== "all") {
+        query = query.eq("status", filters.status);
+      }
+      
+      // Apply date range filters if set
+      if (filters.dateFrom) {
+        const fromDate = new Date(filters.dateFrom);
+        fromDate.setHours(0, 0, 0, 0);
+        query = query.gte("created_at", fromDate.toISOString());
+      }
+      
+      if (filters.dateTo) {
+        const toDate = new Date(filters.dateTo);
+        toDate.setHours(23, 59, 59, 999);
+        query = query.lte("created_at", toDate.toISOString());
+      }
+      
+      query = query.order("created_at", { ascending: false });
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data || [];
@@ -159,15 +185,24 @@ export const useOrders = (isAdmin: boolean) => {
     setIsEditMode(true);
   };
 
+  const handleFilterChange = (filterName: string, value: any) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterName]: value
+    }));
+  };
+
   return {
     orders,
     clients,
     formData,
     isEditMode,
+    filters,
     isLoading: ordersLoading || clientsLoading,
     isPending: addOrderMutation.isPending || updateOrderMutation.isPending,
     handleInputChange,
     handleSelectChange,
+    handleFilterChange,
     addOrder: addOrderMutation.mutate,
     updateOrder: updateOrderMutation.mutate,
     editOrder,

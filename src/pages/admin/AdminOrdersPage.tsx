@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import OrdersTable from "@/components/admin/orders/OrdersTable";
 import OrderSearch from "@/components/admin/orders/OrderSearch";
+import OrderFilters from "@/components/admin/orders/OrderFilters";
 import AddOrderDialog from "@/components/admin/orders/AddOrderDialog";
 import EditOrderDialog from "@/components/admin/orders/EditOrderDialog";
 import OrderStatusBadge from "@/components/admin/orders/OrderStatusBadge";
@@ -27,10 +28,12 @@ const AdminOrdersPage = () => {
     clients,
     formData,
     isEditMode,
+    filters,
     isLoading,
     isPending,
     handleInputChange,
     handleSelectChange,
+    handleFilterChange,
     addOrder,
     updateOrder,
     editOrder,
@@ -111,6 +114,11 @@ const AdminOrdersPage = () => {
               <Plus className="mr-2 h-4 w-4" /> Add New Order
             </Button>
           </div>
+          
+          <OrderFilters 
+            filters={filters} 
+            onFilterChange={handleFilterChange} 
+          />
           
           <div className="mb-6">
             <OrderSearch 
