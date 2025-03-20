@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star } from "lucide-react";
@@ -17,8 +18,8 @@ const testimonials = [
   },
   {
     quote: "The custom size labels we ordered were perfect for our unique packaging needs. The team helped us get exactly what we needed with no hassle.",
-    author: "Emma Williams",
-    company: "Organic Goods NZ",
+    author: "The Herbal Gardens",
+    company: "West Melton",
     rating: 5
   }
 ];
