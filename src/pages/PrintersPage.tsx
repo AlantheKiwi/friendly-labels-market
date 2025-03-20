@@ -20,7 +20,8 @@ const PrintersPage = () => {
       const printCatalog = useReactToPrint({
         documentTitle: "Thermal_Printers_Catalog",
         onAfterPrint: () => console.log("PDF catalog generated successfully"),
-        content: () => pdfCatalogRef.current,
+        // Use contentRef instead of content
+        contentRef: pdfCatalogRef,
       });
       
       // Execute the print function
