@@ -1,3 +1,4 @@
+
 import React from "react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
@@ -20,7 +21,7 @@ const Index = () => {
             <div className="text-center mb-12">
               <h2 className="heading-lg mb-4">Our Products</h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                Browse our selection of high-quality thermal printer labels for all your business needs.
+                Browse our selection of high-quality printer labels for all your business needs.
               </p>
             </div>
             <ProductGrid products={products} />
@@ -35,7 +36,7 @@ const Index = () => {
             <div className="text-center mb-8">
               <h2 className="heading-lg mb-4">How It Works</h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                Getting your thermal labels is quick and easy with our streamlined process.
+                Getting your labels is quick and easy with our streamlined process.
               </p>
             </div>
             

@@ -1,3 +1,4 @@
+
 import React from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -19,9 +20,9 @@ const ProductsPage = () => {
       <main className="flex-1">
         <div className="bg-gradient-to-r from-brand-blue/5 to-brand-blue/10 py-12">
           <div className="container-custom">
-            <h1 className="heading-lg text-center mb-4">Thermal Printer Labels</h1>
+            <h1 className="heading-lg text-center mb-4">Printer Labels</h1>
             <p className="text-center text-gray-600 max-w-2xl mx-auto">
-              Browse our complete range of high-quality thermal labels for all your business needs. Next-day delivery available across New Zealand.
+              Browse our complete range of high-quality labels for all your business needs. Next-day delivery available across New Zealand.
             </p>
           </div>
         </div>
@@ -38,7 +39,7 @@ const ProductsPage = () => {
           {Object.entries(categories).map(([category, categoryProducts]) => {})}
         </div>
 
-        <CallToAction title="Can't Find What You're Looking For?" description="We offer custom thermal label solutions tailored to your specific requirements." buttonText="Request Custom Quote" buttonLink="/custom-quote" secondaryButtonText="Contact Us" secondaryButtonLink="/contact" />
+        <CallToAction title="Can't Find What You're Looking For?" description="We offer custom label solutions tailored to your specific requirements." buttonText="Request Custom Quote" buttonLink="/custom-quote" secondaryButtonText="Contact Us" secondaryButtonLink="/contact" />
       </main>
       <Footer />
     </div>;

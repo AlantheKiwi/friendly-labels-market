@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Truck, BadgeCheck, CreditCard } from "lucide-react";
@@ -8,11 +9,11 @@ const Hero: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="relative z-10">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-brand-black mb-4">
-              Premium Thermal Printer Labels
+              Premium Printer Labels
               <span className="text-brand-blue"> Delivered Next Day</span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-md">
-              High-quality thermal labels for shipping, barcodes, and product identification, delivered across New Zealand.
+              High-quality labels for shipping, barcodes, and product identification, delivered across New Zealand.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 mb-10">
