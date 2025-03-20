@@ -31,6 +31,13 @@ const ProductsPage = () => {
         </div>
 
         <div className="container-custom py-12">
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold mb-6">All Products</h2>
+            <ProductGrid products={products} />
+          </div>
+
+          <Separator className="my-12" />
+
           {/* Products by category */}
           {Object.entries(categories).map(([category, categoryProducts]) => (
             <div key={category} className="mb-12">
