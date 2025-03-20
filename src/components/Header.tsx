@@ -32,9 +32,6 @@ const Header: React.FC = () => {
             <Link to="/printers" className="font-medium hover:text-brand-blue transition-colors">
               Printers
             </Link>
-            <Link to="/bulk-ordering" className="font-medium hover:text-brand-blue transition-colors">
-              Bulk Orders
-            </Link>
             <Link to="/contact" className="font-medium hover:text-brand-blue transition-colors">
               Contact
             </Link>
@@ -93,13 +90,6 @@ const Header: React.FC = () => {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Printers
-              </Link>
-              <Link
-                to="/bulk-ordering"
-                className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Bulk Orders
               </Link>
               <Link
                 to="/contact"
