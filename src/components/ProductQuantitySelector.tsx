@@ -1,3 +1,4 @@
+
 import React from "react";
 import { ProductQuantity } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,9 +43,12 @@ const ProductQuantitySelector: React.FC<ProductQuantitySelectorProps> = ({
                   </span>}
               </div>
               <div className="flex justify-between items-baseline mb-1">
-                <span className="text-2xl font-bold text-brand-blue">
-                  {quantity.id === "qty-3" && quantity.amount === 2000 ? "$110.00" : `$${quantity.price.toFixed(2)}`}
-                </span>
+                <div>
+                  <span className="text-2xl font-bold text-brand-blue">
+                    {quantity.id === "qty-3" && quantity.amount === 2000 ? "$110.00" : `$${quantity.price.toFixed(2)}`}
+                  </span>
+                  <span className="text-xs text-gray-500 ml-1">Ex GST</span>
+                </div>
                 {quantity.discountPercent > 0}
               </div>
               {quantity.discountPercent > 0 && <div className="bg-green-50 text-green-700 text-xs font-medium py-1 px-2 rounded-sm inline-block">

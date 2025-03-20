@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { Product } from "@/types";
@@ -38,7 +39,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     ${lowestPrice.toFixed(2)}
                   </span>
                   <span className="text-gray-500 text-sm ml-1">
-                    from
+                    from <span className="text-xs">Ex GST</span>
                   </span>
                 </div>
                 

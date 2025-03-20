@@ -82,12 +82,12 @@ const CartSidebar: React.FC = () => {
 
       {items.length > 0 && (
         <div className="border-t border-gray-200 pt-4">
-          <div className="flex justify-between text-base font-medium text-gray-900 mb-4">
-            <p>Subtotal</p>
+          <div className="flex justify-between text-base font-medium text-gray-900 mb-1">
+            <p>Subtotal (Ex GST)</p>
             <p>${subtotal.toFixed(2)}</p>
           </div>
-          <p className="text-sm text-gray-500 mb-4">
-            Shipping and taxes calculated at checkout.
+          <p className="text-xs text-gray-500 mb-4">
+            GST will be calculated at checkout.
           </p>
           <SheetClose asChild>
             <Button className="w-full" onClick={handleCheckout}>

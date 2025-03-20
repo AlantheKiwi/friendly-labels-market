@@ -11,7 +11,13 @@ const OrderSummary: React.FC = () => {
   
   // Shipping cost calculation (simplified)
   const shippingCost = 9.99;
-  const total = subtotal + shippingCost;
+  
+  // GST calculation (15% in New Zealand)
+  const gstRate = 0.15;
+  const gstAmount = (subtotal + shippingCost) * gstRate;
+  
+  // Total including GST
+  const total = subtotal + shippingCost + gstAmount;
 
   return (
     <Card>
@@ -55,16 +61,20 @@ const OrderSummary: React.FC = () => {
 
         <div className="mt-4 space-y-2">
           <div className="flex justify-between text-sm">
-            <p>Subtotal</p>
+            <p>Subtotal (Ex GST)</p>
             <p>${subtotal.toFixed(2)}</p>
           </div>
           <div className="flex justify-between text-sm">
             <p>Shipping</p>
             <p>${shippingCost.toFixed(2)}</p>
           </div>
+          <div className="flex justify-between text-sm">
+            <p>GST (15%)</p>
+            <p>${gstAmount.toFixed(2)}</p>
+          </div>
           <Separator className="my-2" />
           <div className="flex justify-between font-semibold text-lg">
-            <p>Total</p>
+            <p>Total (Inc GST)</p>
             <p>${total.toFixed(2)}</p>
           </div>
         </div>

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { ProductQuantity } from "@/types";
@@ -16,6 +17,7 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({
         <span className="text-3xl font-bold text-brand-blue">
           {shouldUseFixedPrice ? "$110.00" : `$${selectedQuantity.price.toFixed(2)}`}
         </span>
+        <span className="text-sm text-gray-500 ml-1">Ex GST</span>
         {selectedQuantity.discountPercent > 0}
       </div>
       
