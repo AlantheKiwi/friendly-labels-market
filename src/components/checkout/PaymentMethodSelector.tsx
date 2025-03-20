@@ -1,18 +1,27 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Icon } from "lucide-react";
 import { paymentMethods } from "@/data/paymentData";
+import StripePaymentForm from "./StripePaymentForm";
 
 interface PaymentMethodSelectorProps {
   selectedPaymentMethod: string;
   setSelectedPaymentMethod: (value: string) => void;
+  total?: number;
+  customerEmail?: string;
+  onPaymentSuccess?: (paymentId: string) => void;
+  showStripeForm?: boolean;
 }
 
 const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
   selectedPaymentMethod,
   setSelectedPaymentMethod,
+  total = 0,
+  customerEmail = "",
+  onPaymentSuccess = () => {},
+  showStripeForm = false,
 }) => {
   // Import specific icons dynamically based on the icon name in paymentMethods
   const getIconComponent = (iconName: string) => {
@@ -44,6 +53,15 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
           </div>
         ))}
       </RadioGroup>
+
+      {/* Show Stripe payment form if stripe is selected and showStripeForm is true */}
+      {selectedPaymentMethod === "stripe" && showStripeForm && (
+        <StripePaymentForm 
+          amount={total} 
+          customerEmail={customerEmail}
+          onPaymentSuccess={onPaymentSuccess}
+        />
+      )}
     </div>
   );
 };

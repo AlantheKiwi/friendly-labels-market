@@ -53,9 +53,7 @@ const Invoice: React.FC<InvoiceProps> = ({ orderData }) => {
 
   const handlePrint = useReactToPrint({
     documentTitle: `Invoice-${orderData.orderNumber}`,
-    // Using onPrintError correctly as a callback
     onPrintError: (error) => console.error('Print failed', error),
-    // Use contentRef property instead of content
     contentRef: invoiceRef,
   });
 
@@ -87,7 +85,7 @@ const Invoice: React.FC<InvoiceProps> = ({ orderData }) => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={handlePrint}
+                onClick={() => handlePrint()}
                 className="flex items-center"
               >
                 <Printer className="h-4 w-4 mr-2" />

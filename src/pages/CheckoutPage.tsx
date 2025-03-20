@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CreditCard } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import CustomerInformationForm from "@/components/checkout/CustomerInformationForm";
 import PaymentMethodSelector from "@/components/checkout/PaymentMethodSelector";
@@ -19,6 +19,8 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("stripe");
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentStep, setPaymentStep] = useState<"details" | "payment">("details");
   
   // Shipping cost calculation (simplified)
   const shippingCost = 9.99;
@@ -30,10 +32,13 @@ const CheckoutPage = () => {
   // Total including GST
   const total = subtotal + shippingCost + gstAmount;
 
-  const handleSubmit = (e: React.FormEvent, formData: CustomerInfo) => {
+  const handleCustomerInfoSubmit = (e: React.FormEvent, formData: CustomerInfo) => {
     e.preventDefault();
     setCustomerInfo(formData);
-    
+    setPaymentStep("payment");
+  };
+
+  const handlePaymentSuccess = (paymentId: string) => {
     // Generate order number
     const orderNumber = `ORD-${Date.now().toString().slice(-6)}`;
     const orderDate = new Date().toLocaleDateString('en-NZ', {
@@ -46,7 +51,7 @@ const CheckoutPage = () => {
     const orderData = {
       orderNumber,
       orderDate,
-      customerInfo: formData,
+      customerInfo: customerInfo!,
       items: items.map(item => ({
         productId: item.productId,
         productName: item.productName,
@@ -55,6 +60,7 @@ const CheckoutPage = () => {
         dimensions: item.dimensions
       })),
       paymentMethod: selectedPaymentMethod,
+      paymentId: paymentId,
       subtotal,
       shipping: shippingCost,
       gst: gstAmount,
@@ -63,7 +69,7 @@ const CheckoutPage = () => {
     
     // Show toast
     toast({
-      title: "Order Submitted",
+      title: "Payment Successful",
       description: "Your order has been placed successfully.",
     });
     
@@ -72,6 +78,14 @@ const CheckoutPage = () => {
     
     // Navigate to thank you page with order data
     navigate("/thank-you", { state: { orderData } });
+  };
+
+  const handleBack = () => {
+    if (paymentStep === "payment") {
+      setPaymentStep("details");
+    } else {
+      navigate(-1);
+    }
   };
 
   if (items.length === 0) {
@@ -86,24 +100,41 @@ const CheckoutPage = () => {
           <Button
             variant="ghost"
             className="mb-6"
-            onClick={() => navigate(-1)}
+            onClick={handleBack}
           >
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            <ArrowLeft className="mr-2 h-4 w-4" /> 
+            {paymentStep === "payment" ? "Back to Details" : "Back to Cart"}
           </Button>
 
-          <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+          <h1 className="text-3xl font-bold mb-8">
+            {paymentStep === "details" ? "Checkout" : "Payment"}
+          </h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Customer Information Form */}
+            {/* Customer Information Form or Payment */}
             <div className="lg:col-span-2">
-              <CustomerInformationForm onSubmit={handleSubmit} />
-              
-              <Separator className="my-8" />
-              
-              <PaymentMethodSelector 
-                selectedPaymentMethod={selectedPaymentMethod} 
-                setSelectedPaymentMethod={setSelectedPaymentMethod} 
-              />
+              {paymentStep === "details" ? (
+                <CustomerInformationForm onSubmit={handleCustomerInfoSubmit} />
+              ) : (
+                <>
+                  <div className="bg-gray-50 p-6 rounded-lg mb-6">
+                    <h3 className="text-lg font-semibold mb-2 flex items-center">
+                      <CreditCard className="mr-2 h-5 w-5" /> Payment Details
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Complete your purchase securely with our payment options.
+                    </p>
+                    <PaymentMethodSelector 
+                      selectedPaymentMethod={selectedPaymentMethod} 
+                      setSelectedPaymentMethod={setSelectedPaymentMethod}
+                      total={total}
+                      customerEmail={customerInfo?.email || ""}
+                      onPaymentSuccess={handlePaymentSuccess}
+                      showStripeForm={true}
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Order Summary */}
