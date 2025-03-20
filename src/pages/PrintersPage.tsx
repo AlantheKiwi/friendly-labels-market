@@ -1,13 +1,24 @@
 
-import React from "react";
+import React, { useRef } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CallToAction from "@/components/CallToAction";
 import { printers } from "@/data/printerData";
 import PrinterGrid from "@/components/PrinterGrid";
-import { Printer } from "lucide-react";
+import { Download, Printer } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useReactToPrint } from "react-to-print";
+import PrinterCatalog from "@/components/PrinterCatalog";
 
 const PrintersPage = () => {
+  const pdfCatalogRef = useRef<HTMLDivElement>(null);
+
+  const handlePrintCatalog = useReactToPrint({
+    content: () => pdfCatalogRef.current,
+    documentTitle: "Thermal_Printers_Catalog",
+    onAfterPrint: () => console.log("PDF catalog generated successfully"),
+  });
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -22,13 +33,22 @@ const PrintersPage = () => {
         </div>
 
         <div className="container-custom py-12">
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-6 flex items-center">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold flex items-center">
               <Printer className="mr-2 h-5 w-5 text-brand-blue" />
               All Printers ({printers.length})
             </h2>
-            <PrinterGrid printers={printers} />
+            
+            <Button 
+              onClick={handlePrintCatalog}
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Download PDF Catalog
+            </Button>
           </div>
+          
+          <PrinterGrid printers={printers} />
         </div>
 
         <CallToAction 
@@ -41,6 +61,11 @@ const PrintersPage = () => {
         />
       </main>
       <Footer />
+      
+      {/* Hidden PDF catalog for printing */}
+      <div className="hidden">
+        <PrinterCatalog ref={pdfCatalogRef} printers={printers} />
+      </div>
     </div>
   );
 };
