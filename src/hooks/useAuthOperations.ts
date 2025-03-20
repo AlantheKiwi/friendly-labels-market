@@ -33,6 +33,8 @@ export const useAuthOperations = () => {
         console.log("User authenticated, checking roles for:", data.user.id);
         const roles = await checkUserRoles(data.user.id);
         
+        console.log("Roles determined:", roles);
+        
         // Always redirect clients to their dashboard
         if (roles.isClient) {
           console.log("Redirecting client to dashboard");

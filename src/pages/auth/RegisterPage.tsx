@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -9,6 +8,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Eye, EyeOff, UserPlus } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const RegisterPage = () => {
   const [email, setEmail] = useState("");
@@ -19,8 +20,9 @@ const RegisterPage = () => {
   const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { signUp, user } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
@@ -33,11 +35,55 @@ const RegisterPage = () => {
     setIsLoading(true);
     
     try {
-      await signUp(email, password, {
-        first_name: firstName,
-        last_name: lastName,
-        company,
-        phone
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            company,
+            phone
+          }
+        }
+      });
+      
+      if (error) {
+        toast({
+          title: "Registration failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (data.user) {
+        const { error: roleError } = await supabase
+          .from("user_roles")
+          .insert([{ user_id: data.user.id, role: "client" }]);
+        
+        if (roleError) {
+          console.error("Error assigning client role:", roleError);
+          toast({
+            title: "Warning",
+            description: "Account created but role assignment failed",
+            variant: "destructive"
+          });
+        }
+      }
+      
+      toast({
+        title: "Account created",
+        description: "Please check your email to verify your account",
+      });
+      
+      navigate("/auth/login");
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast({
+        title: "Registration failed",
+        description: "An unexpected error occurred",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
