@@ -1,5 +1,5 @@
 
-import React, { useRef } from "react";
+import React, { useRef, useCallback } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CallToAction from "@/components/CallToAction";
@@ -13,12 +13,17 @@ import PrinterCatalog from "@/components/PrinterCatalog";
 const PrintersPage = () => {
   const pdfCatalogRef = useRef<HTMLDivElement>(null);
 
-  const handlePrintCatalog = useReactToPrint({
-    documentTitle: "Thermal_Printers_Catalog",
-    onAfterPrint: () => console.log("PDF catalog generated successfully"),
-    // The proper way to use content property according to the library's TypeScript definitions
-    print: () => pdfCatalogRef.current,
-  });
+  // Use useCallback to create a stable function reference
+  const handlePrintCatalog = useCallback(() => {
+    if (pdfCatalogRef.current) {
+      // Call useReactToPrint with the proper configuration
+      useReactToPrint({
+        documentTitle: "Thermal_Printers_Catalog",
+        onAfterPrint: () => console.log("PDF catalog generated successfully"),
+        content: () => pdfCatalogRef.current,
+      })();
+    }
+  }, [pdfCatalogRef]);
 
   return (
     <div className="min-h-screen flex flex-col">
