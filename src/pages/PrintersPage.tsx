@@ -16,7 +16,8 @@ const PrintersPage = () => {
   const handlePrintCatalog = useReactToPrint({
     documentTitle: "Thermal_Printers_Catalog",
     onAfterPrint: () => console.log("PDF catalog generated successfully"),
-    content: () => pdfCatalogRef.current,
+    // The proper way to use content property according to the library's TypeScript definitions
+    print: () => pdfCatalogRef.current,
   });
 
   return (
@@ -40,7 +41,7 @@ const PrintersPage = () => {
             </h2>
             
             <Button 
-              onClick={() => handlePrintCatalog()}
+              onClick={handlePrintCatalog}
               className="flex items-center gap-2"
             >
               <Download className="h-4 w-4" />
