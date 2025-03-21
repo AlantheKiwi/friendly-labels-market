@@ -27,6 +27,15 @@ const UserActions: React.FC<UserActionsProps> = ({
         description: "Please wait while we log you out",
       });
       
+      // Clear any supabase auth related items in localStorage first
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('supabase.auth.')) {
+          localStorage.removeItem(key);
+          console.log(`UserActions - Cleared localStorage item: ${key}`);
+        }
+      });
+      
+      // Call the signOut function
       await signOut();
       console.log("UserActions - signOut function completed");
       
