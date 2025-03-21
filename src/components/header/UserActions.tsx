@@ -31,6 +31,7 @@ const UserActions: React.FC<UserActionsProps> = ({
 
   const handleSignOut = async () => {
     try {
+      console.log("UserActions - Starting signOut process");
       await signOut();
       toast({
         title: "Signed out successfully",

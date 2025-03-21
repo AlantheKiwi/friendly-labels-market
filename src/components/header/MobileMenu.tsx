@@ -27,6 +27,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
 
   const handleSignOut = async () => {
     try {
+      console.log("MobileMenu - Starting signOut process");
       await signOut();
       onClose();
       toast({
@@ -117,6 +118,17 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
               Logout
             </button>
           </>
+        )}
+        
+        {/* Show logout for users not logged in */}
+        {user && !isClient && !isAdmin && (
+          <button 
+            className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2 w-full text-left"
+            onClick={handleSignOut}
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </button>
         )}
         
         {/* Show login for users not logged in */}
