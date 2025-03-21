@@ -6,6 +6,11 @@ export const checkUserRoles = async (userId: string): Promise<UserRoles> => {
   try {
     console.log("Checking roles for user:", userId);
     
+    if (!userId) {
+      console.error("No user ID provided to checkUserRoles");
+      return { isAdmin: false, isClient: false };
+    }
+    
     // Query the user_roles table directly
     const { data: userRoles, error } = await supabase
       .from("user_roles")
