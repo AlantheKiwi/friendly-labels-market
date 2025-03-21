@@ -19,9 +19,11 @@ const UserActions: React.FC<UserActionsProps> = ({
   const { toast } = useToast();
 
   const handleSignOut = async () => {
+    console.log("UserActions - Logout button clicked");
     try {
       await signOut();
-      // The auth state change listener will handle navigation
+      console.log("UserActions - signOut function completed");
+      // The navigation will be handled in the AuthContext
     } catch (error) {
       console.error("Error signing out:", error);
       toast({

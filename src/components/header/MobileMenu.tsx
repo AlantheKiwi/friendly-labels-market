@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { LogIn, LogOut, LayoutDashboard } from "lucide-react";
@@ -30,7 +29,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
       console.log("MobileMenu - Starting signOut process");
       onClose(); // Close the mobile menu immediately
       await signOut();
-      // We don't need to handle navigation here - the auth state change listener will do that
+      console.log("MobileMenu - Signout completed");
     } catch (error) {
       console.error("Error signing out:", error);
       toast({

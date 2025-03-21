@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,19 +16,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isClient, setIsClient] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
   const { signIn, signUp, signOut: authSignOut } = useAuthOperations();
 
   // Wrapper for signOut to ensure state is cleared properly
   const signOut = async (): Promise<void> => {
     try {
       console.log("AuthContext - Starting signOut process");
-      await authSignOut();
-      // Clear state explicitly here to prevent any issues
+      
+      // Clear state before calling authSignOut to prevent race conditions
       setSession(null);
       setUser(null);
       setIsAdmin(false);
       setIsClient(false);
-      navigate("/", { replace: true });
+      
+      await authSignOut();
+      
+      console.log("AuthContext - signOut complete, state cleared");
       return Promise.resolve();
     } catch (error) {
       console.error("Error in signOut:", error);
@@ -37,67 +41,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    let subscription;
+    console.log("Setting up auth listener");
     
     // Set up auth state listener FIRST
-    const setupAuthListener = () => {
-      const { data } = supabase.auth.onAuthStateChange(
-        async (event, currentSession) => {
-          console.log("Auth state changed:", event, currentSession?.user?.id);
+    const { data } = supabase.auth.onAuthStateChange(
+      async (event, currentSession) => {
+        console.log("Auth state changed:", event, currentSession?.user?.id);
+        
+        if (event === 'SIGNED_OUT') {
+          console.log("SIGNED_OUT event received, clearing state");
+          setSession(null);
+          setUser(null);
+          setIsAdmin(false);
+          setIsClient(false);
           
-          if (currentSession) {
-            setSession(currentSession);
-            setUser(currentSession.user);
-            
-            if (currentSession.user) {
-              try {
-                const roles = await checkUserRoles(currentSession.user.id);
-                console.log("User roles after auth state change:", roles);
-                setIsAdmin(roles.isAdmin);
-                setIsClient(roles.isClient);
-                
-                // Redirect if on login or register page
-                const currentPath = window.location.pathname;
-                if (currentPath === "/auth/login" || currentPath === "/auth/register" || currentPath === "/") {
-                  if (roles.isClient) {
-                    console.log("Auth state change - redirecting client to dashboard");
-                    navigate("/client/dashboard", { replace: true });
-                  } else if (roles.isAdmin) {
-                    console.log("Auth state change - redirecting admin to dashboard");
-                    navigate("/admin/dashboard", { replace: true });
-                  }
+          // Navigate to home page on sign out
+          navigate("/", { replace: true });
+        } else if (currentSession) {
+          setSession(currentSession);
+          setUser(currentSession.user);
+          
+          if (currentSession.user) {
+            try {
+              const roles = await checkUserRoles(currentSession.user.id);
+              console.log("User roles after auth state change:", roles);
+              setIsAdmin(roles.isAdmin);
+              setIsClient(roles.isClient);
+              
+              // Redirect if on login or register page
+              const currentPath = window.location.pathname;
+              if (currentPath === "/auth/login" || currentPath === "/auth/register" || currentPath === "/") {
+                if (roles.isClient) {
+                  console.log("Auth state change - redirecting client to dashboard");
+                  navigate("/client/dashboard", { replace: true });
+                } else if (roles.isAdmin) {
+                  console.log("Auth state change - redirecting admin to dashboard");
+                  navigate("/admin/dashboard", { replace: true });
                 }
-              } catch (error) {
-                console.error("Error checking roles:", error);
               }
-            }
-          } else {
-            // This runs when user logs out
-            console.log("User session ended, clearing role states");
-            setSession(null);
-            setUser(null);
-            setIsAdmin(false);
-            setIsClient(false);
-            
-            // If logged out and on a protected page, redirect to home
-            const currentPath = window.location.pathname;
-            if (currentPath.startsWith('/client/') || currentPath.startsWith('/admin/')) {
-              console.log("User logged out while on protected page, redirecting to home");
-              navigate("/", { replace: true });
+            } catch (error) {
+              console.error("Error checking roles:", error);
             }
           }
-          
-          setIsLoading(false);
         }
-      );
-      
-      subscription = data.subscription;
-      return data;
-    };
-
-    // Set up the auth listener
-    const authData = setupAuthListener();
-
+        
+        setIsLoading(false);
+      }
+    );
+    
+    // Store subscription reference for cleanup
+    subscriptionRef.current = data.subscription;
+    
     // THEN check for existing session
     supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
       console.log("Initial session check:", currentSession?.user?.id);
@@ -136,11 +130,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
     });
 
-    // Use correct cleanup function with the subscription
+    // Proper cleanup with subscription reference
     return () => {
       console.log("Cleaning up auth listener subscription");
-      if (subscription) {
-        subscription.unsubscribe();
+      if (subscriptionRef.current) {
+        subscriptionRef.current.unsubscribe();
+        subscriptionRef.current = null;
       }
     };
   }, [navigate]);
