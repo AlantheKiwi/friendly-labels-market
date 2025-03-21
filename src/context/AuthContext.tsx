@@ -83,6 +83,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // THEN check for existing session
     supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+      console.log("Initial session check:", currentSession?.user?.id);
+      
       if (currentSession) {
         setSession(currentSession);
         setUser(currentSession.user);
@@ -110,6 +112,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.error("Error checking roles on initial load:", error);
           }
         }
+      } else {
+        console.log("No session found on initial load");
       }
       
       setIsLoading(false);
@@ -130,6 +134,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signUp,
     signOut
   };
+
+  console.log("AuthContext current state:", { 
+    hasUser: !!user, 
+    isAdmin, 
+    isClient, 
+    isLoading 
+  });
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

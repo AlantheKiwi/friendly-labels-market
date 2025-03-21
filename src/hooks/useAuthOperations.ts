@@ -10,9 +10,11 @@ export const useAuthOperations = () => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log("Attempting sign in for:", email);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
+        console.error("Sign in error:", error.message);
         toast({
           title: "Sign in failed",
           description: error.message,
