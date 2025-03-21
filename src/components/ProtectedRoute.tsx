@@ -24,18 +24,25 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
+  // If no user is logged in, redirect to login
   if (!user) {
+    console.log("No user found, redirecting to login");
     return <Navigate to="/auth/login" replace />;
   }
 
+  // If admin access is required but user is not admin
   if (requireAdmin && !isAdmin) {
+    console.log("Admin access required but user is not admin");
     return <Navigate to="/" replace />;
   }
 
+  // If client access is required but user is not client
   if (requireClient && !isClient) {
+    console.log("Client access required but user is not client");
     return <Navigate to="/" replace />;
   }
 
+  // User has necessary permissions, render the protected content
   return <>{children}</>;
 };
 

@@ -31,19 +31,24 @@ export const useAuthOperations = () => {
       
       if (data.user) {
         console.log("User authenticated, checking roles for:", data.user.id);
-        const roles = await checkUserRoles(data.user.id);
-        
-        console.log("Roles determined:", roles);
-        
-        // Redirect based on roles
-        if (roles.isClient) {
-          console.log("Redirecting client to dashboard");
-          navigate("/client/dashboard", { replace: true });
-        } else if (roles.isAdmin) {
-          console.log("Redirecting admin to dashboard");
-          navigate("/admin/dashboard", { replace: true });
-        } else {
-          console.log("No specific role, redirecting to home");
+        try {
+          const roles = await checkUserRoles(data.user.id);
+          
+          console.log("Roles determined:", roles);
+          
+          // Redirect based on roles
+          if (roles.isClient) {
+            console.log("Redirecting client to dashboard");
+            navigate("/client/dashboard", { replace: true });
+          } else if (roles.isAdmin) {
+            console.log("Redirecting admin to dashboard");
+            navigate("/admin/dashboard", { replace: true });
+          } else {
+            console.log("No specific role, redirecting to home");
+            navigate("/");
+          }
+        } catch (error) {
+          console.error("Error checking roles:", error);
           navigate("/");
         }
       } else {
@@ -111,6 +116,8 @@ export const useAuthOperations = () => {
       // Clear any user state and navigate to home page
       console.log("Successfully signed out, redirecting to home");
       navigate("/", { replace: true });
+      
+      // Return nothing to match the Promise<void> type
     } catch (error) {
       console.error("Sign out error:", error);
       throw error;
