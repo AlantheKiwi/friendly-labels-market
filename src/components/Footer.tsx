@@ -15,10 +15,10 @@ const Footer: React.FC = () => {
               © {currentYear} Insight AI Systems Limited. All rights reserved.
             </p>
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-              <Link to="/terms" className="text-gray-600 text-sm hover:text-brand-blue transition-colors">
+              <Link to="/terms-of-service" className="text-gray-600 text-sm hover:text-brand-blue transition-colors">
                 Terms of Service
               </Link>
-              <Link to="/privacy" className="text-gray-600 text-sm hover:text-brand-blue transition-colors">
+              <Link to="/privacy-policy" className="text-gray-600 text-sm hover:text-brand-blue transition-colors">
                 Privacy Policy
               </Link>
               <Link to="/admin/login" className="text-gray-600 text-sm hover:text-brand-blue transition-colors flex items-center gap-1">
