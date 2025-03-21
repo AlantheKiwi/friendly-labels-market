@@ -21,6 +21,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Wrapper for signOut to ensure state is cleared properly
   const signOut = async (): Promise<void> => {
     try {
+      console.log("AuthContext - Starting signOut process");
       await authSignOut();
       // The auth state change listener will handle state updates
     } catch (error) {
@@ -31,7 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         console.log("Auth state changed:", event, currentSession?.user?.id);
         
@@ -121,7 +122,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Use correct cleanup function with the subscription
     return () => {
-      subscription.unsubscribe();
+      if (data && data.subscription) {
+        data.subscription.unsubscribe();
+      }
     };
   }, [navigate]);
 
