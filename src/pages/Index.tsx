@@ -16,8 +16,8 @@ const Index = () => {
     <div className="flex flex-col min-h-screen">
       <Header />
       
-      {/* Debug info only shown when logged in */}
-      {user && <UserDebugInfo />}
+      {/* Debug info always shown during development */}
+      <UserDebugInfo />
       
       <main className="flex-grow">
         <Hero />

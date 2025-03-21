@@ -2,22 +2,51 @@
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
 
 const UserDebugInfo = () => {
-  const { user, isClient, isAdmin, isLoading } = useAuth();
+  const { user, isClient, isAdmin, isLoading, session } = useAuth();
 
-  if (isLoading) {
-    return <div>Loading authentication status...</div>;
-  }
+  // Add debug button to force role check
+  const handleDebugRoleCheck = async () => {
+    try {
+      // Force a roles check by reloading the page
+      window.location.reload();
+    } catch (error) {
+      console.error("Debug error:", error);
+    }
+  };
 
   return (
     <Card className="w-full max-w-md mx-auto mt-4">
       <CardHeader>
-        <CardTitle>Authentication Status</CardTitle>
+        <CardTitle className="flex justify-between items-center">
+          <span>Authentication Status</span>
+          {isLoading && <span className="text-xs text-amber-500 animate-pulse">Loading...</span>}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {user ? (
+          {isLoading ? (
+            <div className="space-y-2">
+              <p>Loading authentication status...</p>
+              <p className="text-sm text-gray-500">Auth state is still initializing. This may take a moment.</p>
+              <div className="text-xs text-gray-400 mt-2 space-y-1">
+                <p>Debug info:</p>
+                <p>Session exists: {session ? 'Yes' : 'No'}</p>
+                <p>User exists: {user ? 'Yes' : 'No'}</p>
+                {user && <p>User ID: {user.id}</p>}
+              </div>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="mt-2" 
+                onClick={handleDebugRoleCheck}
+              >
+                Refresh Authentication
+              </Button>
+            </div>
+          ) : user ? (
             <>
               <p><span className="font-medium">Logged in as:</span> {user.email}</p>
               <p><span className="font-medium">User ID:</span> {user.id}</p>
@@ -32,9 +61,29 @@ const UserDebugInfo = () => {
                   <span className="ml-2 text-red-600">No client portal access</span>
                 }
               </p>
+              <div className="text-xs text-gray-400 mt-2 space-y-1">
+                <p>Debug info:</p>
+                <p>Session exists: Yes</p>
+                <p>Auth state initialized: Yes</p>
+              </div>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="mt-2" 
+                onClick={handleDebugRoleCheck}
+              >
+                Refresh Authentication
+              </Button>
             </>
           ) : (
-            <p>Not logged in</p>
+            <>
+              <p>Not logged in</p>
+              <div className="text-xs text-gray-400 mt-2">
+                <p>Debug info:</p>
+                <p>Session exists: No</p>
+                <p>Auth state initialized: Yes</p>
+              </div>
+            </>
           )}
         </div>
       </CardContent>
