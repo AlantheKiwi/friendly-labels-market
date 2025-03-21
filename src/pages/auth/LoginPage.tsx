@@ -44,6 +44,13 @@ const LoginPage = () => {
       <Header />
       <main className="flex-grow flex items-center justify-center bg-gray-50 py-12">
         <div className="w-full max-w-md px-4">
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-lg text-center shadow-sm">
+            <h2 className="text-xl font-semibold text-blue-700 mb-2">Welcome to Our Client Portal</h2>
+            <p className="text-blue-600">
+              Register as a new client to access exclusive services or sign in to your existing account
+            </p>
+          </div>
+          
           <Card className="border-2 border-gray-200 shadow-lg">
             <CardHeader className="space-y-1 text-center">
               <CardTitle className="text-2xl font-bold">Login</CardTitle>
