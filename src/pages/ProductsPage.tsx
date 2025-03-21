@@ -5,18 +5,8 @@ import Footer from "@/components/Footer";
 import { products } from "@/data/productData";
 import ProductGrid from "@/components/ProductGrid";
 import CallToAction from "@/components/CallToAction";
-import { Separator } from "@/components/ui/separator";
 
 const ProductsPage = () => {
-  // Group products by category
-  const categories = products.reduce((acc, product) => {
-    if (!acc[product.category]) {
-      acc[product.category] = [];
-    }
-    acc[product.category].push(product);
-    return acc;
-  }, {} as Record<string, typeof products>);
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -35,16 +25,6 @@ const ProductsPage = () => {
             <h2 className="text-2xl font-bold mb-6">All Products</h2>
             <ProductGrid products={products} />
           </div>
-
-          <Separator className="my-12" />
-
-          {/* Products by category */}
-          {Object.entries(categories).map(([category, categoryProducts]) => (
-            <div key={category} className="mb-12">
-              <h2 className="text-2xl font-bold mb-6">{category}</h2>
-              <ProductGrid products={categoryProducts} />
-            </div>
-          ))}
         </div>
 
         <CallToAction 
