@@ -97,11 +97,24 @@ export const useAuthOperations = () => {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Sign out error:", error);
+        toast({
+          title: "Sign out failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+      
       toast({
         title: "Signed out",
         description: "You have been signed out successfully",
       });
+      
+      // Clear any user state and navigate to home page
       navigate("/");
     } catch (error) {
       console.error("Sign out error:", error);

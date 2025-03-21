@@ -45,6 +45,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else {
           setIsAdmin(false);
           setIsClient(false);
+          
+          // If logged out and on a protected page, redirect to home
+          const currentPath = window.location.pathname;
+          if (currentPath.startsWith('/client/') || currentPath.startsWith('/admin/')) {
+            navigate("/");
+          }
         }
         
         setIsLoading(false);
@@ -61,8 +67,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsAdmin(roles.isAdmin);
         setIsClient(roles.isClient);
         
-        // Redirect based on roles if on homepage
-        if (window.location.pathname === "/") {
+        // Redirect based on roles if on homepage or auth pages
+        if (window.location.pathname === "/" || 
+            window.location.pathname === "/auth/login" || 
+            window.location.pathname === "/auth/register") {
           if (roles.isClient) {
             console.log("Initial load - redirecting client to dashboard");
             navigate("/client/dashboard");

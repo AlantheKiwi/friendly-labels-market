@@ -48,21 +48,33 @@ const Header: React.FC = () => {
             {/* Client Login/Account Button */}
             {user ? (
               isClient ? (
-                <Button variant="outline" className="flex items-center gap-2" size="sm" asChild>
-                  <Link to={isOnClientDashboard ? "/client/dashboard" : "/client/dashboard"}>
-                    <User className="h-4 w-4" />
-                    <span className="hidden sm:inline">My Account</span>
-                  </Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" className="flex items-center gap-2" size="sm" asChild>
+                    <Link to={isOnClientDashboard ? "/client/dashboard" : "/client/dashboard"}>
+                      <User className="h-4 w-4" />
+                      <span className="hidden sm:inline">My Account</span>
+                    </Link>
+                  </Button>
+                  <Button variant="outline" className="flex items-center gap-2" onClick={() => signOut()} size="sm">
+                    <LogOut className="h-4 w-4" />
+                    <span className="hidden sm:inline">Logout</span>
+                  </Button>
+                </div>
               ) : isAdmin ? (
-                <Button variant="outline" className="flex items-center gap-2" size="sm" asChild>
-                  <Link to={isOnAdminDashboard ? "/admin/dashboard" : "/admin/dashboard"}>
-                    <User className="h-4 w-4" />
-                    <span className="hidden sm:inline">Admin Panel</span>
-                  </Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" className="flex items-center gap-2" size="sm" asChild>
+                    <Link to={isOnAdminDashboard ? "/admin/dashboard" : "/admin/dashboard"}>
+                      <User className="h-4 w-4" />
+                      <span className="hidden sm:inline">Admin Panel</span>
+                    </Link>
+                  </Button>
+                  <Button variant="outline" className="flex items-center gap-2" onClick={() => signOut()} size="sm">
+                    <LogOut className="h-4 w-4" />
+                    <span className="hidden sm:inline">Logout</span>
+                  </Button>
+                </div>
               ) : (
-                <Button variant="outline" className="flex items-center gap-2" onClick={signOut} size="sm">
+                <Button variant="outline" className="flex items-center gap-2" onClick={() => signOut()} size="sm">
                   <LogOut className="h-4 w-4" />
                   <span className="hidden sm:inline">Logout</span>
                 </Button>
@@ -137,23 +149,47 @@ const Header: React.FC = () => {
                 Contact
               </Link>
               {isClient && user ? (
-                <Link
-                  to="/client/dashboard"
-                  className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <User className="h-4 w-4" />
-                  My Account
-                </Link>
+                <>
+                  <Link
+                    to="/client/dashboard"
+                    className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <User className="h-4 w-4" />
+                    My Account
+                  </Link>
+                  <button 
+                    className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2 w-full text-left"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      signOut();
+                    }}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </button>
+                </>
               ) : isAdmin && user ? (
-                <Link
-                  to="/admin/dashboard"
-                  className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <User className="h-4 w-4" />
-                  Admin Panel
-                </Link>
+                <>
+                  <Link
+                    to="/admin/dashboard"
+                    className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <User className="h-4 w-4" />
+                    Admin Panel
+                  </Link>
+                  <button 
+                    className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2 w-full text-left"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      signOut();
+                    }}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </button>
+                </>
               ) : !user && (
                 <Link
                   to="/auth/login"
