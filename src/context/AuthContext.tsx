@@ -19,11 +19,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { signIn, signUp, signOut: authSignOut } = useAuthOperations();
 
   // Wrapper for signOut to ensure state is cleared properly
-  const signOut = async () => {
+  const signOut = async (): Promise<void> => {
     try {
       await authSignOut();
       // State will be updated by the auth state change listener
-      return true;
     } catch (error) {
       console.error("Error in signOut:", error);
       throw error;
