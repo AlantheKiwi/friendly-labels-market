@@ -30,6 +30,9 @@ import CookieBanner from "./components/CookieBanner";
 import ClientDashboardPage from "./pages/client/ClientDashboardPage";
 import ClientOrdersPage from "./pages/client/ClientOrdersPage";
 import ClientQueriesPage from "./pages/client/ClientQueriesPage";
+import ClientInvoicesPage from "./pages/client/ClientInvoicesPage";
+import ClientOffersPage from "./pages/client/ClientOffersPage";
+import ClientNotesPage from "./pages/client/ClientNotesPage";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -81,6 +84,30 @@ const App = () => {
                   element={
                     <ProtectedRoute requireClient>
                       <ClientQueriesPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/client/invoices" 
+                  element={
+                    <ProtectedRoute requireClient>
+                      <ClientInvoicesPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/client/offers" 
+                  element={
+                    <ProtectedRoute requireClient>
+                      <ClientOffersPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/client/notes" 
+                  element={
+                    <ProtectedRoute requireClient>
+                      <ClientNotesPage />
                     </ProtectedRoute>
                   } 
                 />

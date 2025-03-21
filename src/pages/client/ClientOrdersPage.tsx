@@ -6,8 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import ClientLayout from "@/components/client/ClientLayout";
 
 const ClientOrdersPage = () => {
   const { user } = useAuth();
@@ -43,64 +42,56 @@ const ClientOrdersPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-grow flex items-center justify-center">
+      <ClientLayout>
+        <div className="flex items-center justify-center h-full">
           <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
-        </main>
-        <Footer />
-      </div>
+        </div>
+      </ClientLayout>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-grow bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6">My Orders</h1>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Order History</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {orders && orders.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Order #</TableHead>
-                      <TableHead>Product</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Quantity</TableHead>
-                      <TableHead>Price (NZD)</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {orders.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell className="font-medium">{order.order_number}</TableCell>
-                        <TableCell>{order.product_name}</TableCell>
-                        <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
-                        <TableCell>{order.quantity}</TableCell>
-                        <TableCell>${order.price.toFixed(2)}</TableCell>
-                        <TableCell>{getStatusBadge(order.status)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="text-center py-6">
-                  <p className="text-gray-500">You haven't placed any orders yet.</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </main>
-      <Footer />
-    </div>
+    <ClientLayout>
+      <h1 className="text-3xl font-bold mb-6">My Orders</h1>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Order History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {orders && orders.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Order #</TableHead>
+                  <TableHead>Product</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Quantity</TableHead>
+                  <TableHead>Price (NZD)</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {orders.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-medium">{order.order_number}</TableCell>
+                    <TableCell>{order.product_name}</TableCell>
+                    <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell>{order.quantity}</TableCell>
+                    <TableCell>${order.price.toFixed(2)}</TableCell>
+                    <TableCell>{getStatusBadge(order.status)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-gray-500">You haven't placed any orders yet.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </ClientLayout>
   );
 };
 
