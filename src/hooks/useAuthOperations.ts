@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -27,23 +28,25 @@ export const useAuthOperations = () => {
         description: "Welcome back!",
       });
       
+      // Get user data after successful sign in
       const { data } = await supabase.auth.getUser();
       
       if (data.user) {
-        console.log("User authenticated, checking roles for:", data.user.id);
+        console.log("User authenticated:", data.user.id);
         try {
+          // Check user roles to determine where to redirect
           const roles = await checkUserRoles(data.user.id);
           
-          console.log("Roles determined:", roles);
+          console.log("User roles determined:", roles);
           
           if (roles.isClient) {
-            console.log("Redirecting client to dashboard");
+            console.log("User is a client, redirecting to client dashboard");
             navigate("/client/dashboard", { replace: true });
           } else if (roles.isAdmin) {
-            console.log("Redirecting admin to dashboard");
+            console.log("User is an admin, redirecting to admin dashboard");
             navigate("/admin/dashboard", { replace: true });
           } else {
-            console.log("No specific role, redirecting to home");
+            console.log("User has no specific role, redirecting to home");
             navigate("/");
           }
         } catch (error) {
@@ -51,7 +54,7 @@ export const useAuthOperations = () => {
           navigate("/");
         }
       } else {
-        console.log("No user data, redirecting to home");
+        console.log("No user data available, redirecting to home");
         navigate("/");
       }
     } catch (error) {

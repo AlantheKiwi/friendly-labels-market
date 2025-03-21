@@ -6,8 +6,7 @@ export const checkUserRoles = async (userId: string): Promise<UserRoles> => {
   try {
     console.log("Checking roles for user:", userId);
     
-    // Query all roles for this user at once to reduce database calls
-    // Fix the ambiguous column issue by specifying the table name and use clearer query
+    // Query all roles for this user
     const { data: userRoles, error } = await supabase
       .from("user_roles")
       .select("role")
@@ -18,8 +17,8 @@ export const checkUserRoles = async (userId: string): Promise<UserRoles> => {
       return { isAdmin: false, isClient: false };
     }
     
-    // Add explicit logging to show what roles were found
-    console.log("User roles found:", userRoles);
+    // Add detailed logging to see what's happening
+    console.log("User roles query result:", userRoles);
     
     // Check if the user has admin or client roles
     const isAdmin = userRoles?.some(role => role.role === 'admin') || false;

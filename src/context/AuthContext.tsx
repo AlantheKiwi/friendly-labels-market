@@ -24,7 +24,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log("AuthContext - Starting signOut process");
       
-      // Clear state before calling authSignOut to prevent race conditions
+      // Clear state before calling authSignOut
       setSession(null);
       setUser(null);
       setIsAdmin(false);
@@ -43,7 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     console.log("Setting up auth listener");
     
-    // Set up auth state listener FIRST
+    // Set up auth state listener first
     const { data } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         console.log("Auth state changed:", event, currentSession?.user?.id);
@@ -92,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Store subscription reference for cleanup
     subscriptionRef.current = data.subscription;
     
-    // THEN check for existing session
+    // Then check for existing session
     supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
       console.log("Initial session check:", currentSession?.user?.id);
       
@@ -108,9 +108,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsClient(roles.isClient);
             
             // Redirect based on roles if on homepage or auth pages
-            if (window.location.pathname === "/" || 
-                window.location.pathname === "/auth/login" || 
-                window.location.pathname === "/auth/register") {
+            const currentPath = window.location.pathname;
+            if (currentPath === "/" || 
+                currentPath === "/auth/login" || 
+                currentPath === "/auth/register") {
               if (roles.isClient) {
                 console.log("Initial load - redirecting client to dashboard");
                 navigate("/client/dashboard", { replace: true });
@@ -130,7 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
     });
 
-    // Proper cleanup with subscription reference
+    // Cleanup function
     return () => {
       console.log("Cleaning up auth listener subscription");
       if (subscriptionRef.current) {
@@ -153,6 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   console.log("AuthContext current state:", { 
     hasUser: !!user, 
+    userId: user?.id,
     isAdmin, 
     isClient, 
     isLoading 
