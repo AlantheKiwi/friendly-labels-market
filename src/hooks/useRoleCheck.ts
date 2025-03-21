@@ -7,10 +7,11 @@ export const checkUserRoles = async (userId: string): Promise<UserRoles> => {
     console.log("Checking roles for user:", userId);
     
     // Query all roles for this user at once to reduce database calls
+    // Fix the ambiguous column issue by specifying the table name
     const { data: userRoles, error } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", userId);
+      .eq("user_roles.user_id", userId);
     
     if (error) {
       console.error("Error checking user roles:", error);
