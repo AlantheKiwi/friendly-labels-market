@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -13,6 +13,17 @@ interface MobileMenuProps {
 const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
   const { user, signOut, isClient, isAdmin } = useAuth();
   const { toast } = useToast();
+
+  // Debug logging
+  useEffect(() => {
+    if (user) {
+      console.log("MobileMenu - User is logged in:", user.id);
+      console.log("MobileMenu - isClient:", isClient);
+      console.log("MobileMenu - isAdmin:", isAdmin);
+    } else {
+      console.log("MobileMenu - No user logged in");
+    }
+  }, [user, isClient, isAdmin]);
 
   const handleSignOut = async () => {
     try {

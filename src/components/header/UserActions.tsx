@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { LogIn, LogOut, User, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,17 @@ const UserActions: React.FC<UserActionsProps> = ({
 }) => {
   const { user, signOut, isClient, isAdmin } = useAuth();
   const { toast } = useToast();
+
+  // Debug logging
+  useEffect(() => {
+    if (user) {
+      console.log("UserActions - User is logged in:", user.id);
+      console.log("UserActions - isClient:", isClient);
+      console.log("UserActions - isAdmin:", isAdmin);
+    } else {
+      console.log("UserActions - No user logged in");
+    }
+  }, [user, isClient, isAdmin]);
 
   const handleSignOut = async () => {
     try {
@@ -37,6 +48,7 @@ const UserActions: React.FC<UserActionsProps> = ({
 
   // Show client portal button for any logged in user who is a client
   if (user && isClient) {
+    console.log("Rendering client portal section");
     return (
       <div className="flex items-center gap-2">
         <Button variant="default" className="flex items-center gap-2" size="sm" asChild>
@@ -59,6 +71,7 @@ const UserActions: React.FC<UserActionsProps> = ({
   } 
   // Show admin panel button for any logged in user who is an admin
   else if (user && isAdmin) {
+    console.log("Rendering admin panel section");
     return (
       <div className="flex items-center gap-2">
         <Button variant="default" className="flex items-center gap-2" size="sm" asChild>
@@ -81,6 +94,7 @@ const UserActions: React.FC<UserActionsProps> = ({
   } 
   // Show only logout button for any other logged in user
   else if (user) {
+    console.log("Rendering only logout button");
     return (
       <Button 
         variant="outline" 
@@ -95,6 +109,7 @@ const UserActions: React.FC<UserActionsProps> = ({
   } 
   // Show login button for non-logged in users
   else {
+    console.log("Rendering login button");
     return (
       <Button variant="default" className="flex items-center gap-2" size="sm" asChild>
         <Link to="/auth/login">

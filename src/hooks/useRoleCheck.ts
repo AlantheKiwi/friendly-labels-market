@@ -6,19 +6,24 @@ export const checkUserRoles = async (userId: string): Promise<UserRoles> => {
   try {
     console.log("Checking roles for user:", userId);
     
-    const { data: adminRole, error: adminError } = await supabase.rpc('has_role', {
-      user_id: userId,
-      role: 'admin'
-    });
+    // Use explicit table reference to avoid ambiguous column error
+    const { data: adminRole, error: adminError } = await supabase
+      .from("user_roles")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
     
     if (adminError) {
       console.error("Error checking admin role:", adminError);
     }
     
-    const { data: clientRole, error: clientError } = await supabase.rpc('has_role', {
-      user_id: userId,
-      role: 'client'
-    });
+    const { data: clientRole, error: clientError } = await supabase
+      .from("user_roles")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("role", "client")
+      .maybeSingle();
     
     if (clientError) {
       console.error("Error checking client role:", clientError);
