@@ -97,6 +97,9 @@ export const useAuthOperations = () => {
 
   const signOut = async () => {
     try {
+      // First clear any local state before signout
+      console.log("Signing out user");
+      
       const { error } = await supabase.auth.signOut();
       
       if (error) {
@@ -115,7 +118,8 @@ export const useAuthOperations = () => {
       });
       
       // Clear any user state and navigate to home page
-      navigate("/");
+      console.log("Redirecting to home after signout");
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("Sign out error:", error);
       toast({

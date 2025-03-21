@@ -43,12 +43,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           }
         } else {
+          // This runs when user logs out
+          console.log("User session ended, clearing role states");
           setIsAdmin(false);
           setIsClient(false);
           
           // If logged out and on a protected page, redirect to home
           const currentPath = window.location.pathname;
           if (currentPath.startsWith('/client/') || currentPath.startsWith('/admin/')) {
+            console.log("User logged out while on protected page, redirecting to home");
             navigate("/");
           }
         }
