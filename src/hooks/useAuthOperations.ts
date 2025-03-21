@@ -94,7 +94,7 @@ export const useAuthOperations = () => {
     }
   };
 
-  const signOut = async () => {
+  const signOut = async (): Promise<void> => {
     try {
       // First clear any local state before signout
       console.log("Signing out user");
@@ -110,8 +110,6 @@ export const useAuthOperations = () => {
       // Clear any user state and navigate to home page
       console.log("Successfully signed out, redirecting to home");
       navigate("/", { replace: true });
-      
-      return true;
     } catch (error) {
       console.error("Sign out error:", error);
       throw error;
