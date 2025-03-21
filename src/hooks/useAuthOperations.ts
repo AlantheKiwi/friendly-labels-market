@@ -104,10 +104,9 @@ export const useAuthOperations = () => {
 
   const signOut = async (): Promise<void> => {
     try {
-      // First clear any local state before signout
       console.log("Signing out user");
       
-      // Make sure to await the signOut operation
+      // Make sure to use scope 'global' to sign out from all sessions
       const { error } = await supabase.auth.signOut({ scope: 'global' });
       
       if (error) {
@@ -121,11 +120,7 @@ export const useAuthOperations = () => {
         description: "You have been logged out",
       });
       
-      // Clear any user state and navigate to home page
-      console.log("Successfully signed out, redirecting to home");
-      navigate("/", { replace: true });
-      
-      // Return nothing to match the Promise<void> type
+      // Note: Navigation will be handled by the AuthContext
       return Promise.resolve();
     } catch (error) {
       console.error("Sign out error:", error);

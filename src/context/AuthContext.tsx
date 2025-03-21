@@ -23,7 +23,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log("AuthContext - Starting signOut process");
       await authSignOut();
-      // The auth state change listener will handle state updates
+      // Clear state explicitly here to prevent any issues
+      setSession(null);
+      setUser(null);
+      setIsAdmin(false);
+      setIsClient(false);
+      navigate("/", { replace: true });
+      return Promise.resolve();
     } catch (error) {
       console.error("Error in signOut:", error);
       throw error;
@@ -31,56 +37,66 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    let subscription;
+    
     // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        console.log("Auth state changed:", event, currentSession?.user?.id);
-        
-        if (currentSession) {
-          setSession(currentSession);
-          setUser(currentSession.user);
+    const setupAuthListener = () => {
+      const { data } = supabase.auth.onAuthStateChange(
+        async (event, currentSession) => {
+          console.log("Auth state changed:", event, currentSession?.user?.id);
           
-          if (currentSession.user) {
-            try {
-              const roles = await checkUserRoles(currentSession.user.id);
-              console.log("User roles after auth state change:", roles);
-              setIsAdmin(roles.isAdmin);
-              setIsClient(roles.isClient);
-              
-              // Redirect if on login or register page
-              const currentPath = window.location.pathname;
-              if (currentPath === "/auth/login" || currentPath === "/auth/register" || currentPath === "/") {
-                if (roles.isClient) {
-                  console.log("Auth state change - redirecting client to dashboard");
-                  navigate("/client/dashboard", { replace: true });
-                } else if (roles.isAdmin) {
-                  console.log("Auth state change - redirecting admin to dashboard");
-                  navigate("/admin/dashboard", { replace: true });
+          if (currentSession) {
+            setSession(currentSession);
+            setUser(currentSession.user);
+            
+            if (currentSession.user) {
+              try {
+                const roles = await checkUserRoles(currentSession.user.id);
+                console.log("User roles after auth state change:", roles);
+                setIsAdmin(roles.isAdmin);
+                setIsClient(roles.isClient);
+                
+                // Redirect if on login or register page
+                const currentPath = window.location.pathname;
+                if (currentPath === "/auth/login" || currentPath === "/auth/register" || currentPath === "/") {
+                  if (roles.isClient) {
+                    console.log("Auth state change - redirecting client to dashboard");
+                    navigate("/client/dashboard", { replace: true });
+                  } else if (roles.isAdmin) {
+                    console.log("Auth state change - redirecting admin to dashboard");
+                    navigate("/admin/dashboard", { replace: true });
+                  }
                 }
+              } catch (error) {
+                console.error("Error checking roles:", error);
               }
-            } catch (error) {
-              console.error("Error checking roles:", error);
+            }
+          } else {
+            // This runs when user logs out
+            console.log("User session ended, clearing role states");
+            setSession(null);
+            setUser(null);
+            setIsAdmin(false);
+            setIsClient(false);
+            
+            // If logged out and on a protected page, redirect to home
+            const currentPath = window.location.pathname;
+            if (currentPath.startsWith('/client/') || currentPath.startsWith('/admin/')) {
+              console.log("User logged out while on protected page, redirecting to home");
+              navigate("/", { replace: true });
             }
           }
-        } else {
-          // This runs when user logs out
-          console.log("User session ended, clearing role states");
-          setSession(null);
-          setUser(null);
-          setIsAdmin(false);
-          setIsClient(false);
           
-          // If logged out and on a protected page, redirect to home
-          const currentPath = window.location.pathname;
-          if (currentPath.startsWith('/client/') || currentPath.startsWith('/admin/')) {
-            console.log("User logged out while on protected page, redirecting to home");
-            navigate("/", { replace: true });
-          }
+          setIsLoading(false);
         }
-        
-        setIsLoading(false);
-      }
-    );
+      );
+      
+      subscription = data.subscription;
+      return data;
+    };
+
+    // Set up the auth listener
+    const authData = setupAuthListener();
 
     // THEN check for existing session
     supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
@@ -122,6 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Use correct cleanup function with the subscription
     return () => {
+      console.log("Cleaning up auth listener subscription");
       if (subscription) {
         subscription.unsubscribe();
       }
