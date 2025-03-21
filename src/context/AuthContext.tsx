@@ -40,20 +40,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(currentSession.user);
           
           if (currentSession.user) {
-            const roles = await checkUserRoles(currentSession.user.id);
-            setIsAdmin(roles.isAdmin);
-            setIsClient(roles.isClient);
-            
-            // Redirect if on login or register page
-            const currentPath = window.location.pathname;
-            if (currentPath === "/auth/login" || currentPath === "/auth/register" || currentPath === "/") {
-              if (roles.isClient) {
-                console.log("Auth state change - redirecting client to dashboard");
-                navigate("/client/dashboard");
-              } else if (roles.isAdmin) {
-                console.log("Auth state change - redirecting admin to dashboard");
-                navigate("/admin/dashboard");
+            try {
+              const roles = await checkUserRoles(currentSession.user.id);
+              console.log("User roles after auth state change:", roles);
+              setIsAdmin(roles.isAdmin);
+              setIsClient(roles.isClient);
+              
+              // Redirect if on login or register page
+              const currentPath = window.location.pathname;
+              if (currentPath === "/auth/login" || currentPath === "/auth/register" || currentPath === "/") {
+                if (roles.isClient) {
+                  console.log("Auth state change - redirecting client to dashboard");
+                  navigate("/client/dashboard", { replace: true });
+                } else if (roles.isAdmin) {
+                  console.log("Auth state change - redirecting admin to dashboard");
+                  navigate("/admin/dashboard", { replace: true });
+                }
               }
+            } catch (error) {
+              console.error("Error checking roles:", error);
             }
           }
         } else {
@@ -68,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const currentPath = window.location.pathname;
           if (currentPath.startsWith('/client/') || currentPath.startsWith('/admin/')) {
             console.log("User logged out while on protected page, redirecting to home");
-            navigate("/");
+            navigate("/", { replace: true });
           }
         }
         
@@ -83,21 +88,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(currentSession.user);
         
         if (currentSession.user) {
-          const roles = await checkUserRoles(currentSession.user.id);
-          setIsAdmin(roles.isAdmin);
-          setIsClient(roles.isClient);
-          
-          // Redirect based on roles if on homepage or auth pages
-          if (window.location.pathname === "/" || 
-              window.location.pathname === "/auth/login" || 
-              window.location.pathname === "/auth/register") {
-            if (roles.isClient) {
-              console.log("Initial load - redirecting client to dashboard");
-              navigate("/client/dashboard");
-            } else if (roles.isAdmin) {
-              console.log("Initial load - redirecting admin to dashboard");
-              navigate("/admin/dashboard");
+          try {
+            const roles = await checkUserRoles(currentSession.user.id);
+            console.log("User roles on initial load:", roles);
+            setIsAdmin(roles.isAdmin);
+            setIsClient(roles.isClient);
+            
+            // Redirect based on roles if on homepage or auth pages
+            if (window.location.pathname === "/" || 
+                window.location.pathname === "/auth/login" || 
+                window.location.pathname === "/auth/register") {
+              if (roles.isClient) {
+                console.log("Initial load - redirecting client to dashboard");
+                navigate("/client/dashboard", { replace: true });
+              } else if (roles.isAdmin) {
+                console.log("Initial load - redirecting admin to dashboard");
+                navigate("/admin/dashboard", { replace: true });
+              }
             }
+          } catch (error) {
+            console.error("Error checking roles on initial load:", error);
           }
         }
       }

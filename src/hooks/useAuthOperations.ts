@@ -35,13 +35,13 @@ export const useAuthOperations = () => {
         
         console.log("Roles determined:", roles);
         
-        // Always redirect clients to their dashboard
+        // Redirect based on roles
         if (roles.isClient) {
           console.log("Redirecting client to dashboard");
-          navigate("/client/dashboard");
+          navigate("/client/dashboard", { replace: true });
         } else if (roles.isAdmin) {
           console.log("Redirecting admin to dashboard");
-          navigate("/admin/dashboard");
+          navigate("/admin/dashboard", { replace: true });
         } else {
           console.log("No specific role, redirecting to home");
           navigate("/");
