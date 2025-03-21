@@ -2,15 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, EyeOff, UserPlus, CheckCircle } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import RegisterForm from "@/components/auth/RegisterForm";
+import RegisterSuccessScreen from "@/components/auth/RegisterSuccessScreen";
+import { useRegister } from "@/hooks/useRegister";
 
 const RegisterPage = () => {
   const [email, setEmail] = useState("");
@@ -19,12 +16,9 @@ const RegisterPage = () => {
   const [lastName, setLastName] = useState("");
   const [company, setCompany] = useState("");
   const [phone, setPhone] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [registrationComplete, setRegistrationComplete] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { isLoading, registrationComplete, registerUser } = useRegister();
 
   useEffect(() => {
     if (user) {
@@ -34,108 +28,12 @@ const RegisterPage = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      // First, sign up the user
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            company,
-            phone
-          }
-        }
-      });
-      
-      if (error) {
-        toast({
-          title: "Registration failed",
-          description: error.message,
-          variant: "destructive"
-        });
-        setIsLoading(false);
-        return;
-      }
-      
-      // Then, if successful, assign the client role
-      if (data.user) {
-        console.log("Assigning client role to user:", data.user.id);
-        
-        const { error: roleError } = await supabase
-          .from("user_roles")
-          .insert([{ user_id: data.user.id, role: "client" }]);
-        
-        if (roleError) {
-          console.error("Error assigning client role:", roleError);
-          toast({
-            title: "Warning",
-            description: "Account created but role assignment failed. Please contact support.",
-            variant: "destructive"
-          });
-        } else {
-          console.log("Client role assigned successfully");
-        }
-      }
-      
-      // Show success screen instead of redirecting immediately
-      setRegistrationComplete(true);
-      setIsLoading(false);
-      
-    } catch (error) {
-      console.error("Registration error:", error);
-      toast({
-        title: "Registration failed",
-        description: "An unexpected error occurred",
-        variant: "destructive"
-      });
-      setIsLoading(false);
-    }
-  };
-
-  const toggleShowPassword = () => {
-    setShowPassword(!showPassword);
+    await registerUser(email, password, firstName, lastName, company, phone);
   };
 
   // If registration is complete, show the success screen
   if (registrationComplete) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-grow flex items-center justify-center bg-gray-50 py-12">
-          <div className="w-full max-w-md px-4">
-            <Card className="border-2 border-gray-200 shadow-lg">
-              <CardHeader className="space-y-1 text-center">
-                <div className="flex justify-center mb-2">
-                  <CheckCircle className="h-16 w-16 text-green-500" />
-                </div>
-                <CardTitle className="text-2xl font-bold">Registration Successful!</CardTitle>
-                <CardDescription>
-                  Your client account has been created
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center space-y-4">
-                <p>Thank you for registering, {firstName}!</p>
-                <p>You now have access to your client portal where you can view invoices, orders, and more.</p>
-                <p className="font-medium">Please log in to continue.</p>
-              </CardContent>
-              <CardFooter className="flex justify-center pb-6">
-                <Button 
-                  className="w-full max-w-xs" 
-                  onClick={() => navigate("/auth/login")}
-                >
-                  Go to Login
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
+    return <RegisterSuccessScreen firstName={firstName} />;
   }
 
   return (
@@ -151,102 +49,22 @@ const RegisterPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input
-                      id="firstName"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="company">Company</Label>
-                  <Input
-                    id="company"
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                      onClick={toggleShowPassword}
-                      tabIndex={-1}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-                
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <span className="flex items-center justify-center">
-                      <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
-                      Creating account...
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center">
-                      <UserPlus className="mr-2 h-4 w-4" /> Register
-                    </span>
-                  )}
-                </Button>
-              </form>
+              <RegisterForm 
+                firstName={firstName}
+                setFirstName={setFirstName}
+                lastName={lastName}
+                setLastName={setLastName}
+                company={company}
+                setCompany={setCompany}
+                phone={phone}
+                setPhone={setPhone}
+                email={email}
+                setEmail={setEmail}
+                password={password}
+                setPassword={setPassword}
+                isLoading={isLoading}
+                onSubmit={handleRegister}
+              />
             </CardContent>
             <CardFooter className="flex flex-col space-y-2">
               <div className="text-center text-sm">
