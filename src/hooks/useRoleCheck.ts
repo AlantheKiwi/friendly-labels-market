@@ -6,33 +6,22 @@ export const checkUserRoles = async (userId: string): Promise<UserRoles> => {
   try {
     console.log("Checking roles for user:", userId);
     
-    // Use explicit table reference to avoid ambiguous column error
-    const { data: adminRole, error: adminError } = await supabase
+    // Query all roles for this user at once to reduce database calls
+    const { data: userRoles, error } = await supabase
       .from("user_roles")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
+      .select("role")
+      .eq("user_id", userId);
     
-    if (adminError) {
-      console.error("Error checking admin role:", adminError);
+    if (error) {
+      console.error("Error checking user roles:", error);
+      return { isAdmin: false, isClient: false };
     }
     
-    const { data: clientRole, error: clientError } = await supabase
-      .from("user_roles")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("role", "client")
-      .maybeSingle();
+    // Check if the user has admin or client roles
+    const isAdmin = userRoles?.some(role => role.role === 'admin') || false;
+    const isClient = userRoles?.some(role => role.role === 'client') || false;
     
-    if (clientError) {
-      console.error("Error checking client role:", clientError);
-    }
-    
-    const roles = {
-      isAdmin: !!adminRole,
-      isClient: !!clientRole
-    };
+    const roles = { isAdmin, isClient };
     
     console.log("User roles:", roles);
     return roles;

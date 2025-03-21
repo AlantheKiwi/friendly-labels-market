@@ -1,7 +1,7 @@
 
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { LogIn, LogOut, User, LayoutDashboard } from "lucide-react";
+import { LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
