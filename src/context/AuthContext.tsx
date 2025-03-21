@@ -54,6 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(null);
           setIsAdmin(false);
           setIsClient(false);
+          setIsLoading(false);
           
           // Navigate to home page on sign out
           navigate("/", { replace: true });
@@ -68,6 +69,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setIsAdmin(roles.isAdmin);
               setIsClient(roles.isClient);
               
+              // Ensure we set loading to false after role check completes
+              setIsLoading(false);
+              
               // Redirect if on login or register page
               const currentPath = window.location.pathname;
               if (currentPath === "/auth/login" || currentPath === "/auth/register" || currentPath === "/") {
@@ -81,11 +85,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }
             } catch (error) {
               console.error("Error checking roles:", error);
+              // Make sure to set loading to false even if there's an error
+              setIsLoading(false);
             }
+          } else {
+            // If there's a session but no user, make sure loading is false
+            setIsLoading(false);
           }
+        } else {
+          // If no session or user, make sure loading is false
+          setIsLoading(false);
         }
-        
-        setIsLoading(false);
       }
     );
     
@@ -107,6 +117,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsAdmin(roles.isAdmin);
             setIsClient(roles.isClient);
             
+            // Explicitly set loading to false after role check
+            setIsLoading(false);
+            
             // Redirect based on roles if on homepage or auth pages
             const currentPath = window.location.pathname;
             if (currentPath === "/" || 
@@ -122,12 +135,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           } catch (error) {
             console.error("Error checking roles on initial load:", error);
+            // Ensure loading state is updated even in case of error
+            setIsLoading(false);
           }
+        } else {
+          // Set loading to false if there's a session but no user
+          setIsLoading(false);
         }
       } else {
         console.log("No session found on initial load");
+        // No session, so we can set loading to false
+        setIsLoading(false);
       }
-      
+    }).catch(error => {
+      console.error("Error getting session:", error);
+      // Make sure to set loading to false if there's an error
       setIsLoading(false);
     });
 
