@@ -9,7 +9,7 @@ export type AuthContextType = {
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, userData: any) => Promise<void>;
-  signOut: () => Promise<boolean>; // Changed from Promise<void> to Promise<boolean>
+  signOut: () => Promise<void>; // Changed back to Promise<void>
 };
 
 export type UserRoles = {
