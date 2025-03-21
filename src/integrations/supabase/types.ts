@@ -153,6 +153,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_client_role: {
+        Args: {
+          user_id: string
+        }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           user_id: string
