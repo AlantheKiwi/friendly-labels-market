@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Set up auth state listener FIRST
-    const { data } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         console.log("Auth state changed:", event, currentSession?.user?.id);
         
@@ -122,8 +122,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Use correct cleanup function with the subscription
     return () => {
-      if (data && data.subscription) {
-        data.subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
       }
     };
   }, [navigate]);
