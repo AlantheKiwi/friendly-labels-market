@@ -11,6 +11,11 @@ import { useReactToPrint } from "react-to-print";
 import PrinterCatalog from "@/components/PrinterCatalog";
 
 const PrintersPage = () => {
+  // Filter out printers with "Zebra" in their name
+  const filteredPrinters = printers.filter(printer => 
+    printer.name.includes("TSC") && !printer.name.includes("Zebra")
+  );
+
   const pdfCatalogRef = useRef<HTMLDivElement>(null);
 
   // Use useCallback to create a stable function reference
@@ -35,9 +40,9 @@ const PrintersPage = () => {
       <main className="flex-grow">
         <div className="bg-gradient-to-r from-brand-blue/5 to-brand-blue/10 py-12">
           <div className="container-custom">
-            <h1 className="heading-lg text-center mb-4">Thermal Printers</h1>
+            <h1 className="heading-lg text-center mb-4">TSC Thermal Printers</h1>
             <p className="text-center text-gray-600 max-w-2xl mx-auto">
-              Premium Thermal Printers from Trusted Brands.
+              Premium TSC Thermal Printers for Professional Label Printing.
             </p>
           </div>
         </div>
@@ -46,7 +51,7 @@ const PrintersPage = () => {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold flex items-center">
               <Printer className="mr-2 h-5 w-5 text-brand-blue" />
-              All Printers ({printers.length})
+              TSC Printers ({filteredPrinters.length})
             </h2>
             
             <Button 
@@ -58,12 +63,12 @@ const PrintersPage = () => {
             </Button>
           </div>
           
-          <PrinterGrid printers={printers} />
+          <PrinterGrid printers={filteredPrinters} />
         </div>
 
         <CallToAction 
           title="Need Help Choosing the Right Printer?" 
-          description="Our team is ready to assist you in finding the perfect thermal printer for your business needs." 
+          description="Our team is ready to assist you in finding the perfect TSC thermal printer for your business needs." 
           buttonText="Contact Us" 
           buttonLink="/contact" 
           secondaryButtonText="Browse Labels" 
@@ -74,7 +79,7 @@ const PrintersPage = () => {
       
       {/* Hidden PDF catalog for printing */}
       <div className="hidden">
-        <PrinterCatalog ref={pdfCatalogRef} printers={printers} />
+        <PrinterCatalog ref={pdfCatalogRef} printers={filteredPrinters} />
       </div>
     </div>
   );
