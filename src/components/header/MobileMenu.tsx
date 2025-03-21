@@ -3,6 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { LogIn, LogOut, User } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -11,6 +12,25 @@ interface MobileMenuProps {
 
 const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
   const { user, signOut, isClient, isAdmin } = useAuth();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      onClose();
+      toast({
+        title: "Signed out successfully",
+        description: "You have been logged out"
+      });
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Sign out failed",
+        description: "There was an error signing out",
+        variant: "destructive"
+      });
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -57,10 +77,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             </Link>
             <button 
               className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2 w-full text-left"
-              onClick={() => {
-                onClose();
-                signOut();
-              }}
+              onClick={handleSignOut}
             >
               <LogOut className="h-4 w-4" />
               Logout
@@ -78,10 +95,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             </Link>
             <button 
               className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2 w-full text-left"
-              onClick={() => {
-                onClose();
-                signOut();
-              }}
+              onClick={handleSignOut}
             >
               <LogOut className="h-4 w-4" />
               Logout

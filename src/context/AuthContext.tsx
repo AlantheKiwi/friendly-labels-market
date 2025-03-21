@@ -16,35 +16,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isClient, setIsClient] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const { signIn, signUp, signOut } = useAuthOperations();
+  const { signIn, signUp, signOut: authSignOut } = useAuthOperations();
+
+  // Wrapper for signOut to ensure state is cleared properly
+  const signOut = async () => {
+    try {
+      await authSignOut();
+      // State will be updated by the auth state change listener
+      return true;
+    } catch (error) {
+      console.error("Error in signOut:", error);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         console.log("Auth state changed:", event, currentSession?.user?.id);
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
         
-        if (currentSession?.user) {
-          const roles = await checkUserRoles(currentSession.user.id);
-          setIsAdmin(roles.isAdmin);
-          setIsClient(roles.isClient);
+        if (currentSession) {
+          setSession(currentSession);
+          setUser(currentSession.user);
           
-          // Redirect if on login or register page
-          const currentPath = window.location.pathname;
-          if (currentPath === "/auth/login" || currentPath === "/auth/register" || currentPath === "/") {
-            if (roles.isClient) {
-              console.log("Auth state change - redirecting client to dashboard");
-              navigate("/client/dashboard");
-            } else if (roles.isAdmin) {
-              console.log("Auth state change - redirecting admin to dashboard");
-              navigate("/admin/dashboard");
+          if (currentSession.user) {
+            const roles = await checkUserRoles(currentSession.user.id);
+            setIsAdmin(roles.isAdmin);
+            setIsClient(roles.isClient);
+            
+            // Redirect if on login or register page
+            const currentPath = window.location.pathname;
+            if (currentPath === "/auth/login" || currentPath === "/auth/register" || currentPath === "/") {
+              if (roles.isClient) {
+                console.log("Auth state change - redirecting client to dashboard");
+                navigate("/client/dashboard");
+              } else if (roles.isAdmin) {
+                console.log("Auth state change - redirecting admin to dashboard");
+                navigate("/admin/dashboard");
+              }
             }
           }
         } else {
           // This runs when user logs out
           console.log("User session ended, clearing role states");
+          setSession(null);
+          setUser(null);
           setIsAdmin(false);
           setIsClient(false);
           
@@ -62,24 +79,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // THEN check for existing session
     supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      
-      if (currentSession?.user) {
-        const roles = await checkUserRoles(currentSession.user.id);
-        setIsAdmin(roles.isAdmin);
-        setIsClient(roles.isClient);
+      if (currentSession) {
+        setSession(currentSession);
+        setUser(currentSession.user);
         
-        // Redirect based on roles if on homepage or auth pages
-        if (window.location.pathname === "/" || 
-            window.location.pathname === "/auth/login" || 
-            window.location.pathname === "/auth/register") {
-          if (roles.isClient) {
-            console.log("Initial load - redirecting client to dashboard");
-            navigate("/client/dashboard");
-          } else if (roles.isAdmin) {
-            console.log("Initial load - redirecting admin to dashboard");
-            navigate("/admin/dashboard");
+        if (currentSession.user) {
+          const roles = await checkUserRoles(currentSession.user.id);
+          setIsAdmin(roles.isAdmin);
+          setIsClient(roles.isClient);
+          
+          // Redirect based on roles if on homepage or auth pages
+          if (window.location.pathname === "/" || 
+              window.location.pathname === "/auth/login" || 
+              window.location.pathname === "/auth/register") {
+            if (roles.isClient) {
+              console.log("Initial load - redirecting client to dashboard");
+              navigate("/client/dashboard");
+            } else if (roles.isAdmin) {
+              console.log("Initial load - redirecting admin to dashboard");
+              navigate("/admin/dashboard");
+            }
           }
         }
       }
