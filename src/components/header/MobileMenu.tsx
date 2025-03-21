@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { LogIn, LogOut, User } from "lucide-react";
+import { LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -69,11 +69,11 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           <>
             <Link
               to="/client/dashboard"
-              className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2"
+              className="px-4 py-2 bg-primary text-white hover:bg-primary/90 rounded-md font-medium flex items-center gap-2"
               onClick={onClose}
             >
-              <User className="h-4 w-4" />
-              My Account
+              <LayoutDashboard className="h-4 w-4" />
+              Client Portal
             </Link>
             <button 
               className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2 w-full text-left"
@@ -87,10 +87,10 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           <>
             <Link
               to="/admin/dashboard"
-              className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2"
+              className="px-4 py-2 bg-primary text-white hover:bg-primary/90 rounded-md font-medium flex items-center gap-2"
               onClick={onClose}
             >
-              <User className="h-4 w-4" />
+              <LayoutDashboard className="h-4 w-4" />
               Admin Panel
             </Link>
             <button 

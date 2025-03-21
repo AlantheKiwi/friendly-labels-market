@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { LogIn, LogOut, User } from "lucide-react";
+import { LogIn, LogOut, User, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
@@ -39,10 +39,10 @@ const UserActions: React.FC<UserActionsProps> = ({
     if (isClient) {
       return (
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="flex items-center gap-2" size="sm" asChild>
+          <Button variant="outline" className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90" size="sm" asChild>
             <Link to={isOnClientDashboard ? "/client/dashboard" : "/client/dashboard"}>
-              <User className="h-4 w-4" />
-              <span className="hidden sm:inline">My Account</span>
+              <LayoutDashboard className="h-4 w-4" />
+              <span className="hidden sm:inline">Client Portal</span>
             </Link>
           </Button>
           <Button 
@@ -59,9 +59,9 @@ const UserActions: React.FC<UserActionsProps> = ({
     } else if (isAdmin) {
       return (
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="flex items-center gap-2" size="sm" asChild>
+          <Button variant="outline" className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90" size="sm" asChild>
             <Link to={isOnAdminDashboard ? "/admin/dashboard" : "/admin/dashboard"}>
-              <User className="h-4 w-4" />
+              <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline">Admin Panel</span>
             </Link>
           </Button>
