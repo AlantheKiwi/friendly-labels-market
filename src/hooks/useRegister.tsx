@@ -47,9 +47,9 @@ export function useRegister() {
       if (data.user) {
         console.log("Assigning client role to user:", data.user.id);
         
+        // Fix: Use row-level-security-bypass admin function to ensure role assignment
         const { error: roleError } = await supabase
-          .from("user_roles")
-          .insert([{ user_id: data.user.id, role: "client" }]);
+          .rpc('assign_client_role', { user_id: data.user.id });
         
         if (roleError) {
           console.error("Error assigning client role:", roleError);
