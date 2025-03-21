@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -35,6 +36,7 @@ const RegisterPage = () => {
     setIsLoading(true);
     
     try {
+      // First, sign up the user
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -54,10 +56,14 @@ const RegisterPage = () => {
           description: error.message,
           variant: "destructive"
         });
+        setIsLoading(false);
         return;
       }
       
+      // Then, if successful, assign the client role
       if (data.user) {
+        console.log("Assigning client role to user:", data.user.id);
+        
         const { error: roleError } = await supabase
           .from("user_roles")
           .insert([{ user_id: data.user.id, role: "client" }]);
@@ -66,9 +72,11 @@ const RegisterPage = () => {
           console.error("Error assigning client role:", roleError);
           toast({
             title: "Warning",
-            description: "Account created but role assignment failed",
+            description: "Account created but role assignment failed. Please contact support.",
             variant: "destructive"
           });
+        } else {
+          console.log("Client role assigned successfully");
         }
       }
       

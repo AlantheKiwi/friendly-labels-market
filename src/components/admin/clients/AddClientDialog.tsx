@@ -35,6 +35,7 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({ isOpen, onOpenChange 
 
   const addClientMutation = useMutation({
     mutationFn: async (clientData: typeof formData) => {
+      // Create the user
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: clientData.email,
         password: clientData.password,
@@ -49,12 +50,20 @@ const AddClientDialog: React.FC<AddClientDialogProps> = ({ isOpen, onOpenChange 
       
       if (authError) throw authError;
       
+      // Assign client role if user was created successfully
       if (authData.user) {
+        console.log("Admin adding client role to user:", authData.user.id);
+        
         const { error: roleError } = await supabase
           .from("user_roles")
           .insert([{ user_id: authData.user.id, role: "client" }]);
         
-        if (roleError) throw roleError;
+        if (roleError) {
+          console.error("Error assigning client role:", roleError);
+          throw roleError;
+        }
+        
+        console.log("Client role assigned successfully by admin");
       }
       
       return authData;
