@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +21,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async (): Promise<void> => {
     try {
       await authSignOut();
-      // State will be updated by the auth state change listener
+      // No need to manually update state here
+      // The auth state change listener will handle state updates
     } catch (error) {
       console.error("Error in signOut:", error);
       throw error;

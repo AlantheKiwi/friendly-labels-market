@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { LogIn, LogOut, LayoutDashboard } from "lucide-react";
@@ -33,10 +32,8 @@ const UserActions: React.FC<UserActionsProps> = ({
     try {
       console.log("UserActions - Starting signOut process");
       await signOut();
-      toast({
-        title: "Signed out successfully",
-        description: "You have been logged out"
-      });
+      // We don't need to show a toast here as we're being redirected
+      // The auth state change listener will handle the state update
     } catch (error) {
       console.error("Error signing out:", error);
       toast({

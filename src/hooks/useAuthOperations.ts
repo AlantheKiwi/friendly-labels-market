@@ -120,6 +120,7 @@ export const useAuthOperations = () => {
       navigate("/", { replace: true });
       
       // Return nothing to match the Promise<void> type
+      return Promise.resolve();
     } catch (error) {
       console.error("Sign out error:", error);
       throw error;
