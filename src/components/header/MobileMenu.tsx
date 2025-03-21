@@ -65,7 +65,9 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
         >
           Contact
         </Link>
-        {isClient && user ? (
+        
+        {/* Add client portal link for clients */}
+        {isClient && user && (
           <>
             <Link
               to="/client/dashboard"
@@ -83,7 +85,10 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
               Logout
             </button>
           </>
-        ) : isAdmin && user ? (
+        )}
+        
+        {/* Add admin panel link for admins */}
+        {isAdmin && user && (
           <>
             <Link
               to="/admin/dashboard"
@@ -101,7 +106,10 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
               Logout
             </button>
           </>
-        ) : !user && (
+        )}
+        
+        {/* Show login for users not logged in */}
+        {!user && (
           <Link
             to="/auth/login"
             className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2"

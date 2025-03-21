@@ -35,49 +35,16 @@ const UserActions: React.FC<UserActionsProps> = ({
     }
   };
 
-  if (user) {
-    if (isClient) {
-      return (
-        <div className="flex items-center gap-2">
-          <Button variant="outline" className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90" size="sm" asChild>
-            <Link to={isOnClientDashboard ? "/client/dashboard" : "/client/dashboard"}>
-              <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline">Client Portal</span>
-            </Link>
-          </Button>
-          <Button 
-            variant="outline" 
-            className="flex items-center gap-2" 
-            onClick={handleSignOut} 
-            size="sm"
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Logout</span>
-          </Button>
-        </div>
-      );
-    } else if (isAdmin) {
-      return (
-        <div className="flex items-center gap-2">
-          <Button variant="outline" className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90" size="sm" asChild>
-            <Link to={isOnAdminDashboard ? "/admin/dashboard" : "/admin/dashboard"}>
-              <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline">Admin Panel</span>
-            </Link>
-          </Button>
-          <Button 
-            variant="outline" 
-            className="flex items-center gap-2" 
-            onClick={handleSignOut} 
-            size="sm"
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Logout</span>
-          </Button>
-        </div>
-      );
-    } else {
-      return (
+  // Show client portal button for any logged in user who is a client
+  if (user && isClient) {
+    return (
+      <div className="flex items-center gap-2">
+        <Button variant="default" className="flex items-center gap-2" size="sm" asChild>
+          <Link to="/client/dashboard">
+            <LayoutDashboard className="h-4 w-4" />
+            <span className="hidden sm:inline">Client Portal</span>
+          </Link>
+        </Button>
         <Button 
           variant="outline" 
           className="flex items-center gap-2" 
@@ -87,11 +54,49 @@ const UserActions: React.FC<UserActionsProps> = ({
           <LogOut className="h-4 w-4" />
           <span className="hidden sm:inline">Logout</span>
         </Button>
-      );
-    }
-  } else {
+      </div>
+    );
+  } 
+  // Show admin panel button for any logged in user who is an admin
+  else if (user && isAdmin) {
     return (
-      <Button variant="outline" className="flex items-center gap-2" size="sm" asChild>
+      <div className="flex items-center gap-2">
+        <Button variant="default" className="flex items-center gap-2" size="sm" asChild>
+          <Link to="/admin/dashboard">
+            <LayoutDashboard className="h-4 w-4" />
+            <span className="hidden sm:inline">Admin Panel</span>
+          </Link>
+        </Button>
+        <Button 
+          variant="outline" 
+          className="flex items-center gap-2" 
+          onClick={handleSignOut} 
+          size="sm"
+        >
+          <LogOut className="h-4 w-4" />
+          <span className="hidden sm:inline">Logout</span>
+        </Button>
+      </div>
+    );
+  } 
+  // Show only logout button for any other logged in user
+  else if (user) {
+    return (
+      <Button 
+        variant="outline" 
+        className="flex items-center gap-2" 
+        onClick={handleSignOut} 
+        size="sm"
+      >
+        <LogOut className="h-4 w-4" />
+        <span className="hidden sm:inline">Logout</span>
+      </Button>
+    );
+  } 
+  // Show login button for non-logged in users
+  else {
+    return (
+      <Button variant="default" className="flex items-center gap-2" size="sm" asChild>
         <Link to="/auth/login">
           <LogIn className="h-4 w-4" />
           <span className="hidden sm:inline">Client Login</span>
