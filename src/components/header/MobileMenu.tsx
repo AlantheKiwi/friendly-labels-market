@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { LogIn, LogOut, LayoutDashboard } from "lucide-react";
@@ -27,14 +28,14 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
   const handleSignOut = async () => {
     try {
       console.log("MobileMenu - Starting signOut process");
+      onClose(); // Close the mobile menu immediately
       await signOut();
-      onClose(); // Close the mobile menu when logging out
-      // The auth state change listener will handle the state update
+      // We don't need to handle navigation here - the auth state change listener will do that
     } catch (error) {
       console.error("Error signing out:", error);
       toast({
         title: "Sign out failed",
-        description: "There was an error signing out",
+        description: "There was an error signing out. Please try again.",
         variant: "destructive"
       });
     }

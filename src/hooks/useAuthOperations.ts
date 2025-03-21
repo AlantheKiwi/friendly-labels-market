@@ -108,12 +108,18 @@ export const useAuthOperations = () => {
       console.log("Signing out user");
       
       // Make sure to await the signOut operation
-      const { error } = await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
       
       if (error) {
         console.error("Sign out error:", error);
         throw error;
       }
+      
+      // Show success message
+      toast({
+        title: "Signed out successfully",
+        description: "You have been logged out",
+      });
       
       // Clear any user state and navigate to home page
       console.log("Successfully signed out, redirecting to home");
@@ -123,6 +129,11 @@ export const useAuthOperations = () => {
       return Promise.resolve();
     } catch (error) {
       console.error("Sign out error:", error);
+      toast({
+        title: "Sign out failed",
+        description: "There was an error signing out. Please try again.",
+        variant: "destructive"
+      });
       throw error;
     }
   };

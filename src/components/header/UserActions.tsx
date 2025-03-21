@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { LogIn, LogOut, LayoutDashboard } from "lucide-react";
@@ -32,13 +33,13 @@ const UserActions: React.FC<UserActionsProps> = ({
     try {
       console.log("UserActions - Starting signOut process");
       await signOut();
-      // We don't need to show a toast here as we're being redirected
-      // The auth state change listener will handle the state update
+      // We don't need to show a toast here as the signOut function in useAuthOperations will do that
+      // We don't need to handle navigation here - the auth state change listener will do that
     } catch (error) {
       console.error("Error signing out:", error);
       toast({
         title: "Sign out failed",
-        description: "There was an error signing out",
+        description: "There was an error signing out. Please try again.",
         variant: "destructive"
       });
     }
