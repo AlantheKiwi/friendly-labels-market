@@ -18,11 +18,16 @@ export const checkUserRoles = async (userId: string): Promise<UserRoles> => {
     }
     
     // Add detailed logging to see what's happening
-    console.log("User roles query result:", userRoles);
+    console.log("User roles query result:", JSON.stringify(userRoles));
+    
+    if (!userRoles || userRoles.length === 0) {
+      console.log("No roles found for user:", userId);
+      return { isAdmin: false, isClient: false };
+    }
     
     // Check if the user has admin or client roles
-    const isAdmin = userRoles?.some(role => role.role === 'admin') || false;
-    const isClient = userRoles?.some(role => role.role === 'client') || false;
+    const isAdmin = userRoles.some(role => role.role === 'admin') || false;
+    const isClient = userRoles.some(role => role.role === 'client') || false;
     
     const roles = { isAdmin, isClient };
     

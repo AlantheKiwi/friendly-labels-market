@@ -3,17 +3,32 @@ import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
+import { useToast } from "./ui/use-toast";
 
 const UserDebugInfo = () => {
   const { user, isClient, isAdmin, isLoading, session } = useAuth();
+  const { toast } = useToast();
 
   // Add debug button to force role check
   const handleDebugRoleCheck = async () => {
     try {
-      // Force a roles check by reloading the page
-      window.location.reload();
+      console.log("Manually refreshing authentication state...");
+      toast({
+        title: "Refreshing authentication",
+        description: "Reloading the page to refresh authentication state...",
+      });
+      
+      // Short delay to show the toast before reload
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.error("Debug error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to refresh authentication state",
+        variant: "destructive"
+      });
     }
   };
 
@@ -40,10 +55,10 @@ const UserDebugInfo = () => {
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="mt-2" 
+                className="mt-2 w-full" 
                 onClick={handleDebugRoleCheck}
               >
-                Refresh Authentication
+                Force Refresh Authentication
               </Button>
             </div>
           ) : user ? (
@@ -69,7 +84,7 @@ const UserDebugInfo = () => {
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="mt-2" 
+                className="mt-2 w-full" 
                 onClick={handleDebugRoleCheck}
               >
                 Refresh Authentication
