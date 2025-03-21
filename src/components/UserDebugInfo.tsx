@@ -43,6 +43,7 @@ const UserDebugInfo = () => {
       Object.keys(localStorage).forEach(key => {
         if (key.startsWith('supabase.auth.')) {
           localStorage.removeItem(key);
+          console.log(`Cleared localStorage item: ${key}`);
         }
       });
       

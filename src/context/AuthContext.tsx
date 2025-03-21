@@ -17,6 +17,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
+  const roleCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { signIn, signUp, signOut: authSignOut } = useAuthOperations();
 
   // Wrapper for signOut to ensure state is cleared properly
@@ -41,6 +42,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error("Error in signOut:", error);
       throw error;
+    }
+  };
+
+  // Helper function to check roles with timeout safety
+  const checkRolesWithTimeout = async (userId: string) => {
+    console.log("Starting role check with timeout for user:", userId);
+    
+    // Clear any existing timeout to prevent race conditions
+    if (roleCheckTimeoutRef.current) {
+      clearTimeout(roleCheckTimeoutRef.current);
+    }
+    
+    // Set a timeout to ensure loading state is eventually set to false even if role check fails
+    roleCheckTimeoutRef.current = setTimeout(() => {
+      console.log("Role check timeout triggered - forcing loading to false");
+      setIsLoading(false);
+    }, 5000); // 5 second timeout
+    
+    try {
+      const roles = await checkUserRoles(userId);
+      console.log("User roles determined:", roles);
+      setIsAdmin(roles.isAdmin);
+      setIsClient(roles.isClient);
+      
+      // Clear the timeout since we got the roles successfully
+      if (roleCheckTimeoutRef.current) {
+        clearTimeout(roleCheckTimeoutRef.current);
+        roleCheckTimeoutRef.current = null;
+      }
+      
+      setIsLoading(false);
+      return roles;
+    } catch (error) {
+      console.error("Error checking roles:", error);
+      setIsLoading(false);
+      
+      // Clear the timeout if there was an error
+      if (roleCheckTimeoutRef.current) {
+        clearTimeout(roleCheckTimeoutRef.current);
+        roleCheckTimeoutRef.current = null;
+      }
+      
+      return { isAdmin: false, isClient: false };
     }
   };
 
@@ -69,30 +113,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(currentSession.user);
           
           if (currentSession.user) {
-            try {
-              const roles = await checkUserRoles(currentSession.user.id);
-              console.log("User roles after auth state change:", roles);
-              setIsAdmin(roles.isAdmin);
-              setIsClient(roles.isClient);
-              
-              // Ensure we set loading to false after role check completes
-              setIsLoading(false);
-              
-              // Redirect if on login or register page
-              const currentPath = window.location.pathname;
-              if (currentPath === "/auth/login" || currentPath === "/auth/register" || currentPath === "/") {
-                if (roles.isClient) {
-                  console.log("Auth state change - redirecting client to dashboard");
-                  navigate("/client/dashboard", { replace: true });
-                } else if (roles.isAdmin) {
-                  console.log("Auth state change - redirecting admin to dashboard");
-                  navigate("/admin/dashboard", { replace: true });
-                }
+            const roles = await checkRolesWithTimeout(currentSession.user.id);
+            
+            // Redirect if on login or register page
+            const currentPath = window.location.pathname;
+            if (currentPath === "/auth/login" || currentPath === "/auth/register" || currentPath === "/") {
+              if (roles.isClient) {
+                console.log("Auth state change - redirecting client to dashboard");
+                navigate("/client/dashboard", { replace: true });
+              } else if (roles.isAdmin) {
+                console.log("Auth state change - redirecting admin to dashboard");
+                navigate("/admin/dashboard", { replace: true });
               }
-            } catch (error) {
-              console.error("Error checking roles:", error);
-              // Make sure to set loading to false even if there's an error
-              setIsLoading(false);
             }
           } else {
             // If there's a session but no user, make sure loading is false
@@ -117,32 +149,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(currentSession.user);
         
         if (currentSession.user) {
-          try {
-            const roles = await checkUserRoles(currentSession.user.id);
-            console.log("User roles on initial load:", roles);
-            setIsAdmin(roles.isAdmin);
-            setIsClient(roles.isClient);
-            
-            // Explicitly set loading to false after role check
-            setIsLoading(false);
-            
-            // Redirect based on roles if on homepage or auth pages
-            const currentPath = window.location.pathname;
-            if (currentPath === "/" || 
-                currentPath === "/auth/login" || 
-                currentPath === "/auth/register") {
-              if (roles.isClient) {
-                console.log("Initial load - redirecting client to dashboard");
-                navigate("/client/dashboard", { replace: true });
-              } else if (roles.isAdmin) {
-                console.log("Initial load - redirecting admin to dashboard");
-                navigate("/admin/dashboard", { replace: true });
-              }
+          const roles = await checkRolesWithTimeout(currentSession.user.id);
+          
+          // Redirect based on roles if on homepage or auth pages
+          const currentPath = window.location.pathname;
+          if (currentPath === "/" || 
+              currentPath === "/auth/login" || 
+              currentPath === "/auth/register") {
+            if (roles.isClient) {
+              console.log("Initial load - redirecting client to dashboard");
+              navigate("/client/dashboard", { replace: true });
+            } else if (roles.isAdmin) {
+              console.log("Initial load - redirecting admin to dashboard");
+              navigate("/admin/dashboard", { replace: true });
             }
-          } catch (error) {
-            console.error("Error checking roles on initial load:", error);
-            // Ensure loading state is updated even in case of error
-            setIsLoading(false);
           }
         } else {
           // Set loading to false if there's a session but no user
@@ -165,6 +185,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (subscriptionRef.current) {
         subscriptionRef.current.unsubscribe();
         subscriptionRef.current = null;
+      }
+      
+      // Clear any timeout on unmount
+      if (roleCheckTimeoutRef.current) {
+        clearTimeout(roleCheckTimeoutRef.current);
+        roleCheckTimeoutRef.current = null;
       }
     };
   }, [navigate]);

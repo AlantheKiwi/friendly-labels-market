@@ -37,6 +37,8 @@ export const checkUserRoles = async (userId: string): Promise<UserRoles> => {
     const roles = { isAdmin, isClient };
     
     console.log("Final role determination:", roles);
+    
+    // After successful role check, ensure we return quickly
     return roles;
   } catch (error) {
     console.error("Error checking roles:", error);
