@@ -18,15 +18,41 @@ const UserDebugInfo = () => {
         description: "Reloading the page to refresh authentication state...",
       });
       
-      // Short delay to show the toast before reload
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // Force a hard reload to clear any cached state
+      window.location.reload();
     } catch (error) {
       console.error("Debug error:", error);
       toast({
         title: "Error",
         description: "Failed to refresh authentication state",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Add debug button to force sign out
+  const handleForceSignOut = async () => {
+    try {
+      console.log("Force clearing all auth data...");
+      toast({
+        title: "Force Sign Out",
+        description: "Clearing all authentication data and reloading...",
+      });
+      
+      // Clear any supabase auth related items in localStorage
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('supabase.auth.')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      // Redirect to home page and force reload
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Force sign out error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to force sign out",
         variant: "destructive"
       });
     }
@@ -52,14 +78,24 @@ const UserDebugInfo = () => {
                 <p>User exists: {user ? 'Yes' : 'No'}</p>
                 {user && <p>User ID: {user.id}</p>}
               </div>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="mt-2 w-full" 
-                onClick={handleDebugRoleCheck}
-              >
-                Force Refresh Authentication
-              </Button>
+              <div className="flex gap-2 mt-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="mt-2 flex-1" 
+                  onClick={handleDebugRoleCheck}
+                >
+                  Force Refresh Authentication
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="destructive" 
+                  className="mt-2 flex-1" 
+                  onClick={handleForceSignOut}
+                >
+                  Force Sign Out
+                </Button>
+              </div>
             </div>
           ) : user ? (
             <>
@@ -81,14 +117,24 @@ const UserDebugInfo = () => {
                 <p>Session exists: Yes</p>
                 <p>Auth state initialized: Yes</p>
               </div>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="mt-2 w-full" 
-                onClick={handleDebugRoleCheck}
-              >
-                Refresh Authentication
-              </Button>
+              <div className="flex gap-2 mt-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="mt-2 flex-1" 
+                  onClick={handleDebugRoleCheck}
+                >
+                  Refresh Authentication
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="destructive" 
+                  className="mt-2 flex-1" 
+                  onClick={handleForceSignOut}
+                >
+                  Force Sign Out
+                </Button>
+              </div>
             </>
           ) : (
             <>
@@ -98,6 +144,14 @@ const UserDebugInfo = () => {
                 <p>Session exists: No</p>
                 <p>Auth state initialized: Yes</p>
               </div>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="mt-2 w-full" 
+                onClick={handleDebugRoleCheck}
+              >
+                Refresh Authentication
+              </Button>
             </>
           )}
         </div>

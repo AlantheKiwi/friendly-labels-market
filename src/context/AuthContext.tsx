@@ -30,7 +30,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAdmin(false);
       setIsClient(false);
       
+      // Force a full signout that will redirect to home page
       await authSignOut();
+      
+      // Force reload the page to ensure clean state
+      window.location.href = "/";
       
       console.log("AuthContext - signOut complete, state cleared");
       return Promise.resolve();
@@ -56,8 +60,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsClient(false);
           setIsLoading(false);
           
-          // Navigate to home page on sign out
-          navigate("/", { replace: true });
+          // Force reload on sign out to ensure clean state
+          if (window.location.pathname !== "/") {
+            navigate("/", { replace: true });
+          }
         } else if (currentSession) {
           setSession(currentSession);
           setUser(currentSession.user);

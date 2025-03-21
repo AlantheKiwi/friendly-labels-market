@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -28,13 +27,11 @@ export const useAuthOperations = () => {
         description: "Welcome back!",
       });
       
-      // Get user data after successful sign in
       const { data } = await supabase.auth.getUser();
       
       if (data.user) {
         console.log("User authenticated:", data.user.id);
         try {
-          // Check user roles to determine where to redirect
           const roles = await checkUserRoles(data.user.id);
           
           console.log("User roles determined:", roles);
@@ -106,19 +103,23 @@ export const useAuthOperations = () => {
     try {
       console.log("useAuthOperations - Signing out user");
       
-      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      const { error } = await supabase.auth.signOut({ 
+        scope: 'global' 
+      });
       
       if (error) {
         console.error("Sign out error:", error);
         throw error;
       }
       
+      localStorage.removeItem("supabase.auth.token");
+      
       toast({
         title: "Signed out successfully",
         description: "You have been logged out",
       });
       
-      navigate("/", { replace: true });
+      window.location.href = "/";
       
       console.log("useAuthOperations - Sign out successful, navigated to home page");
       return Promise.resolve();

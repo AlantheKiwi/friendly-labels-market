@@ -21,9 +21,17 @@ const UserActions: React.FC<UserActionsProps> = ({
   const handleSignOut = async () => {
     console.log("UserActions - Logout button clicked");
     try {
+      // Use a toast to indicate logout is in progress
+      toast({
+        title: "Signing out...",
+        description: "Please wait while we log you out",
+      });
+      
       await signOut();
       console.log("UserActions - signOut function completed");
-      // The navigation will be handled in the AuthContext
+      
+      // Force reload to clear any cached state
+      window.location.href = "/";
     } catch (error) {
       console.error("Error signing out:", error);
       toast({
