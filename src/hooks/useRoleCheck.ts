@@ -28,7 +28,16 @@ export const checkUserRoles = async (userId: string): Promise<UserRoles> => {
     if (!userRoles || userRoles.length === 0) {
       console.log("No roles found for user:", userId);
       
-      // Double-check with the RPC function as a fallback
+      // Attempt to assign client role immediately
+      console.log("User has no roles, attempting to assign client role");
+      const assigned = await ensureClientRole(userId);
+      
+      if (assigned) {
+        console.log("Successfully assigned client role, returning updated roles");
+        return { isAdmin: false, isClient: true };
+      }
+      
+      // If role assignment failed, try the fallback role check
       try {
         console.log("Trying fallback role check with has_role RPC");
         const { data: isClientRole } = await supabase.rpc('has_role', {
@@ -48,15 +57,6 @@ export const checkUserRoles = async (userId: string): Promise<UserRoles> => {
             isAdmin: !!isAdminRole, 
             isClient: !!isClientRole 
           };
-        }
-        
-        // If we're here, user has no roles, let's assign the client role automatically
-        console.log("User has no roles, attempting to assign client role");
-        const assigned = await ensureClientRole(userId);
-        
-        if (assigned) {
-          console.log("Successfully assigned client role, returning updated roles");
-          return { isAdmin: false, isClient: true };
         }
       } catch (rpcError) {
         console.error("Fallback role check failed:", rpcError);
@@ -89,25 +89,40 @@ export const ensureClientRole = async (userId: string): Promise<boolean> => {
     console.log("Ensuring client role for user:", userId);
     
     // First check if the role already exists
-    const { data: hasRole } = await supabase.rpc('has_role', {
-      user_id: userId,
-      role: 'client'
-    });
+    const { data: existingRoles, error: checkError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "client");
+      
+    if (checkError) {
+      console.error("Error checking existing client role:", checkError);
+      return false;
+    }
     
-    if (hasRole) {
+    if (existingRoles && existingRoles.length > 0) {
       console.log("User already has client role");
       return true;
     }
     
-    // If not, assign the role
-    console.log("Assigning missing client role");
-    const { error } = await supabase.rpc('assign_client_role', {
-      user_id: userId
-    });
-    
-    if (error) {
-      console.error("Failed to assign client role:", error);
-      return false;
+    // If role doesn't exist, try to insert it directly
+    console.log("Assigning missing client role via direct insert");
+    const { error: insertError } = await supabase
+      .from("user_roles")
+      .insert({ user_id: userId, role: "client" });
+      
+    if (insertError) {
+      console.error("Direct insert failed, trying RPC function:", insertError);
+      
+      // If direct insert fails, try the RPC function as fallback
+      const { error: rpcError } = await supabase.rpc('assign_client_role', {
+        user_id: userId
+      });
+      
+      if (rpcError) {
+        console.error("Failed to assign client role via RPC:", rpcError);
+        return false;
+      }
     }
     
     console.log("Successfully assigned client role");
