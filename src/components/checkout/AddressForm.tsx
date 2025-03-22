@@ -1,18 +1,14 @@
 
-import React, { useRef } from "react";
+import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AddressInfo } from "@/types/checkout";
-import { useAddressFinder } from "@/hooks/useAddressFinder";
 
 interface AddressFormProps {
   type: "shipping" | "billing";
   data: AddressInfo;
   onChange: (field: string, value: string) => void;
 }
-
-// Use a placeholder API key - user would need to replace this with a real one
-const ADDRESS_FINDER_API_KEY = "DEMO_KEY"; // This is a placeholder - user should replace with real API key
 
 const AddressForm: React.FC<AddressFormProps> = ({ type, data, onChange }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,37 +17,6 @@ const AddressForm: React.FC<AddressFormProps> = ({ type, data, onChange }) => {
   };
 
   const prefix = type === "shipping" ? "" : "billing";
-  
-  // Create ref for address line 1 input for autocomplete
-  const addressInputRef = useRef<HTMLInputElement>(null);
-  
-  // Initialize AddressFinder on the address input
-  useAddressFinder({
-    inputRef: addressInputRef,
-    apiKey: ADDRESS_FINDER_API_KEY,
-    country: 'NZ',
-    onAddressSelected: (fullAddress, metaData) => {
-      // Update form fields with selected address data
-      if (metaData) {
-        onChange(`${prefix}address1`, fullAddress);
-        
-        if (metaData.city) {
-          onChange(`${prefix}city`, metaData.city);
-        }
-        
-        if (metaData.postcode) {
-          onChange(`${prefix}postalCode`, metaData.postcode);
-        }
-        
-        if (metaData.region) {
-          onChange(`${prefix}state`, metaData.region);
-        }
-        
-        // Country is always New Zealand for NZ addresses
-        onChange(`${prefix}country`, "New Zealand");
-      }
-    }
-  });
 
   return (
     <div className="space-y-4">
@@ -72,8 +37,6 @@ const AddressForm: React.FC<AddressFormProps> = ({ type, data, onChange }) => {
           id={`${prefix}address1`} 
           value={data.address1}
           onChange={handleChange}
-          ref={addressInputRef}
-          placeholder="Start typing your address..."
           required 
         />
       </div>
