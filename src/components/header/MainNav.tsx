@@ -7,7 +7,10 @@ import { useAuth } from "@/context/AuthContext";
 import ClientPortalDialog from "./ClientPortalDialog";
 
 const MainNav: React.FC = () => {
-  const { user, isClient } = useAuth();
+  const { user, isClient, isAdmin } = useAuth();
+
+  // Added isAdmin check to show admin users the client portal button as well
+  const showClientPortal = isClient || isAdmin;
 
   return (
     <nav className="hidden md:flex items-center space-x-8">

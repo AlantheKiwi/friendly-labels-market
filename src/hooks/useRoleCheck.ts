@@ -87,7 +87,9 @@ export const checkUserRoles = async (userId: string): Promise<UserRoles> => {
     
     // Check if the user has admin or client roles
     const isAdmin = userRoles.some(role => role.role === 'admin') || false;
-    const isClient = userRoles.some(role => role.role === 'client') || false;
+    
+    // Important change: If user is admin, also set isClient to true
+    const isClient = isAdmin || userRoles.some(role => role.role === 'client') || false;
     
     const roles = { isAdmin, isClient };
     

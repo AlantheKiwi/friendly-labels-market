@@ -44,6 +44,9 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  // Added isAdmin check to show admin users the client portal button as well
+  const showClientPortal = isClient || isAdmin;
+
   if (!isOpen) return null;
 
   return (
