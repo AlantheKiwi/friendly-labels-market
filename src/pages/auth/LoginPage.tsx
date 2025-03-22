@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,24 +16,31 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [redirected, setRedirected] = useState(false);
   const { signIn, user, isClient } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
-    // If user is already logged in and has client role, redirect to client dashboard
-    if (user && isClient) {
+    // Only redirect if user is logged in, has client role, and we haven't already redirected
+    if (user && isClient && !redirected && !isLoading) {
+      console.log("User logged in and has client role, redirecting to dashboard");
+      setRedirected(true);
       navigate("/client/dashboard", { replace: true });
     }
-  }, [user, isClient, navigate]);
+  }, [user, isClient, navigate, redirected, isLoading]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
+    
     setIsLoading(true);
     
     try {
       await signIn(email, password);
-      // Navigation is handled in the AuthContext after successful login
+      // Toast will be shown in the signIn function
+      // Navigation is handled in the useEffect above
     } catch (error) {
       console.error("Login error:", error);
       toast({

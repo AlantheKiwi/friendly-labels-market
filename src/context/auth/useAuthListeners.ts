@@ -23,6 +23,7 @@ export const useAuthListeners = ({
   const navigate = useNavigate();
   const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
   const initialCheckDoneRef = useRef(false);
+  const redirectInProgressRef = useRef(false);
 
   // Setup auth listeners and initial session check
   useEffect(() => {
@@ -62,22 +63,30 @@ export const useAuthListeners = ({
                 // Set a default client role immediately for better UX while roles are checked
                 setIsClient(true);
                 
-                const roles = await checkRolesWithTimeout(currentSession.user.id);
-                
-                // Redirect if on login or register page
-                const currentPath = window.location.pathname;
-                if (currentPath === "/auth/login" || currentPath === "/auth/register") {
-                  if (roles.isClient) {
-                    console.log("Auth state change - redirecting client to dashboard");
-                    navigate("/client/dashboard", { replace: true });
-                  } else if (roles.isAdmin) {
-                    console.log("Auth state change - redirecting admin to dashboard");
-                    navigate("/admin/dashboard", { replace: true });
+                // Don't redirect if already in progress
+                if (!redirectInProgressRef.current) {
+                  redirectInProgressRef.current = true;
+                  
+                  const roles = await checkRolesWithTimeout(currentSession.user.id);
+                  
+                  // Redirect if on login or register page
+                  const currentPath = window.location.pathname;
+                  if (currentPath === "/auth/login" || currentPath === "/auth/register") {
+                    if (roles.isClient) {
+                      console.log("Auth state change - redirecting client to dashboard");
+                      navigate("/client/dashboard", { replace: true });
+                    } else if (roles.isAdmin) {
+                      console.log("Auth state change - redirecting admin to dashboard");
+                      navigate("/admin/dashboard", { replace: true });
+                    }
                   }
+                  
+                  redirectInProgressRef.current = false;
                 }
               } catch (error) {
                 console.error("Error checking roles in auth listener:", error);
                 setIsLoading(false);
+                redirectInProgressRef.current = false;
               }
             } else {
               // If there's a session but no user, make sure loading is false
@@ -112,24 +121,32 @@ export const useAuthListeners = ({
             // Set a default client role immediately for better UX while roles are checked
             setIsClient(true);
             
-            const roles = await checkRolesWithTimeout(currentSession.user.id);
-            
-            // Redirect based on roles if on homepage or auth pages
-            const currentPath = window.location.pathname;
-            if (currentPath === "/" || 
-                currentPath === "/auth/login" || 
-                currentPath === "/auth/register") {
-              if (roles.isClient) {
-                console.log("Initial load - redirecting client to dashboard");
-                navigate("/client/dashboard", { replace: true });
-              } else if (roles.isAdmin) {
-                console.log("Initial load - redirecting admin to dashboard");
-                navigate("/admin/dashboard", { replace: true });
+            // Don't redirect if already in progress
+            if (!redirectInProgressRef.current) {
+              redirectInProgressRef.current = true;
+              
+              const roles = await checkRolesWithTimeout(currentSession.user.id);
+              
+              // Redirect based on roles if on homepage or auth pages
+              const currentPath = window.location.pathname;
+              if (currentPath === "/" || 
+                  currentPath === "/auth/login" || 
+                  currentPath === "/auth/register") {
+                if (roles.isClient) {
+                  console.log("Initial load - redirecting client to dashboard");
+                  navigate("/client/dashboard", { replace: true });
+                } else if (roles.isAdmin) {
+                  console.log("Initial load - redirecting admin to dashboard");
+                  navigate("/admin/dashboard", { replace: true });
+                }
               }
+              
+              redirectInProgressRef.current = false;
             }
           } catch (error) {
             console.error("Error checking roles in initial session:", error);
             setIsLoading(false);
+            redirectInProgressRef.current = false;
           }
         } else {
           // Set loading to false if there's a session but no user
@@ -144,6 +161,7 @@ export const useAuthListeners = ({
       console.error("Error getting session:", error);
       // Make sure to set loading to false if there's an error
       setIsLoading(false);
+      redirectInProgressRef.current = false;
     });
 
     // Cleanup function

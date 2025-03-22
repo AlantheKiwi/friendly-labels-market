@@ -42,12 +42,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       });
     }
 
-    // Only set showRedirect after we've determined loading is complete
+    // Only set showRedirect after we've determined loading is complete and there's no user
     if (!isLoading && !user) {
-      setShowRedirect(true);
+      // Add a small delay to prevent race conditions with login flows
+      const timer = setTimeout(() => {
+        setShowRedirect(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else {
+      setShowRedirect(false);
     }
   }, [user, lastRoleCheck, refreshRoles, requireAdmin, requireClient, isRefreshing, isLoading]);
 
+  // If still loading, show a spinner
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -56,45 +63,41 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // If no user is logged in, redirect to login
+  // If no user is logged in and we should redirect, go to login page
   if (showRedirect && !user) {
     console.log("No user found, redirecting to login");
-    // Use a setTimeout to prevent the toast from being called during render
-    setTimeout(() => {
+    
+    // Don't show toast during initial redirect or when already on the auth pages
+    if (!window.location.pathname.includes("/auth/")) {
       toast({
         title: "Authentication required",
         description: "Please sign in to access this page",
         variant: "destructive"
       });
-    }, 0);
+    }
+    
     return <Navigate to="/auth/login" replace />;
   }
 
   // If admin access is required but user is not admin
   if (user && requireAdmin && !isAdmin) {
     console.log("Admin access required but user is not admin");
-    // Use a setTimeout to prevent the toast from being called during render
-    setTimeout(() => {
-      toast({
-        title: "Access denied",
-        description: "You need administrator privileges to access this page",
-        variant: "destructive"
-      });
-    }, 0);
+    toast({
+      title: "Access denied",
+      description: "You need administrator privileges to access this page",
+      variant: "destructive"
+    });
     return <Navigate to="/" replace />;
   }
 
   // If client access is required but user is not client
   if (user && requireClient && !isClient) {
     console.log("Client access required but user is not client");
-    // Use a setTimeout to prevent the toast from being called during render
-    setTimeout(() => {
-      toast({
-        title: "Access denied",
-        description: "You need client privileges to access this page",
-        variant: "destructive"
-      });
-    }, 0);
+    toast({
+      title: "Access denied",
+      description: "You need client privileges to access this page",
+      variant: "destructive"
+    });
     return <Navigate to="/" replace />;
   }
 
