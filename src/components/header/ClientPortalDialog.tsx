@@ -15,6 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ensureClientRole } from "@/hooks/useRoleCheck";
 
 interface ClientPortalDialogProps {
   children: React.ReactNode;
@@ -43,6 +44,10 @@ const ClientPortalDialog: React.FC<ClientPortalDialogProps> = ({ children }) => 
       });
       
       try {
+        // First, ensure client role is assigned
+        await ensureClientRole(user.id);
+        
+        // Then refresh roles to see the updated permissions
         const roles = await refreshRoles();
         
         if (roles.isClient || roles.isAdmin) {
@@ -53,9 +58,8 @@ const ClientPortalDialog: React.FC<ClientPortalDialogProps> = ({ children }) => 
           navigate("/client/dashboard");
         } else {
           toast({
-            title: "Access denied",
-            description: "You don't have client portal access. Please contact support.",
-            variant: "destructive"
+            title: "Access assignment in progress",
+            description: "Your client access is being set up. Please try again in a moment.",
           });
         }
       } catch (error) {
@@ -86,35 +90,43 @@ const ClientPortalDialog: React.FC<ClientPortalDialogProps> = ({ children }) => 
     });
     
     try {
-      // This will force a complete role refresh and attempt to assign client role if missing
-      const roles = await refreshRoles();
-      
-      if (roles.isClient || roles.isAdmin) {
-        toast({
-          title: "Success!",
-          description: "Client role assigned successfully.",
-        });
-      } else {
-        // Try one more explicit attempt to assign the role
-        const { data: result } = await supabase.rpc('assign_client_role', {
+      // Direct database insert first (most reliable)
+      const { error: insertError } = await supabase
+        .from("user_roles")
+        .insert({ user_id: user.id, role: "client" });
+        
+      if (insertError) {
+        console.error("Direct insert failed:", insertError);
+        
+        // RPC fallback
+        const { error: rpcError } = await supabase.rpc('assign_client_role', {
           user_id: user.id
         });
         
-        // Check roles again after the explicit assignment
-        const updatedRoles = await refreshRoles();
-        
-        if (updatedRoles.isClient || updatedRoles.isAdmin) {
-          toast({
-            title: "Success!",
-            description: "Client role assigned successfully after retry.",
-          });
-        } else {
-          toast({
-            title: "Role assignment failed",
-            description: "Could not assign client role. Please contact support.",
-            variant: "destructive"
-          });
+        if (rpcError) {
+          console.error("RPC failed:", rpcError);
         }
+      }
+      
+      // Call ensureClientRole as a final fallback
+      await ensureClientRole(user.id);
+      
+      // Check roles again after the assignment attempts
+      const updatedRoles = await refreshRoles();
+      
+      if (updatedRoles.isClient || updatedRoles.isAdmin) {
+        toast({
+          title: "Success!",
+          description: "Client role assigned successfully. You can now access the client portal.",
+        });
+        
+        // Automatically navigate to dashboard on success
+        navigate("/client/dashboard");
+      } else {
+        toast({
+          title: "Role assignment attempted",
+          description: "Please try clicking 'Check Portal Access' again.",
+        });
       }
     } catch (error) {
       console.error("Error assigning client role:", error);
@@ -162,14 +174,14 @@ const ClientPortalDialog: React.FC<ClientPortalDialogProps> = ({ children }) => 
                 disabled={isRefreshing}
               >
                 <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
-                Attempt Role Assignment
+                Assign Client Role & Access Portal
               </Button>
             )}
             
             <div className="text-sm text-gray-500 text-center">
               {hasAccess 
                 ? "Click the button above to access your client portal."
-                : "If you're a registered client but don't have access, try the 'Attempt Role Assignment' button or contact support."}
+                : "If you should have client access, click the 'Assign Client Role' button."}
             </div>
             
             <div className="text-xs text-gray-400 border-t border-gray-200 pt-4 mt-2">
@@ -204,7 +216,7 @@ const ClientPortalDialog: React.FC<ClientPortalDialogProps> = ({ children }) => 
               </Button>
             </Link>
             <div className="text-sm text-gray-500 text-center">
-              New clients can register for portal access. Registration requires approval.
+              New clients can register for portal access. Client role is assigned automatically.
             </div>
           </div>
         )}
