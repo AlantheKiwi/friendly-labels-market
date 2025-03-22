@@ -41,6 +41,8 @@ export const useClientInvoices = () => {
       return data || [];
     },
     enabled: !!userId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1, // Only retry once to prevent infinite retry loops
   });
 
   return {

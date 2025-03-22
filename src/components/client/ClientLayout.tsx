@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { memo } from "react";
 import ClientSidebar from "./ClientSidebar";
 import { useAuth } from "@/context/AuthContext";
 import Header from "@/components/Header";
@@ -8,7 +8,8 @@ interface ClientLayoutProps {
   children: React.ReactNode;
 }
 
-const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
+// Memoize the component to prevent unnecessary re-renders
+const ClientLayout: React.FC<ClientLayoutProps> = memo(({ children }) => {
   const { isLoading } = useAuth();
   
   // Simple loading state that doesn't cause re-renders
@@ -33,6 +34,9 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
       </div>
     </div>
   );
-};
+});
+
+// Add displayName for better debugging
+ClientLayout.displayName = "ClientLayout";
 
 export default ClientLayout;
