@@ -8,22 +8,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useAuth } from "@/context/AuthContext";
 
-// Import the new component views
+// Import the simplified view component
 import LoginView from "./portal/LoginView";
-import AuthenticatedView from "./portal/AuthenticatedView";
 
 interface ClientPortalDialogProps {
   children: React.ReactNode;
 }
 
 const ClientPortalDialog: React.FC<ClientPortalDialogProps> = ({ children }) => {
-  const { user, isClient, isAdmin, refreshRoles } = useAuth();
-  
-  // Determine if the user should have access (either client or admin)
-  const hasAccess = isClient || isAdmin;
-
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -37,19 +30,8 @@ const ClientPortalDialog: React.FC<ClientPortalDialogProps> = ({ children }) => 
           </DialogDescription>
         </DialogHeader>
         
-        {user ? (
-          // User is logged in, show authenticated view
-          <AuthenticatedView 
-            userId={user.id} 
-            hasAccess={hasAccess} 
-            refreshRoles={refreshRoles}
-            isAdmin={isAdmin}
-            isClient={isClient}
-          />
-        ) : (
-          // User is not logged in, show login view
-          <LoginView />
-        )}
+        {/* Show simple view indicating auth has been removed */}
+        <LoginView />
       </DialogContent>
     </Dialog>
   );
