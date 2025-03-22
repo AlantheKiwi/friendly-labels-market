@@ -22,10 +22,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   
   // If more than 60 seconds have passed since the last role check, refresh roles
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || !user) return;
     
     const shouldRefresh = 
-      user && 
       lastRoleCheck && 
       Date.now() - lastRoleCheck > 60000 && // 60 seconds
       (requireAdmin || requireClient) &&
@@ -49,9 +48,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     if (!isLoading) {
       if (!user) {
         // User is not logged in, should redirect to login
+        // Using a short delay to avoid potential race conditions
         const timer = setTimeout(() => {
           setShouldRedirect(true);
-        }, 500);
+        }, 300); 
         return () => clearTimeout(timer);
       } else {
         setShouldRedirect(false);
@@ -73,7 +73,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     console.log("No user found, redirecting to login");
     
     // Don't show toast during initial redirect or when already on the auth pages
-    if (!window.location.pathname.includes("/auth/")) {
+    const currentPath = window.location.pathname;
+    if (!currentPath.includes("/auth/")) {
       toast({
         title: "Authentication required",
         description: "Please sign in to access this page",

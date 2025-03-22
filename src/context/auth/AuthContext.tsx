@@ -26,7 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkRolesWithTimeout
   } = useAuthState();
 
-  // Set up auth listeners
+  // Set up auth listeners - fixing the prop types to match what useAuthState returns
   useAuthListeners({
     setSession,
     setUser,

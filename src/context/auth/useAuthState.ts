@@ -9,6 +9,8 @@ import { UserRoles } from "@/types/auth";
 export const useAuthState = (): AuthState & {
   setSession: (session: Session | null) => void;
   setUser: (user: User | null) => void;
+  setIsAdmin: (isAdmin: boolean) => void;
+  setIsClient: (isClient: boolean) => void;
   setIsLoading: (isLoading: boolean) => void;
   checkRolesWithTimeout: (userId: string) => Promise<UserRoles>;
 } => {
@@ -108,6 +110,8 @@ export const useAuthState = (): AuthState & {
     lastRoleCheck,
     setSession,
     setUser,
+    setIsAdmin,
+    setIsClient,
     setIsLoading,
     checkRolesWithTimeout
   };

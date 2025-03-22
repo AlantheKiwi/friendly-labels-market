@@ -1,15 +1,17 @@
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Session, User } from "@supabase/supabase-js";
+import { UserRoles } from "@/types/auth";
 
 interface UseAuthListenersProps {
-  setSession: (session: any) => void;
-  setUser: (user: any) => void; 
+  setSession: (session: Session | null) => void;
+  setUser: (user: User | null) => void; 
   setIsAdmin: (isAdmin: boolean) => void;
   setIsClient: (isClient: boolean) => void;
   setIsLoading: (isLoading: boolean) => void;
-  checkRolesWithTimeout: (userId: string) => Promise<any>;
+  checkRolesWithTimeout: (userId: string) => Promise<UserRoles>;
 }
 
 export const useAuthListeners = ({
@@ -107,7 +109,7 @@ export const useAuthListeners = ({
     );
     
     // Store subscription reference for cleanup
-    subscriptionRef.current = data.subscription;
+    subscriptionRef.current = data;
     
     // Then check for existing session - only once
     initialCheckDoneRef.current = true;
