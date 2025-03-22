@@ -1,16 +1,18 @@
+
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { checkUserRoles } from "./useRoleCheck";
+import { useAuthService } from "./useAuthService";
 
 export const useAuthOperations = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const authService = useAuthService();
 
   const signIn = async (email: string, password: string) => {
     try {
       console.log("Attempting sign in for:", email);
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await authService.signInWithPassword(email, password);
       
       if (error) {
         console.error("Sign in error:", error.message);
@@ -32,7 +34,7 @@ export const useAuthOperations = () => {
       if (data.user) {
         console.log("User authenticated:", data.user.id);
         try {
-          const roles = await checkUserRoles(data.user.id);
+          const roles = await authService.checkUserRoles(data.user.id);
           
           console.log("User roles determined:", roles);
           
@@ -66,13 +68,7 @@ export const useAuthOperations = () => {
 
   const signUp = async (email: string, password: string, userData: any) => {
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: userData
-        }
-      });
+      const { error } = await authService.signUp(email, password, userData);
       
       if (error) {
         toast({
@@ -103,9 +99,7 @@ export const useAuthOperations = () => {
     try {
       console.log("useAuthOperations - Signing out user");
       
-      const { error } = await supabase.auth.signOut({ 
-        scope: 'global' 
-      });
+      const { error } = await authService.signOut();
       
       if (error) {
         console.error("Sign out error:", error);

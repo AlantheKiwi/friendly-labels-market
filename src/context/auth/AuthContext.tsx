@@ -3,6 +3,7 @@ import React, { createContext, useContext, useCallback } from "react";
 import { AuthContextType } from "./authTypes";
 import { useAuthState } from "./useAuthState";
 import { useAuthListeners } from "./useAuthListeners";
+import { useAuthService } from "@/hooks/useAuthService";
 import { useAuthOperations } from "@/hooks/useAuthOperations";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { isAdmin: false, isClient: false };
   }, [user, checkRolesWithTimeout, setIsLoading]);
 
-  // Wrapper for signOut to ensure state is cleared properly
+  // Wrap the authSignOut function provided by useAuthOperations
   const signOut = async (): Promise<void> => {
     try {
       console.log("AuthContext - Starting signOut process");
