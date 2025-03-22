@@ -22,7 +22,7 @@ const RegisterPage = () => {
 
   useEffect(() => {
     if (user) {
-      navigate("/");
+      navigate("/client/dashboard");
     }
   }, [user, navigate]);
 

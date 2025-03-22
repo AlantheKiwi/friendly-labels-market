@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Lock } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -17,10 +18,12 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
+    // If user is already logged in, redirect to client dashboard
     if (user) {
-      navigate("/");
+      navigate("/client/dashboard");
     }
   }, [user, navigate]);
 
@@ -30,6 +33,14 @@ const LoginPage = () => {
     
     try {
       await signIn(email, password);
+      // Navigation is handled in the AuthContext after successful login
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Login failed",
+        description: "Please check your credentials and try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -47,7 +58,7 @@ const LoginPage = () => {
           <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-lg text-center shadow-sm">
             <h2 className="text-xl font-semibold text-blue-700 mb-2">Welcome to Our Client Portal</h2>
             <p className="text-blue-600">
-              Register as a new client to access exclusive services or sign in to your existing account
+              Sign in to access your exclusive client dashboard
             </p>
           </div>
           

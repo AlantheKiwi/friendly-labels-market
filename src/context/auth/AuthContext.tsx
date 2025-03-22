@@ -1,29 +1,68 @@
 
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { Session, User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
 import { AuthContextType } from "./authTypes";
+import { useAuthState } from "./useAuthState";
+import { useAuthListeners } from "./useAuthListeners";
+import { useAuthOperations } from "@/hooks/useAuthOperations";
 
-// Create a mock AuthContext with minimal implementation
+// Create the auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Create a simplified AuthProvider that doesn't actually implement authentication
+// Create the AuthProvider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Provide a minimal implementation that satisfies the AuthContextType
+  // Use our custom hooks to manage state and operations
+  const {
+    session,
+    user,
+    isAdmin,
+    isClient,
+    isLoading,
+    lastRoleCheck,
+    setSession,
+    setUser,
+    setIsLoading,
+    checkRolesWithTimeout
+  } = useAuthState();
+
+  // Set up auth listeners
+  useAuthListeners({
+    setSession,
+    setUser,
+    setIsAdmin: (val) => {},  // These will be handled by checkRolesWithTimeout
+    setIsClient: (val) => {}, // These will be handled by checkRolesWithTimeout
+    setIsLoading,
+    checkRolesWithTimeout
+  });
+
+  // Get auth operations
+  const { signIn, signUp, signOut } = useAuthOperations();
+
+  // Implement the refreshRoles function
+  const refreshRoles = async () => {
+    if (!user) return { isAdmin: false, isClient: false };
+    return await checkRolesWithTimeout(user.id);
+  };
+
+  // Combine all values for the context
   const value: AuthContextType = {
-    session: null,
-    user: null,
-    isAdmin: false,
-    isClient: false,
-    isLoading: false,
-    signIn: async () => {},
-    signUp: async () => {},
-    signOut: async () => Promise.resolve(),
-    refreshRoles: async () => ({ isAdmin: false, isClient: false }),
-    lastRoleCheck: 0
+    session,
+    user,
+    isAdmin,
+    isClient,
+    isLoading,
+    signIn,
+    signUp,
+    signOut,
+    refreshRoles,
+    lastRoleCheck
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// Create the useAuth hook
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

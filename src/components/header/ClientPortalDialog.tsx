@@ -8,15 +8,26 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
-// Import the simplified view component
+// Import views
 import LoginView from "./portal/LoginView";
+import AuthenticatedView from "./portal/AuthenticatedView";
 
 interface ClientPortalDialogProps {
   children: React.ReactNode;
 }
 
 const ClientPortalDialog: React.FC<ClientPortalDialogProps> = ({ children }) => {
+  const { user, isClient } = useAuth();
+  const navigate = useNavigate();
+
+  const handleGoToDashboard = () => {
+    navigate("/client/dashboard");
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -26,12 +37,26 @@ const ClientPortalDialog: React.FC<ClientPortalDialogProps> = ({ children }) => 
         <DialogHeader>
           <DialogTitle>Client Portal Access</DialogTitle>
           <DialogDescription>
-            Access your orders, invoices, and account information
+            {user 
+              ? "Manage your orders, invoices, and account information" 
+              : "Sign in to access your orders, invoices, and account information"}
           </DialogDescription>
         </DialogHeader>
         
-        {/* Show simple view indicating auth has been removed */}
-        <LoginView />
+        {user ? (
+          <div className="space-y-4">
+            <AuthenticatedView />
+            <Button 
+              className="w-full" 
+              variant="default"
+              onClick={handleGoToDashboard}
+            >
+              Go to Dashboard
+            </Button>
+          </div>
+        ) : (
+          <LoginView />
+        )}
       </DialogContent>
     </Dialog>
   );

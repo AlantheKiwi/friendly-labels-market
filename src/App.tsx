@@ -30,6 +30,9 @@ import ClientQueriesPage from "./pages/client/ClientQueriesPage";
 import ClientInvoicesPage from "./pages/client/ClientInvoicesPage";
 import ClientOffersPage from "./pages/client/ClientOffersPage";
 import ClientNotesPage from "./pages/client/ClientNotesPage";
+import LoginPage from "./pages/auth/LoginPage";
+import RegisterPage from "./pages/auth/RegisterPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -55,21 +58,69 @@ const App = () => {
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/contact" element={<ContactPage />} />
                 
-                {/* Client Routes (no longer protected) */}
-                <Route path="/client/dashboard" element={<ClientDashboardPage />} />
-                <Route path="/client/orders" element={<ClientOrdersPage />} />
-                <Route path="/client/queries" element={<ClientQueriesPage />} />
-                <Route path="/client/invoices" element={<ClientInvoicesPage />} />
-                <Route path="/client/offers" element={<ClientOffersPage />} />
-                <Route path="/client/notes" element={<ClientNotesPage />} />
+                {/* Auth Routes */}
+                <Route path="/auth/login" element={<LoginPage />} />
+                <Route path="/auth/register" element={<RegisterPage />} />
                 
-                {/* Admin Routes */}
+                {/* Protected Client Routes */}
+                <Route path="/client/dashboard" element={
+                  <ProtectedRoute requireClient>
+                    <ClientDashboardPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/client/orders" element={
+                  <ProtectedRoute requireClient>
+                    <ClientOrdersPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/client/queries" element={
+                  <ProtectedRoute requireClient>
+                    <ClientQueriesPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/client/invoices" element={
+                  <ProtectedRoute requireClient>
+                    <ClientInvoicesPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/client/offers" element={
+                  <ProtectedRoute requireClient>
+                    <ClientOffersPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/client/notes" element={
+                  <ProtectedRoute requireClient>
+                    <ClientNotesPage />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Protected Admin Routes */}
                 <Route path="/admin/login" element={<AdminLoginPage />} />
-                <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-                <Route path="/admin/clients" element={<AdminClientsPage />} />
-                <Route path="/admin/orders" element={<AdminOrdersPage />} />
-                <Route path="/admin/quotes" element={<AdminQuotesPage />} />
-                <Route path="/admin/clients/:id" element={<ClientDetailPage />} />
+                <Route path="/admin/dashboard" element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminDashboardPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/clients" element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminClientsPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/orders" element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminOrdersPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/quotes" element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminQuotesPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/clients/:id" element={
+                  <ProtectedRoute requireAdmin>
+                    <ClientDetailPage />
+                  </ProtectedRoute>
+                } />
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
