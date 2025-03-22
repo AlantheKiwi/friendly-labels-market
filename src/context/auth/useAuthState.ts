@@ -44,28 +44,15 @@ export const useAuthState = (): AuthState & {
     }, 5000); // 5 second timeout
     
     try {
+      // Always attempt to ensure the client role first
+      await ensureClientRole(userId);
+      
       const roles = await checkUserRoles(userId);
       console.log("User roles determined:", roles);
       
-      // If user has no roles but is authenticated, try to ensure they have client role
-      if (!roles.isAdmin && !roles.isClient) {
-        console.log("No roles found for authenticated user, attempting to assign client role");
-        const roleAssigned = await ensureClientRole(userId);
-        
-        if (roleAssigned) {
-          console.log("Client role assigned, rechecking roles");
-          // Recheck roles after assignment
-          const updatedRoles = await checkUserRoles(userId);
-          setIsAdmin(updatedRoles.isAdmin);
-          setIsClient(updatedRoles.isClient);
-        } else {
-          setIsAdmin(roles.isAdmin);
-          setIsClient(roles.isClient);
-        }
-      } else {
-        setIsAdmin(roles.isAdmin);
-        setIsClient(roles.isClient);
-      }
+      // Set the roles in state
+      setIsAdmin(roles.isAdmin);
+      setIsClient(roles.isClient);
       
       // Record when we last checked roles
       setLastRoleCheck(Date.now());
@@ -88,7 +75,9 @@ export const useAuthState = (): AuthState & {
         roleCheckTimeoutRef.current = null;
       }
       
-      return { isAdmin: false, isClient: false };
+      // Default to client role for authenticated users even if checks fail
+      setIsClient(true);
+      return { isAdmin: false, isClient: true };
     }
   }, [toast]);
 

@@ -56,7 +56,7 @@ export const useAuthListeners = ({
               
               // Redirect if on login or register page
               const currentPath = window.location.pathname;
-              if (currentPath === "/auth/login" || currentPath === "/auth/register" || currentPath === "/") {
+              if (currentPath === "/auth/login" || currentPath === "/auth/register") {
                 if (roles.isClient) {
                   console.log("Auth state change - redirecting client to dashboard");
                   navigate("/client/dashboard", { replace: true });

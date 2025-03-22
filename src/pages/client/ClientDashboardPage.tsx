@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
@@ -7,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Package2, MessageSquare, Receipt, Bell, FileText } from "lucide-react";
 import ClientLayout from "@/components/client/ClientLayout";
+import UserDebugInfo from "@/components/UserDebugInfo";
 
 const ClientDashboardPage = () => {
   const { user } = useAuth();
@@ -72,6 +72,7 @@ const ClientDashboardPage = () => {
       
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4">Welcome, {profile?.first_name} {profile?.last_name}</h2>
+        <UserDebugInfo />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <p className="text-gray-600"><span className="font-medium">Email:</span> {user?.email}</p>
