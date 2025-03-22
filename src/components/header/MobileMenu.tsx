@@ -1,9 +1,11 @@
+
 import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import ClientPortalDialog from "./ClientPortalDialog";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -11,7 +13,7 @@ interface MobileMenuProps {
 }
 
 const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
-  const { user, signOut, isClient, isAdmin, refreshRoles } = useAuth();
+  const { user, signOut, isClient, isAdmin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -40,52 +42,6 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
         variant: "destructive"
       });
     }
-  };
-
-  const handleClientPortalClick = async () => {
-    onClose(); // Close the mobile menu immediately
-    
-    // If user is not logged in, redirect to login
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to access the client portal",
-      });
-      navigate("/auth/login");
-      return;
-    }
-
-    // If user is logged in but doesn't have client role, try to refresh roles
-    if (!isClient) {
-      toast({
-        title: "Checking permissions",
-        description: "Verifying your access to the client portal...",
-      });
-      
-      try {
-        const roles = await refreshRoles();
-        if (roles.isClient) {
-          navigate("/client/dashboard");
-        } else {
-          toast({
-            title: "Access denied",
-            description: "You don't have client portal access. Please contact support.",
-            variant: "destructive"
-          });
-        }
-      } catch (error) {
-        console.error("Error refreshing roles:", error);
-        toast({
-          title: "Error checking permissions",
-          description: "There was a problem verifying your access. Please try again.",
-          variant: "destructive"
-        });
-      }
-      return;
-    }
-
-    // If user is already verified as client, just navigate
-    navigate("/client/dashboard");
   };
 
   if (!isOpen) return null;
@@ -122,15 +78,18 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           Contact
         </Link>
         
-        {/* Always show Client Portal button */}
-        <Button
-          className="mx-4 flex items-center gap-2 justify-center"
-          variant="outline"
-          onClick={handleClientPortalClick}
-        >
-          <LayoutDashboard className="h-4 w-4" />
-          Client Portal
-        </Button>
+        {/* Replace the previous Client Portal button with the dialog */}
+        <div className="px-4">
+          <ClientPortalDialog>
+            <Button
+              className="w-full flex items-center gap-2 justify-center"
+              variant="outline"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Client Portal
+            </Button>
+          </ClientPortalDialog>
+        </div>
         
         {/* Show logout for logged in users */}
         {user && (
