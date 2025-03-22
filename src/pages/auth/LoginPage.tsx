@@ -16,16 +16,16 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, user } = useAuth();
+  const { signIn, user, isClient } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // If user is already logged in, redirect to client dashboard
-    if (user) {
-      navigate("/client/dashboard");
+    // If user is already logged in and has client role, redirect to client dashboard
+    if (user && isClient) {
+      navigate("/client/dashboard", { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, isClient, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

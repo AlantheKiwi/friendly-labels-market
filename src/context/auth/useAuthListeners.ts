@@ -59,6 +59,9 @@ export const useAuthListeners = ({
             
             if (currentSession.user) {
               try {
+                // Set a default client role immediately for better UX while roles are checked
+                setIsClient(true);
+                
                 const roles = await checkRolesWithTimeout(currentSession.user.id);
                 
                 // Redirect if on login or register page
@@ -106,6 +109,9 @@ export const useAuthListeners = ({
         
         if (currentSession.user) {
           try {
+            // Set a default client role immediately for better UX while roles are checked
+            setIsClient(true);
+            
             const roles = await checkRolesWithTimeout(currentSession.user.id);
             
             // Redirect based on roles if on homepage or auth pages

@@ -28,8 +28,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useAuthListeners({
     setSession,
     setUser,
-    setIsAdmin: (isAdmin) => {},  // We'll handle this via checkRolesWithTimeout
-    setIsClient: (isClient) => {},  // We'll handle this via checkRolesWithTimeout
+    setIsAdmin: () => {},  // We'll handle this via checkRolesWithTimeout
+    setIsClient: () => {},  // We'll handle this via checkRolesWithTimeout
     setIsLoading,
     checkRolesWithTimeout
   });
