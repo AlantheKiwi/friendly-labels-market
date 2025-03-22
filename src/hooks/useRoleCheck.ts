@@ -11,12 +11,11 @@ export const checkUserRoles = async (userId: string): Promise<UserRoles> => {
       return { isAdmin: false, isClient: false };
     }
     
-    // Query the user_roles table directly with a short timeout
+    // Query the user_roles table directly
     const { data: userRoles, error } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", userId)
-      .timeout(3000);
+      .eq("user_id", userId);
     
     if (error) {
       console.error("Error checking user roles:", error);
