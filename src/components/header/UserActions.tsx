@@ -1,8 +1,8 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
-import { LogIn } from "lucide-react";
+import ClientPortalDialog from "./ClientPortalDialog";
 import { Button } from "@/components/ui/button";
+import { LayoutDashboard } from "lucide-react";
 
 interface UserActionsProps {
   isOnClientDashboard?: boolean;
@@ -11,12 +11,12 @@ interface UserActionsProps {
 
 const UserActions: React.FC<UserActionsProps> = () => {
   return (
-    <Button variant="default" className="flex items-center gap-2" size="sm" asChild>
-      <Link to="/">
-        <LogIn className="h-4 w-4" />
+    <ClientPortalDialog>
+      <Button variant="default" className="flex items-center gap-2" size="sm">
+        <LayoutDashboard className="h-4 w-4" />
         <span className="hidden sm:inline">Client Portal</span>
-      </Link>
-    </Button>
+      </Button>
+    </ClientPortalDialog>
   );
 };
 

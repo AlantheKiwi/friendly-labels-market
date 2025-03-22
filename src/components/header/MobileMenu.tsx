@@ -1,8 +1,6 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import ClientPortalDialog from "./ClientPortalDialog";
-import { LayoutDashboard, LogIn } from "lucide-react";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -44,27 +42,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           Contact
         </Link>
         
-        {/* Replace the previous Client Portal button with the dialog */}
-        <div className="px-4">
-          <ClientPortalDialog>
-            <Button
-              className="w-full flex items-center gap-2 justify-center"
-              variant="outline"
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              Client Portal
-            </Button>
-          </ClientPortalDialog>
-        </div>
-        
-        <Link
-          to="/auth/login"
-          className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2"
-          onClick={onClose}
-        >
-          <LogIn className="h-4 w-4" />
-          Login
-        </Link>
+        {/* Client Portal link is now only in the UserActions component */}
       </nav>
     </div>
   );
