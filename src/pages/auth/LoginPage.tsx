@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,20 +16,19 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [redirected, setRedirected] = useState(false);
+  const redirectedRef = useRef(false);
   const { signIn, user, isClient } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
     // Only redirect if user is logged in, has client role, and we haven't already redirected
-    if (user && isClient && !redirected && !isLoading) {
+    if (user && isClient && !redirectedRef.current && !isLoading) {
       console.log("User logged in and has client role, redirecting to dashboard");
-      setRedirected(true);
+      redirectedRef.current = true;
       navigate("/client/dashboard", { replace: true });
     }
-  }, [user, isClient, navigate, redirected, isLoading]);
+  }, [user, isClient, navigate, isLoading]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

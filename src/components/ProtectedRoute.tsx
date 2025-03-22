@@ -17,7 +17,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { user, isAdmin, isClient, isLoading, refreshRoles, lastRoleCheck } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showRedirect, setShowRedirect] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
   const { toast } = useToast();
   
   // If more than 60 seconds have passed since the last role check, refresh roles
@@ -41,18 +41,23 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         setIsRefreshing(false);
       });
     }
-
-    // Only set showRedirect after we've determined loading is complete and there's no user
-    if (!isLoading && !user) {
-      // Add a small delay to prevent race conditions with login flows
-      const timer = setTimeout(() => {
-        setShowRedirect(true);
-      }, 500);
-      return () => clearTimeout(timer);
-    } else {
-      setShowRedirect(false);
-    }
   }, [user, lastRoleCheck, refreshRoles, requireAdmin, requireClient, isRefreshing, isLoading]);
+
+  // Handle redirect logic in a separate effect to prevent render loops
+  useEffect(() => {
+    // Only determine redirect after loading is complete
+    if (!isLoading) {
+      if (!user) {
+        // User is not logged in, should redirect to login
+        const timer = setTimeout(() => {
+          setShouldRedirect(true);
+        }, 500);
+        return () => clearTimeout(timer);
+      } else {
+        setShouldRedirect(false);
+      }
+    }
+  }, [user, isLoading]);
 
   // If still loading, show a spinner
   if (isLoading) {
@@ -64,7 +69,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // If no user is logged in and we should redirect, go to login page
-  if (showRedirect && !user) {
+  if (shouldRedirect && !user) {
     console.log("No user found, redirecting to login");
     
     // Don't show toast during initial redirect or when already on the auth pages

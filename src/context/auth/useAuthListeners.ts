@@ -60,14 +60,16 @@ export const useAuthListeners = ({
             
             if (currentSession.user) {
               try {
-                // Set a default client role immediately for better UX while roles are checked
-                setIsClient(true);
+                // Set loading to true before checking roles
+                setIsLoading(true);
                 
-                // Don't redirect if already in progress
+                // Check roles with timeout
                 if (!redirectInProgressRef.current) {
                   redirectInProgressRef.current = true;
                   
                   const roles = await checkRolesWithTimeout(currentSession.user.id);
+                  setIsAdmin(roles.isAdmin);
+                  setIsClient(roles.isClient);
                   
                   // Redirect if on login or register page
                   const currentPath = window.location.pathname;
@@ -81,6 +83,7 @@ export const useAuthListeners = ({
                     }
                   }
                   
+                  setIsLoading(false);
                   redirectInProgressRef.current = false;
                 }
               } catch (error) {
@@ -118,14 +121,16 @@ export const useAuthListeners = ({
         
         if (currentSession.user) {
           try {
-            // Set a default client role immediately for better UX while roles are checked
-            setIsClient(true);
+            // Set loading to true before checking roles
+            setIsLoading(true);
             
-            // Don't redirect if already in progress
+            // Check roles with timeout
             if (!redirectInProgressRef.current) {
               redirectInProgressRef.current = true;
               
               const roles = await checkRolesWithTimeout(currentSession.user.id);
+              setIsAdmin(roles.isAdmin);
+              setIsClient(roles.isClient);
               
               // Redirect based on roles if on homepage or auth pages
               const currentPath = window.location.pathname;
@@ -141,6 +146,7 @@ export const useAuthListeners = ({
                 }
               }
               
+              setIsLoading(false);
               redirectInProgressRef.current = false;
             }
           } catch (error) {

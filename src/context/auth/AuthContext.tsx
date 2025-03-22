@@ -20,6 +20,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     lastRoleCheck,
     setSession,
     setUser,
+    setIsAdmin,
+    setIsClient,
     setIsLoading,
     checkRolesWithTimeout
   } = useAuthState();
@@ -28,14 +30,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useAuthListeners({
     setSession,
     setUser,
-    setIsAdmin: () => {},  // We'll handle this via checkRolesWithTimeout
-    setIsClient: () => {},  // We'll handle this via checkRolesWithTimeout
+    setIsAdmin,
+    setIsClient,
     setIsLoading,
     checkRolesWithTimeout
   });
 
-  // Get auth operations
-  const { signIn, signUp, signOut } = useAuthOperations();
+  // Get auth operations - wrapped in useMemo to prevent unnecessary recalculations
+  const authOperations = useAuthOperations();
 
   // Implement the refreshRoles function
   const refreshRoles = async () => {
@@ -50,9 +52,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAdmin,
     isClient,
     isLoading,
-    signIn,
-    signUp,
-    signOut,
+    signIn: authOperations.signIn,
+    signUp: authOperations.signUp,
+    signOut: authOperations.signOut,
     refreshRoles,
     lastRoleCheck
   };
