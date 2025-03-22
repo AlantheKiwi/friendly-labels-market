@@ -2,7 +2,7 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AddressInfo } from "@/types";
+import { AddressInfo } from "@/types/checkout";
 
 interface AddressFormProps {
   type: "shipping" | "billing";
