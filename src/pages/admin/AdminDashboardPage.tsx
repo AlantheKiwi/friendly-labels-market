@@ -48,7 +48,7 @@ const AdminDashboardPage = () => {
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
           
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <Tabs defaultValue="orders" onValueChange={setActiveTab} value={activeTab}>
             <TabsList className="mb-6">
               <TabsTrigger value="orders">Client Orders</TabsTrigger>
               <TabsTrigger value="payments">Payments</TabsTrigger>
