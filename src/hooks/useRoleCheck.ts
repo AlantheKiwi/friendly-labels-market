@@ -11,15 +11,37 @@ export const checkUserRoles = async (userId: string): Promise<UserRoles> => {
       return { isAdmin: false, isClient: false };
     }
     
-    // Query the user_roles table directly
+    // Query the user_roles table directly with multiple attempts
     const { data: userRoles, error } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", userId);
     
     if (error) {
-      console.error("Error checking user roles:", error);
-      return { isAdmin: false, isClient: false };
+      console.error("Error checking user roles (first attempt):", error);
+      
+      // Retry with a slight delay (network issues sometimes cause first attempt to fail)
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const { data: retryUserRoles, error: retryError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId);
+        
+      if (retryError) {
+        console.error("Error checking user roles (retry):", retryError);
+        return { isAdmin: false, isClient: false };
+      }
+      
+      if (retryUserRoles && retryUserRoles.length > 0) {
+        console.log("User roles retry successful:", JSON.stringify(retryUserRoles));
+        
+        // Check if the user has admin or client roles
+        const isAdmin = retryUserRoles.some(role => role.role === 'admin') || false;
+        const isClient = isAdmin || retryUserRoles.some(role => role.role === 'client') || false;
+        
+        return { isAdmin, isClient };
+      }
     }
     
     // Add detailed logging to see what's happening
@@ -28,58 +50,55 @@ export const checkUserRoles = async (userId: string): Promise<UserRoles> => {
     if (!userRoles || userRoles.length === 0) {
       console.log("No roles found for user:", userId);
       
-      // Immediately attempt to assign the client role with a direct insert first
+      // Immediately attempt to assign the client role
       console.log("No roles found, directly assigning client role");
       try {
-        const { error: insertError } = await supabase
-          .from("user_roles")
-          .insert({ user_id: userId, role: "client" });
+        // First try with RPC function
+        const { data: rpcResult, error: rpcError } = await supabase.rpc('assign_client_role', {
+          user_id: userId
+        });
+        
+        if (rpcError) {
+          console.error("RPC assign_client_role failed:", rpcError);
           
-        if (!insertError) {
-          console.log("Successfully assigned client role via direct insert");
-          return { isAdmin: false, isClient: true };
+          // Fallback to direct insert
+          const { error: insertError } = await supabase
+            .from("user_roles")
+            .insert({ user_id: userId, role: "client" });
+            
+          if (insertError) {
+            console.error("Direct insert failed:", insertError);
+          } else {
+            console.log("Successfully assigned client role via direct insert");
+            return { isAdmin: false, isClient: true };
+          }
         } else {
-          console.error("Direct insert failed:", insertError);
-        }
-      } catch (insertErr) {
-        console.error("Error during direct role assignment:", insertErr);
-      }
-      
-      // If direct insert failed, try the ensureClientRole function which has fallbacks
-      try {
-        const assigned = await ensureClientRole(userId);
-        
-        if (assigned) {
-          console.log("Successfully assigned client role via ensureClientRole");
+          console.log("Successfully assigned client role via RPC");
           return { isAdmin: false, isClient: true };
         }
-      } catch (ensureErr) {
-        console.error("Error during ensureClientRole:", ensureErr);
+      } catch (assignError) {
+        console.error("Error during role assignment:", assignError);
       }
       
-      // As last resort, try the fallback role check
+      // As a final check, verify if the role was assigned
       try {
-        console.log("Trying fallback role check with has_role RPC");
-        const { data: isClientRole } = await supabase.rpc('has_role', {
-          user_id: userId,
-          role: 'client'
-        });
-        
-        const { data: isAdminRole } = await supabase.rpc('has_role', {
-          user_id: userId,
-          role: 'admin'
-        });
-        
-        console.log("Fallback role check results - isClient:", isClientRole, "isAdmin:", isAdminRole);
-        
-        if (isClientRole || isAdminRole) {
-          return { 
-            isAdmin: !!isAdminRole, 
-            isClient: !!isClientRole 
-          };
+        const { data: verifyRoles, error: verifyError } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId);
+          
+        if (verifyError) {
+          console.error("Error during verification check:", verifyError);
+        } else if (verifyRoles && verifyRoles.length > 0) {
+          console.log("Verification found roles:", JSON.stringify(verifyRoles));
+          
+          const isAdmin = verifyRoles.some(role => role.role === 'admin') || false;
+          const isClient = isAdmin || verifyRoles.some(role => role.role === 'client') || false;
+          
+          return { isAdmin, isClient };
         }
-      } catch (rpcError) {
-        console.error("Fallback role check failed:", rpcError);
+      } catch (verifyError) {
+        console.error("Error during role verification:", verifyError);
       }
       
       return { isAdmin: false, isClient: false };
@@ -88,7 +107,7 @@ export const checkUserRoles = async (userId: string): Promise<UserRoles> => {
     // Check if the user has admin or client roles
     const isAdmin = userRoles.some(role => role.role === 'admin') || false;
     
-    // Important change: If user is admin, also set isClient to true
+    // Important: If user is admin, also set isClient to true
     const isClient = isAdmin || userRoles.some(role => role.role === 'client') || false;
     
     const roles = { isAdmin, isClient };
@@ -129,8 +148,21 @@ export const ensureClientRole = async (userId: string): Promise<boolean> => {
     
     // Try multiple approaches to assign the role
     
-    // 1. Try direct insert first - most reliable
-    console.log("Assigning missing client role via direct insert");
+    // 1. Try RPC function first
+    console.log("Assigning client role via RPC");
+    const { error: rpcError } = await supabase.rpc('assign_client_role', {
+      user_id: userId
+    });
+    
+    if (!rpcError) {
+      console.log("Successfully assigned client role via RPC");
+      return true;
+    }
+    
+    console.error("RPC failed:", rpcError);
+    
+    // 2. Try direct insert as fallback
+    console.log("Assigning client role via direct insert");
     const { error: insertError } = await supabase
       .from("user_roles")
       .insert({ user_id: userId, role: "client" });
@@ -142,19 +174,19 @@ export const ensureClientRole = async (userId: string): Promise<boolean> => {
     
     console.error("Direct insert failed:", insertError);
     
-    // 2. Try RPC function as fallback
-    console.log("Trying RPC function as fallback");
-    const { error: rpcError } = await supabase.rpc('assign_client_role', {
-      user_id: userId
-    });
-    
-    if (rpcError) {
-      console.error("Failed to assign client role via RPC:", rpcError);
-      return false;
+    // 3. Final verification check
+    const { data: verifyRoles, error: verifyError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "client");
+      
+    if (!verifyError && verifyRoles && verifyRoles.length > 0) {
+      console.log("Verification confirms client role exists");
+      return true;
     }
     
-    console.log("Successfully assigned client role via RPC");
-    return true;
+    return false;
   } catch (error) {
     console.error("Error in ensureClientRole:", error);
     return false;
