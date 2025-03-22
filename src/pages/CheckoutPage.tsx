@@ -12,7 +12,7 @@ import CustomerInformationForm from "@/components/checkout/CustomerInformationFo
 import PaymentMethodSelector from "@/components/checkout/PaymentMethodSelector";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import EmptyCart from "@/components/checkout/EmptyCart";
-import { CustomerInfo } from "@/types";
+import { CustomerInfo } from "@/types/checkout";
 
 const CheckoutPage = () => {
   const { items, subtotal, clearCart } = useCart();

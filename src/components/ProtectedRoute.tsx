@@ -36,7 +36,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   
   // If more than 60 seconds have passed since the last role check, refresh roles
   useEffect(() => {
-    if (isLoading || !user) return;
+    if (isLoading || !user || isRefreshing) return;
     
     const shouldRefresh = 
       lastRoleCheck && 
@@ -47,7 +47,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       console.log("Auto-refreshing roles - stale role data detected");
       handleRefreshRoles();
     }
-  }, [user, lastRoleCheck, handleRefreshRoles, requireAdmin, requireClient, isLoading]);
+  }, [user, lastRoleCheck, handleRefreshRoles, requireAdmin, requireClient, isLoading, isRefreshing]);
 
   // Handle redirect logic in a separate effect to prevent render loops
   useEffect(() => {
@@ -55,11 +55,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     if (!isLoading && !isRefreshing) {
       if (!user) {
         setShouldRedirect(true);
+      } else if (
+        (requireAdmin && !isAdmin) || 
+        (requireClient && !isClient)
+      ) {
+        setShouldRedirect(true);
       } else {
         setShouldRedirect(false);
       }
     }
-  }, [user, isLoading, isRefreshing]);
+  }, [user, isAdmin, isClient, isLoading, isRefreshing, requireAdmin, requireClient]);
 
   // If still loading or refreshing, show a spinner
   if (isLoading || isRefreshing || shouldRedirect === null) {
@@ -70,43 +75,46 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // If no user is logged in and we should redirect, go to login page
-  if (shouldRedirect && !user) {
-    console.log("No user found, redirecting to login");
-    
-    // Don't show toast during initial redirect or when already on the auth pages
-    const currentPath = window.location.pathname;
-    if (!currentPath.includes("/auth/")) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to access this page",
-        variant: "destructive"
-      });
+  // If we should redirect
+  if (shouldRedirect) {
+    // No user is logged in, go to login page
+    if (!user) {
+      console.log("No user found, redirecting to login");
+      
+      // Don't show toast during initial redirect or when already on the auth pages
+      const currentPath = window.location.pathname;
+      if (!currentPath.includes("/auth/")) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to access this page",
+          variant: "destructive"
+        });
+      }
+      
+      return <Navigate to="/auth/login" replace />;
     }
     
-    return <Navigate to="/auth/login" replace />;
-  }
+    // If admin access is required but user is not admin
+    if (requireAdmin && !isAdmin) {
+      console.log("Admin access required but user is not admin");
+      toast({
+        title: "Access denied",
+        description: "You need administrator privileges to access this page",
+        variant: "destructive"
+      });
+      return <Navigate to="/" replace />;
+    }
 
-  // If admin access is required but user is not admin
-  if (user && requireAdmin && !isAdmin) {
-    console.log("Admin access required but user is not admin");
-    toast({
-      title: "Access denied",
-      description: "You need administrator privileges to access this page",
-      variant: "destructive"
-    });
-    return <Navigate to="/" replace />;
-  }
-
-  // If client access is required but user is not client
-  if (user && requireClient && !isClient) {
-    console.log("Client access required but user is not client");
-    toast({
-      title: "Access denied",
-      description: "You need client privileges to access this page",
-      variant: "destructive"
-    });
-    return <Navigate to="/" replace />;
+    // If client access is required but user is not client
+    if (requireClient && !isClient) {
+      console.log("Client access required but user is not client");
+      toast({
+        title: "Access denied",
+        description: "You need client privileges to access this page",
+        variant: "destructive"
+      });
+      return <Navigate to="/" replace />;
+    }
   }
 
   // User has necessary permissions, render the protected content

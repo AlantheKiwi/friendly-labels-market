@@ -4,37 +4,116 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { CustomerInfo } from "@/types";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CustomerInfo, AddressInfo, CheckoutFormData } from "@/types/checkout";
+import AddressForm from "./AddressForm";
 
 interface CustomerInformationFormProps {
   onSubmit: (e: React.FormEvent, formData: CustomerInfo) => void;
 }
 
 const CustomerInformationForm: React.FC<CustomerInformationFormProps> = ({ onSubmit }) => {
-  const [formData, setFormData] = useState<CustomerInfo>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    company: "",
-    address1: "",
-    address2: "",
-    city: "",
-    postalCode: "",
+  const [formData, setFormData] = useState<CheckoutFormData>({
+    contactInfo: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      company: "",
+    },
+    shippingAddress: {
+      fullName: "",
+      address1: "",
+      address2: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      country: "New Zealand",
+    },
+    billingAddress: {
+      fullName: "",
+      address1: "",
+      address2: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      country: "New Zealand",
+    },
+    billingSameAsShipping: true,
     notes: ""
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleContactChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [id]: value
+      contactInfo: {
+        ...prev.contactInfo,
+        [id]: value
+      }
+    }));
+  };
+
+  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      notes: e.target.value
+    }));
+  };
+
+  const handleShippingAddressChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      shippingAddress: {
+        ...prev.shippingAddress,
+        [field]: value
+      }
+    }));
+  };
+
+  const handleBillingAddressChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      billingAddress: {
+        ...prev.billingAddress,
+        [field]: value
+      }
+    }));
+  };
+
+  const handleBillingSameChange = () => {
+    setFormData(prev => ({
+      ...prev,
+      billingSameAsShipping: !prev.billingSameAsShipping
     }));
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(e, formData);
+    
+    // Convert formData to CustomerInfo format for backwards compatibility
+    const customerInfo: CustomerInfo = {
+      firstName: formData.contactInfo.firstName,
+      lastName: formData.contactInfo.lastName,
+      email: formData.contactInfo.email,
+      phone: formData.contactInfo.phone,
+      company: formData.contactInfo.company,
+      address1: formData.shippingAddress.address1,
+      address2: formData.shippingAddress.address2,
+      city: formData.shippingAddress.city,
+      postalCode: formData.shippingAddress.postalCode,
+      billingFullName: formData.billingAddress.fullName,
+      billingAddress1: formData.billingAddress.address1,
+      billingAddress2: formData.billingAddress.address2,
+      billingCity: formData.billingAddress.city,
+      billingState: formData.billingAddress.state,
+      billingPostalCode: formData.billingAddress.postalCode,
+      billingCountry: formData.billingAddress.country,
+      notes: formData.notes,
+      billingSameAsShipping: formData.billingSameAsShipping
+    };
+    
+    onSubmit(e, customerInfo);
   };
 
   return (
@@ -47,8 +126,8 @@ const CustomerInformationForm: React.FC<CustomerInformationFormProps> = ({ onSub
               <Label htmlFor="firstName">First Name</Label>
               <Input 
                 id="firstName" 
-                value={formData.firstName}
-                onChange={handleChange}
+                value={formData.contactInfo.firstName}
+                onChange={handleContactChange}
                 required 
               />
             </div>
@@ -56,8 +135,8 @@ const CustomerInformationForm: React.FC<CustomerInformationFormProps> = ({ onSub
               <Label htmlFor="lastName">Last Name</Label>
               <Input 
                 id="lastName" 
-                value={formData.lastName}
-                onChange={handleChange}
+                value={formData.contactInfo.lastName}
+                onChange={handleContactChange}
                 required 
               />
             </div>
@@ -68,8 +147,8 @@ const CustomerInformationForm: React.FC<CustomerInformationFormProps> = ({ onSub
               <Input 
                 id="email" 
                 type="email" 
-                value={formData.email}
-                onChange={handleChange}
+                value={formData.contactInfo.email}
+                onChange={handleContactChange}
                 required 
               />
             </div>
@@ -77,8 +156,8 @@ const CustomerInformationForm: React.FC<CustomerInformationFormProps> = ({ onSub
               <Label htmlFor="phone">Phone</Label>
               <Input 
                 id="phone" 
-                value={formData.phone}
-                onChange={handleChange}
+                value={formData.contactInfo.phone}
+                onChange={handleContactChange}
                 required 
               />
             </div>
@@ -88,8 +167,8 @@ const CustomerInformationForm: React.FC<CustomerInformationFormProps> = ({ onSub
               <Label htmlFor="company">Company (Optional)</Label>
               <Input 
                 id="company" 
-                value={formData.company}
-                onChange={handleChange}
+                value={formData.contactInfo.company}
+                onChange={handleContactChange}
               />
             </div>
           </div>
@@ -99,46 +178,36 @@ const CustomerInformationForm: React.FC<CustomerInformationFormProps> = ({ onSub
 
         <div>
           <h2 className="text-xl font-semibold mb-4">Shipping Address</h2>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="address1">Address Line 1</Label>
-              <Input 
-                id="address1" 
-                value={formData.address1}
-                onChange={handleChange}
-                required 
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address2">Address Line 2 (Optional)</Label>
-              <Input 
-                id="address2" 
-                value={formData.address2}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input 
-                  id="city" 
-                  value={formData.city}
-                  onChange={handleChange}
-                  required 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="postalCode">Postal Code</Label>
-                <Input 
-                  id="postalCode" 
-                  value={formData.postalCode}
-                  onChange={handleChange}
-                  required 
-                />
-              </div>
-            </div>
-          </div>
+          <AddressForm 
+            type="shipping"
+            data={formData.shippingAddress}
+            onChange={handleShippingAddressChange}
+          />
         </div>
+
+        <Separator />
+
+        <div className="flex items-center space-x-2 mb-4">
+          <Checkbox 
+            id="billingSame" 
+            checked={formData.billingSameAsShipping} 
+            onCheckedChange={handleBillingSameChange} 
+          />
+          <Label htmlFor="billingSame" className="cursor-pointer">
+            Billing address is the same as shipping address
+          </Label>
+        </div>
+
+        {!formData.billingSameAsShipping && (
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Billing Address</h2>
+            <AddressForm 
+              type="billing"
+              data={formData.billingAddress}
+              onChange={handleBillingAddressChange}
+            />
+          </div>
+        )}
 
         <Separator />
 
@@ -151,7 +220,7 @@ const CustomerInformationForm: React.FC<CustomerInformationFormProps> = ({ onSub
               placeholder="Special instructions for your order"
               className="min-h-[100px]"
               value={formData.notes}
-              onChange={handleChange}
+              onChange={handleNotesChange}
             />
           </div>
         </div>

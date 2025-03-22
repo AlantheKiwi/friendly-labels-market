@@ -1,20 +1,15 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import ClientSidebar from "./ClientSidebar";
 import { useAuth } from "@/context/AuthContext";
 import Header from "@/components/Header";
-import { useNavigate } from "react-router-dom";
 
 interface ClientLayoutProps {
   children: React.ReactNode;
 }
 
 const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
-  const { user, isClient, isLoading } = useAuth();
-  const navigate = useNavigate();
-  
-  // No need to redirect here as ProtectedRoute will handle that
-  // This component should only receive the children when user is authenticated
+  const { isLoading } = useAuth();
   
   if (isLoading) {
     return (
