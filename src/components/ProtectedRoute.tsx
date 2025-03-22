@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
@@ -16,6 +16,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireClient = false 
 }) => {
   const { user, isAdmin, isClient, isLoading, refreshRoles, lastRoleCheck } = useAuth();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
   
   // If more than 60 seconds have passed since the last role check, refresh roles
@@ -24,15 +25,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       user && 
       lastRoleCheck && 
       Date.now() - lastRoleCheck > 60000 && // 60 seconds
-      (requireAdmin || requireClient);
+      (requireAdmin || requireClient) &&
+      !isRefreshing;
       
     if (shouldRefresh) {
       console.log("Auto-refreshing roles - stale role data detected");
-      refreshRoles().catch(error => {
+      setIsRefreshing(true);
+      refreshRoles().then(() => {
+        setIsRefreshing(false);
+      }).catch(error => {
         console.error("Auto-refresh roles error:", error);
+        setIsRefreshing(false);
       });
     }
-  }, [user, lastRoleCheck, refreshRoles, requireAdmin, requireClient]);
+  }, [user, lastRoleCheck, refreshRoles, requireAdmin, requireClient, isRefreshing]);
 
   if (isLoading) {
     return (

@@ -1,7 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import React, { createContext, useContext } from "react";
 import { AuthContextType } from "./authTypes";
 import { useAuthState } from "./useAuthState";
 import { useAuthListeners } from "./useAuthListeners";
@@ -30,8 +28,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useAuthListeners({
     setSession,
     setUser,
-    setIsAdmin: (val) => {},  // These will be handled by checkRolesWithTimeout
-    setIsClient: (val) => {}, // These will be handled by checkRolesWithTimeout
+    setIsAdmin: (isAdmin) => {},  // We'll handle this via checkRolesWithTimeout
+    setIsClient: (isClient) => {},  // We'll handle this via checkRolesWithTimeout
     setIsLoading,
     checkRolesWithTimeout
   });

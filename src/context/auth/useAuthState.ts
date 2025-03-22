@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { useToast } from "@/components/ui/use-toast";
 import { checkUserRoles, ensureClientRole } from "@/hooks/useRoleCheck";
@@ -20,20 +20,36 @@ export const useAuthState = (): AuthState & {
   const [lastRoleCheck, setLastRoleCheck] = useState<number>(0);
   const { toast } = useToast();
   const roleCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const roleCheckInProgressRef = useRef<boolean>(false);
 
   // Helper function to check roles with improved logic
   const checkRolesWithTimeout = useCallback(async (userId: string): Promise<UserRoles> => {
     console.log("Starting role check with timeout for user:", userId);
     
+    // Prevent concurrent role checks for the same user
+    if (roleCheckInProgressRef.current) {
+      console.log("Role check already in progress, using cached values");
+      return { isAdmin, isClient };
+    }
+    
+    roleCheckInProgressRef.current = true;
+    
     // Clear any existing timeout to prevent race conditions
     if (roleCheckTimeoutRef.current) {
       clearTimeout(roleCheckTimeoutRef.current);
+      roleCheckTimeoutRef.current = null;
     }
     
     // Set a timeout to ensure loading state is eventually set to false even if role check fails
     roleCheckTimeoutRef.current = setTimeout(() => {
       console.log("Role check timeout triggered - forcing loading to false");
       setIsLoading(false);
+      roleCheckInProgressRef.current = false;
+      
+      // Set client to true as fallback to prevent access issues
+      if (userId) {
+        setIsClient(true);
+      }
       
       // Show a toast when we hit the timeout
       toast({
@@ -64,6 +80,7 @@ export const useAuthState = (): AuthState & {
       }
       
       setIsLoading(false);
+      roleCheckInProgressRef.current = false;
       return roles;
     } catch (error) {
       console.error("Error checking roles:", error);
@@ -77,9 +94,10 @@ export const useAuthState = (): AuthState & {
       
       // Default to client role for authenticated users even if checks fail
       setIsClient(true);
+      roleCheckInProgressRef.current = false;
       return { isAdmin: false, isClient: true };
     }
-  }, [toast]);
+  }, [toast, isAdmin, isClient]);
 
   return {
     session,

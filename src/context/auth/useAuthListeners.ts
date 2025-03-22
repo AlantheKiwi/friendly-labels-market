@@ -22,10 +22,16 @@ export const useAuthListeners = ({
 }: UseAuthListenersProps) => {
   const navigate = useNavigate();
   const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
+  const initialCheckDoneRef = useRef(false);
 
   // Setup auth listeners and initial session check
   useEffect(() => {
     console.log("Setting up auth listener");
+    
+    // Prevent duplicate initial session checks
+    if (initialCheckDoneRef.current) {
+      return;
+    }
     
     // Set up auth state listener first
     const { data } = supabase.auth.onAuthStateChange(
@@ -40,8 +46,8 @@ export const useAuthListeners = ({
           setIsClient(false);
           setIsLoading(false);
           
-          // Force reload on sign out to ensure clean state
-          if (window.location.pathname !== "/") {
+          // Don't force reload on sign out to prevent potential loops
+          if (window.location.pathname !== "/" && !window.location.pathname.includes("/auth/")) {
             navigate("/", { replace: true });
           }
         } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
@@ -52,18 +58,23 @@ export const useAuthListeners = ({
             setUser(currentSession.user);
             
             if (currentSession.user) {
-              const roles = await checkRolesWithTimeout(currentSession.user.id);
-              
-              // Redirect if on login or register page
-              const currentPath = window.location.pathname;
-              if (currentPath === "/auth/login" || currentPath === "/auth/register") {
-                if (roles.isClient) {
-                  console.log("Auth state change - redirecting client to dashboard");
-                  navigate("/client/dashboard", { replace: true });
-                } else if (roles.isAdmin) {
-                  console.log("Auth state change - redirecting admin to dashboard");
-                  navigate("/admin/dashboard", { replace: true });
+              try {
+                const roles = await checkRolesWithTimeout(currentSession.user.id);
+                
+                // Redirect if on login or register page
+                const currentPath = window.location.pathname;
+                if (currentPath === "/auth/login" || currentPath === "/auth/register") {
+                  if (roles.isClient) {
+                    console.log("Auth state change - redirecting client to dashboard");
+                    navigate("/client/dashboard", { replace: true });
+                  } else if (roles.isAdmin) {
+                    console.log("Auth state change - redirecting admin to dashboard");
+                    navigate("/admin/dashboard", { replace: true });
+                  }
                 }
+              } catch (error) {
+                console.error("Error checking roles in auth listener:", error);
+                setIsLoading(false);
               }
             } else {
               // If there's a session but no user, make sure loading is false
@@ -83,7 +94,9 @@ export const useAuthListeners = ({
     // Store subscription reference for cleanup
     subscriptionRef.current = data.subscription;
     
-    // Then check for existing session
+    // Then check for existing session - only once
+    initialCheckDoneRef.current = true;
+    
     supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
       console.log("Initial session check:", currentSession?.user?.id);
       
@@ -92,20 +105,25 @@ export const useAuthListeners = ({
         setUser(currentSession.user);
         
         if (currentSession.user) {
-          const roles = await checkRolesWithTimeout(currentSession.user.id);
-          
-          // Redirect based on roles if on homepage or auth pages
-          const currentPath = window.location.pathname;
-          if (currentPath === "/" || 
-              currentPath === "/auth/login" || 
-              currentPath === "/auth/register") {
-            if (roles.isClient) {
-              console.log("Initial load - redirecting client to dashboard");
-              navigate("/client/dashboard", { replace: true });
-            } else if (roles.isAdmin) {
-              console.log("Initial load - redirecting admin to dashboard");
-              navigate("/admin/dashboard", { replace: true });
+          try {
+            const roles = await checkRolesWithTimeout(currentSession.user.id);
+            
+            // Redirect based on roles if on homepage or auth pages
+            const currentPath = window.location.pathname;
+            if (currentPath === "/" || 
+                currentPath === "/auth/login" || 
+                currentPath === "/auth/register") {
+              if (roles.isClient) {
+                console.log("Initial load - redirecting client to dashboard");
+                navigate("/client/dashboard", { replace: true });
+              } else if (roles.isAdmin) {
+                console.log("Initial load - redirecting admin to dashboard");
+                navigate("/admin/dashboard", { replace: true });
+              }
             }
+          } catch (error) {
+            console.error("Error checking roles in initial session:", error);
+            setIsLoading(false);
           }
         } else {
           // Set loading to false if there's a session but no user
