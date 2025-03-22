@@ -1,9 +1,9 @@
-
 import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -11,8 +11,9 @@ interface MobileMenuProps {
 }
 
 const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
-  const { user, signOut, isClient, isAdmin } = useAuth();
+  const { user, signOut, isClient, isAdmin, refreshRoles } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Debug logging
   useEffect(() => {
@@ -39,6 +40,52 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
         variant: "destructive"
       });
     }
+  };
+
+  const handleClientPortalClick = async () => {
+    onClose(); // Close the mobile menu immediately
+    
+    // If user is not logged in, redirect to login
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to access the client portal",
+      });
+      navigate("/auth/login");
+      return;
+    }
+
+    // If user is logged in but doesn't have client role, try to refresh roles
+    if (!isClient) {
+      toast({
+        title: "Checking permissions",
+        description: "Verifying your access to the client portal...",
+      });
+      
+      try {
+        const roles = await refreshRoles();
+        if (roles.isClient) {
+          navigate("/client/dashboard");
+        } else {
+          toast({
+            title: "Access denied",
+            description: "You don't have client portal access. Please contact support.",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        console.error("Error refreshing roles:", error);
+        toast({
+          title: "Error checking permissions",
+          description: "There was a problem verifying your access. Please try again.",
+          variant: "destructive"
+        });
+      }
+      return;
+    }
+
+    // If user is already verified as client, just navigate
+    navigate("/client/dashboard");
   };
 
   if (!isOpen) return null;
@@ -75,50 +122,18 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           Contact
         </Link>
         
-        {/* Add client portal link for clients */}
-        {isClient && user && (
-          <>
-            <Link
-              to="/client/dashboard"
-              className="px-4 py-2 bg-primary text-white hover:bg-primary/90 rounded-md font-medium flex items-center gap-2"
-              onClick={onClose}
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              Client Portal
-            </Link>
-            <button 
-              className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2 w-full text-left"
-              onClick={handleSignOut}
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </button>
-          </>
-        )}
+        {/* Always show Client Portal button */}
+        <Button
+          className="mx-4 flex items-center gap-2 justify-center"
+          variant="outline"
+          onClick={handleClientPortalClick}
+        >
+          <LayoutDashboard className="h-4 w-4" />
+          Client Portal
+        </Button>
         
-        {/* Add admin panel link for admins */}
-        {isAdmin && user && (
-          <>
-            <Link
-              to="/admin/dashboard"
-              className="px-4 py-2 bg-primary text-white hover:bg-primary/90 rounded-md font-medium flex items-center gap-2"
-              onClick={onClose}
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              Admin Panel
-            </Link>
-            <button 
-              className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2 w-full text-left"
-              onClick={handleSignOut}
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </button>
-          </>
-        )}
-        
-        {/* Show logout for users not logged in */}
-        {user && !isClient && !isAdmin && (
+        {/* Show logout for logged in users */}
+        {user && (
           <button 
             className="px-4 py-2 hover:bg-gray-50 rounded-md font-medium flex items-center gap-2 w-full text-left"
             onClick={handleSignOut}
