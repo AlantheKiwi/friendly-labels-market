@@ -37,79 +37,91 @@ export const useAuthListeners = ({
     }
     
     // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        console.log("Auth state changed:", event, currentSession?.user?.id);
-        
-        if (event === 'SIGNED_OUT') {
-          console.log("SIGNED_OUT event received, clearing state");
-          setSession(null);
-          setUser(null);
-          setIsAdmin(false);
-          setIsClient(false);
-          setIsLoading(false);
+    try {
+      const { data } = supabase.auth.onAuthStateChange(
+        async (event, currentSession) => {
+          console.log("Auth state changed:", event, currentSession?.user?.id);
           
-          // Don't force reload on sign out to prevent potential loops
-          if (window.location.pathname !== "/" && !window.location.pathname.includes("/auth/")) {
-            navigate("/", { replace: true });
-          }
-        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          console.log(`${event} event received, updating session`);
-          
-          if (currentSession) {
-            setSession(currentSession);
-            setUser(currentSession.user);
+          if (event === 'SIGNED_OUT') {
+            console.log("SIGNED_OUT event received, clearing state");
+            setSession(null);
+            setUser(null);
+            setIsAdmin(false);
+            setIsClient(false);
+            setIsLoading(false);
             
-            if (currentSession.user) {
-              try {
-                // Set loading to true before checking roles
-                setIsLoading(true);
-                
-                // Check roles with timeout
-                if (!redirectInProgressRef.current) {
-                  redirectInProgressRef.current = true;
+            // Don't force reload on sign out to prevent potential loops
+            if (window.location.pathname !== "/" && !window.location.pathname.includes("/auth/")) {
+              navigate("/", { replace: true });
+            }
+          } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            console.log(`${event} event received, updating session`);
+            
+            if (currentSession) {
+              setSession(currentSession);
+              setUser(currentSession.user);
+              
+              if (currentSession.user) {
+                try {
+                  // Set loading to true before checking roles
+                  setIsLoading(true);
                   
-                  const roles = await checkRolesWithTimeout(currentSession.user.id);
-                  setIsAdmin(roles.isAdmin);
-                  setIsClient(roles.isClient);
-                  
-                  // Redirect if on login or register page
-                  const currentPath = window.location.pathname;
-                  if (currentPath === "/auth/login" || currentPath === "/auth/register") {
-                    if (roles.isClient) {
-                      console.log("Auth state change - redirecting client to dashboard");
-                      navigate("/client/dashboard", { replace: true });
-                    } else if (roles.isAdmin) {
-                      console.log("Auth state change - redirecting admin to dashboard");
-                      navigate("/admin/dashboard", { replace: true });
+                  // Check roles with timeout
+                  if (!redirectInProgressRef.current) {
+                    redirectInProgressRef.current = true;
+                    
+                    const roles = await checkRolesWithTimeout(currentSession.user.id);
+                    setIsAdmin(roles.isAdmin);
+                    setIsClient(roles.isClient);
+                    
+                    // Redirect if on login or register page
+                    const currentPath = window.location.pathname;
+                    if (currentPath === "/auth/login" || currentPath === "/auth/register") {
+                      if (roles.isClient) {
+                        console.log("Auth state change - redirecting client to dashboard");
+                        navigate("/client/dashboard", { replace: true });
+                      } else if (roles.isAdmin) {
+                        console.log("Auth state change - redirecting admin to dashboard");
+                        navigate("/admin/dashboard", { replace: true });
+                      }
                     }
+                    
+                    setIsLoading(false);
+                    redirectInProgressRef.current = false;
                   }
-                  
+                } catch (error) {
+                  console.error("Error checking roles in auth listener:", error);
                   setIsLoading(false);
                   redirectInProgressRef.current = false;
                 }
-              } catch (error) {
-                console.error("Error checking roles in auth listener:", error);
+              } else {
+                // If there's a session but no user, make sure loading is false
                 setIsLoading(false);
-                redirectInProgressRef.current = false;
               }
             } else {
-              // If there's a session but no user, make sure loading is false
+              // If no session, make sure loading is false
               setIsLoading(false);
             }
           } else {
-            // If no session, make sure loading is false
+            // For other events, ensure loading state is updated
             setIsLoading(false);
           }
-        } else {
-          // For other events, ensure loading state is updated
-          setIsLoading(false);
         }
+      );
+      
+      // Store subscription reference for cleanup - ensure it has unsubscribe method
+      if (data && typeof data.subscription?.unsubscribe === 'function') {
+        subscriptionRef.current = { 
+          unsubscribe: () => data.subscription.unsubscribe() 
+        };
+      } else {
+        console.warn("Supabase subscription doesn't have expected unsubscribe method");
+        subscriptionRef.current = null;
       }
-    );
-    
-    // Store subscription reference for cleanup
-    subscriptionRef.current = { unsubscribe: subscription.unsubscribe };
+    } catch (error) {
+      console.error("Error setting up auth listener:", error);
+      subscriptionRef.current = null;
+    }
     
     // Then check for existing session - only once
     initialCheckDoneRef.current = true;
@@ -175,8 +187,12 @@ export const useAuthListeners = ({
     // Cleanup function
     return () => {
       console.log("Cleaning up auth listener subscription");
-      if (subscriptionRef.current) {
-        subscriptionRef.current.unsubscribe();
+      if (subscriptionRef.current && typeof subscriptionRef.current.unsubscribe === 'function') {
+        try {
+          subscriptionRef.current.unsubscribe();
+        } catch (error) {
+          console.error("Error during subscription cleanup:", error);
+        }
         subscriptionRef.current = null;
       }
     };
