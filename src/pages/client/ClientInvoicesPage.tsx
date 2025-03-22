@@ -3,37 +3,13 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/context/AuthContext";
 import ClientLayout from "@/components/client/ClientLayout";
+import { useClientInvoices } from "@/hooks/useClientInvoices";
+import { Loader2 } from "lucide-react";
 
 const ClientInvoicesPage = () => {
-  const { user } = useAuth();
+  const { invoices, isLoading, error } = useClientInvoices();
   
-  // Mock data for invoices since we don't have an invoices table yet
-  const mockInvoices = [
-    {
-      id: "INV-001",
-      order_number: "ORD-001",
-      date: "2024-05-15",
-      amount: 250.00,
-      status: "paid"
-    },
-    {
-      id: "INV-002",
-      order_number: "ORD-002",
-      date: "2024-05-10",
-      amount: 175.50,
-      status: "pending"
-    },
-    {
-      id: "INV-003",
-      order_number: "ORD-003",
-      date: "2024-05-05",
-      amount: 320.25,
-      status: "paid"
-    }
-  ];
-
   // Function to get badge variant based on status
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
@@ -57,41 +33,57 @@ const ClientInvoicesPage = () => {
           <CardTitle>Invoice History</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Invoice #</TableHead>
-                <TableHead>Order #</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Amount (NZD)</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockInvoices.map((invoice) => (
-                <TableRow key={invoice.id}>
-                  <TableCell className="font-medium">{invoice.id}</TableCell>
-                  <TableCell>{invoice.order_number}</TableCell>
-                  <TableCell>{new Date(invoice.date).toLocaleDateString()}</TableCell>
-                  <TableCell>${invoice.amount.toFixed(2)}</TableCell>
-                  <TableCell>{getStatusBadge(invoice.status)}</TableCell>
-                  <TableCell>
-                    <a 
-                      href="#" 
-                      className="text-primary hover:underline"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        alert("Download functionality will be implemented soon");
-                      }}
-                    >
-                      Download
-                    </a>
-                  </TableCell>
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-500">
+              Error loading invoices. Please try again later.
+            </div>
+          ) : invoices && invoices.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Invoice #</TableHead>
+                  <TableHead>Order #</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Product</TableHead>
+                  <TableHead>Amount (NZD)</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {invoices.map((invoice) => (
+                  <TableRow key={invoice.id}>
+                    <TableCell className="font-medium">{invoice.id.substring(0, 8).toUpperCase()}</TableCell>
+                    <TableCell>{invoice.order_number}</TableCell>
+                    <TableCell>{new Date(invoice.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell>{invoice.product_name}</TableCell>
+                    <TableCell>${(invoice.price * invoice.quantity).toFixed(2)}</TableCell>
+                    <TableCell>{getStatusBadge(invoice.status)}</TableCell>
+                    <TableCell>
+                      <a 
+                        href="#" 
+                        className="text-primary hover:underline"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          alert("Download functionality will be implemented soon");
+                        }}
+                      >
+                        Download
+                      </a>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              No invoices found. Your order history will appear here.
+            </div>
+          )}
         </CardContent>
       </Card>
     </ClientLayout>
