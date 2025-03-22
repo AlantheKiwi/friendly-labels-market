@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +14,7 @@ const AdminCompleteDashboardPage = () => {
   const { isAdmin, loading } = useAdminAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("orders");
 
   React.useEffect(() => {
     if (!loading && !isAdmin) {
@@ -46,7 +47,7 @@ const AdminCompleteDashboardPage = () => {
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
           
-          <Tabs defaultValue="orders" className="space-y-6">
+          <Tabs defaultValue="orders" onValueChange={setActiveTab} value={activeTab}>
             <TabsList className="mb-6">
               <TabsTrigger value="orders">Client Orders</TabsTrigger>
               <TabsTrigger value="payments">Payments</TabsTrigger>
