@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { useMemo } from "react";
 
 export interface Invoice {
   id: string;
@@ -15,7 +16,9 @@ export interface Invoice {
 
 export const useClientInvoices = () => {
   const { user } = useAuth();
-  const userId = user?.id;
+  
+  // Use useMemo to ensure this value is stable between renders
+  const userId = useMemo(() => user?.id, [user?.id]);
 
   const { data: invoices, isLoading, error } = useQuery({
     queryKey: ["clientInvoices", userId],

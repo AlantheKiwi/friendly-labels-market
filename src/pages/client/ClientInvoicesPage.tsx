@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -11,8 +11,8 @@ import { Button } from "@/components/ui/button";
 const ClientInvoicesPage = () => {
   const { invoices, isLoading, error } = useClientInvoices();
   
-  // Function to get badge variant based on status
-  const getStatusBadge = (status: string) => {
+  // Use memoized function to prevent recreation on each render
+  const getStatusBadge = useCallback((status: string) => {
     switch (status.toLowerCase()) {
       case "paid":
         return <Badge className="bg-green-500">Paid</Badge>;
@@ -23,13 +23,14 @@ const ClientInvoicesPage = () => {
       default:
         return <Badge>{status}</Badge>;
     }
-  };
+  }, []);
 
-  const handleDownload = (e: React.MouseEvent, invoiceId: string) => {
+  // Use memoized function to prevent recreation on each render
+  const handleDownload = useCallback((e: React.MouseEvent, invoiceId: string) => {
     e.preventDefault();
     console.log(`Download invoice: ${invoiceId}`);
     alert("Download functionality will be implemented soon");
-  };
+  }, []);
 
   return (
     <ClientLayout>
