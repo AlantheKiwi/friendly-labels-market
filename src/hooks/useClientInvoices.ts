@@ -15,18 +15,19 @@ export interface Invoice {
 
 export const useClientInvoices = () => {
   const { user } = useAuth();
+  const userId = user?.id;
 
   const { data: invoices, isLoading, error } = useQuery({
-    queryKey: ["clientInvoices", user?.id],
+    queryKey: ["clientInvoices", userId],
     queryFn: async (): Promise<Invoice[]> => {
-      if (!user?.id) {
+      if (!userId) {
         return [];
       }
 
       const { data, error } = await supabase
         .from("orders")
         .select("*")
-        .eq("client_id", user.id)
+        .eq("client_id", userId)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -36,7 +37,7 @@ export const useClientInvoices = () => {
 
       return data || [];
     },
-    enabled: !!user?.id,
+    enabled: !!userId,
   });
 
   return {

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import ClientLayout from "@/components/client/ClientLayout";
 import { useClientInvoices } from "@/hooks/useClientInvoices";
 import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const ClientInvoicesPage = () => {
   const { invoices, isLoading, error } = useClientInvoices();
@@ -22,6 +23,12 @@ const ClientInvoicesPage = () => {
       default:
         return <Badge>{status}</Badge>;
     }
+  };
+
+  const handleDownload = (e: React.MouseEvent, invoiceId: string) => {
+    e.preventDefault();
+    console.log(`Download invoice: ${invoiceId}`);
+    alert("Download functionality will be implemented soon");
   };
 
   return (
@@ -64,16 +71,13 @@ const ClientInvoicesPage = () => {
                     <TableCell>${(invoice.price * invoice.quantity).toFixed(2)}</TableCell>
                     <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                     <TableCell>
-                      <a 
-                        href="#" 
-                        className="text-primary hover:underline"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          alert("Download functionality will be implemented soon");
-                        }}
+                      <Button 
+                        variant="link" 
+                        className="text-primary hover:underline p-0 h-auto"
+                        onClick={(e) => handleDownload(e, invoice.id)}
                       >
                         Download
-                      </a>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
