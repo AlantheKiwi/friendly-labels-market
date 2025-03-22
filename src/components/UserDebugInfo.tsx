@@ -4,27 +4,40 @@ import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { useToast } from "./ui/use-toast";
+import { RefreshCw } from "lucide-react";
 
 const UserDebugInfo = () => {
-  const { user, isClient, isAdmin, isLoading, session } = useAuth();
+  const { user, isClient, isAdmin, isLoading, session, refreshRoles, lastRoleCheck } = useAuth();
   const { toast } = useToast();
 
   // Add debug button to force role check
   const handleDebugRoleCheck = async () => {
     try {
-      console.log("Manually refreshing authentication state...");
+      console.log("Manually refreshing roles...");
       toast({
-        title: "Refreshing authentication",
-        description: "Reloading the page to refresh authentication state...",
+        title: "Refreshing roles",
+        description: "Please wait while we check your access privileges...",
       });
       
-      // Force a hard reload to clear any cached state
-      window.location.reload();
+      const roles = await refreshRoles();
+      
+      if (roles.isAdmin || roles.isClient) {
+        toast({
+          title: "Roles refreshed",
+          description: `You have the following roles: ${roles.isAdmin ? 'Admin' : ''}${roles.isAdmin && roles.isClient ? ', ' : ''}${roles.isClient ? 'Client' : ''}`,
+        });
+      } else {
+        toast({
+          title: "No roles found",
+          description: "You don't have any roles assigned. Contact support if this is unexpected.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
-      console.error("Debug error:", error);
+      console.error("Role refresh error:", error);
       toast({
         title: "Error",
-        description: "Failed to refresh authentication state",
+        description: "Failed to refresh roles. Try signing out and back in.",
         variant: "destructive"
       });
     }
@@ -58,6 +71,14 @@ const UserDebugInfo = () => {
       });
     }
   };
+  
+  // Format the last role check time
+  const formatLastCheck = () => {
+    if (!lastRoleCheck) return "Never";
+    
+    const date = new Date(lastRoleCheck);
+    return `${date.toLocaleTimeString()} (${Math.round((Date.now() - lastRoleCheck) / 1000)}s ago)`;
+  };
 
   return (
     <Card className="w-full max-w-md mx-auto mt-4">
@@ -78,15 +99,17 @@ const UserDebugInfo = () => {
                 <p>Session exists: {session ? 'Yes' : 'No'}</p>
                 <p>User exists: {user ? 'Yes' : 'No'}</p>
                 {user && <p>User ID: {user.id}</p>}
+                <p>Last role check: {formatLastCheck()}</p>
               </div>
               <div className="flex gap-2 mt-2">
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  className="mt-2 flex-1" 
+                  className="mt-2 flex-1 items-center gap-1" 
                   onClick={handleDebugRoleCheck}
+                  disabled={!user}
                 >
-                  Force Refresh Authentication
+                  <RefreshCw className="h-3 w-3" /> Refresh Roles
                 </Button>
                 <Button 
                   size="sm" 
@@ -117,15 +140,16 @@ const UserDebugInfo = () => {
                 <p>Debug info:</p>
                 <p>Session exists: Yes</p>
                 <p>Auth state initialized: Yes</p>
+                <p>Last role check: {formatLastCheck()}</p>
               </div>
               <div className="flex gap-2 mt-2">
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  className="mt-2 flex-1" 
+                  className="mt-2 flex-1 items-center gap-1" 
                   onClick={handleDebugRoleCheck}
                 >
-                  Refresh Authentication
+                  <RefreshCw className="h-3 w-3" /> Refresh Roles
                 </Button>
                 <Button 
                   size="sm" 
@@ -150,6 +174,7 @@ const UserDebugInfo = () => {
                 variant="outline" 
                 className="mt-2 w-full" 
                 onClick={handleDebugRoleCheck}
+                disabled
               >
                 Refresh Authentication
               </Button>

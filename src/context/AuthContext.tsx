@@ -1,11 +1,12 @@
 
-import React, { createContext, useContext, useEffect, useState, useRef } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthContextType } from "@/types/auth";
-import { checkUserRoles } from "@/hooks/useRoleCheck";
+import { checkUserRoles, ensureClientRole } from "@/hooks/useRoleCheck";
 import { useAuthOperations } from "@/hooks/useAuthOperations";
+import { useToast } from "@/components/ui/use-toast";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -15,7 +16,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAdmin, setIsAdmin] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [lastRoleCheck, setLastRoleCheck] = useState<number>(0);
   const navigate = useNavigate();
+  const { toast } = useToast();
   const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
   const roleCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { signIn, signUp, signOut: authSignOut } = useAuthOperations();
@@ -45,8 +48,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Helper function to check roles with timeout safety
-  const checkRolesWithTimeout = async (userId: string) => {
+  // Helper function to check roles with improved logic
+  const checkRolesWithTimeout = useCallback(async (userId: string) => {
     console.log("Starting role check with timeout for user:", userId);
     
     // Clear any existing timeout to prevent race conditions
@@ -58,13 +61,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     roleCheckTimeoutRef.current = setTimeout(() => {
       console.log("Role check timeout triggered - forcing loading to false");
       setIsLoading(false);
+      
+      // Show a toast when we hit the timeout
+      toast({
+        title: "Slow response",
+        description: "Role check is taking longer than expected. Try refreshing.",
+        variant: "destructive"
+      });
     }, 5000); // 5 second timeout
     
     try {
       const roles = await checkUserRoles(userId);
       console.log("User roles determined:", roles);
-      setIsAdmin(roles.isAdmin);
-      setIsClient(roles.isClient);
+      
+      // If user has no roles but is authenticated, try to ensure they have client role
+      if (!roles.isAdmin && !roles.isClient) {
+        console.log("No roles found for authenticated user, attempting to assign client role");
+        const roleAssigned = await ensureClientRole(userId);
+        
+        if (roleAssigned) {
+          console.log("Client role assigned, rechecking roles");
+          // Recheck roles after assignment
+          const updatedRoles = await checkUserRoles(userId);
+          setIsAdmin(updatedRoles.isAdmin);
+          setIsClient(updatedRoles.isClient);
+        } else {
+          setIsAdmin(roles.isAdmin);
+          setIsClient(roles.isClient);
+        }
+      } else {
+        setIsAdmin(roles.isAdmin);
+        setIsClient(roles.isClient);
+      }
+      
+      // Record when we last checked roles
+      setLastRoleCheck(Date.now());
       
       // Clear the timeout since we got the roles successfully
       if (roleCheckTimeoutRef.current) {
@@ -86,7 +117,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       return { isAdmin: false, isClient: false };
     }
-  };
+  }, [toast]);
+
+  // Function to manually refresh roles
+  const refreshRoles = useCallback(async () => {
+    if (user?.id) {
+      console.log("Manual role refresh triggered for user:", user.id);
+      setIsLoading(true);
+      return checkRolesWithTimeout(user.id);
+    }
+    return { isAdmin: false, isClient: false };
+  }, [user, checkRolesWithTimeout]);
 
   useEffect(() => {
     console.log("Setting up auth listener");
@@ -108,30 +149,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (window.location.pathname !== "/") {
             navigate("/", { replace: true });
           }
-        } else if (currentSession) {
-          setSession(currentSession);
-          setUser(currentSession.user);
+        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          console.log(`${event} event received, updating session`);
           
-          if (currentSession.user) {
-            const roles = await checkRolesWithTimeout(currentSession.user.id);
+          if (currentSession) {
+            setSession(currentSession);
+            setUser(currentSession.user);
             
-            // Redirect if on login or register page
-            const currentPath = window.location.pathname;
-            if (currentPath === "/auth/login" || currentPath === "/auth/register" || currentPath === "/") {
-              if (roles.isClient) {
-                console.log("Auth state change - redirecting client to dashboard");
-                navigate("/client/dashboard", { replace: true });
-              } else if (roles.isAdmin) {
-                console.log("Auth state change - redirecting admin to dashboard");
-                navigate("/admin/dashboard", { replace: true });
+            if (currentSession.user) {
+              const roles = await checkRolesWithTimeout(currentSession.user.id);
+              
+              // Redirect if on login or register page
+              const currentPath = window.location.pathname;
+              if (currentPath === "/auth/login" || currentPath === "/auth/register" || currentPath === "/") {
+                if (roles.isClient) {
+                  console.log("Auth state change - redirecting client to dashboard");
+                  navigate("/client/dashboard", { replace: true });
+                } else if (roles.isAdmin) {
+                  console.log("Auth state change - redirecting admin to dashboard");
+                  navigate("/admin/dashboard", { replace: true });
+                }
               }
+            } else {
+              // If there's a session but no user, make sure loading is false
+              setIsLoading(false);
             }
           } else {
-            // If there's a session but no user, make sure loading is false
+            // If no session, make sure loading is false
             setIsLoading(false);
           }
         } else {
-          // If no session or user, make sure loading is false
+          // For other events, ensure loading state is updated
           setIsLoading(false);
         }
       }
@@ -193,7 +241,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         roleCheckTimeoutRef.current = null;
       }
     };
-  }, [navigate]);
+  }, [navigate, checkRolesWithTimeout]);
 
   const value = {
     session,
@@ -203,7 +251,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isLoading,
     signIn,
     signUp,
-    signOut
+    signOut,
+    refreshRoles, // Added for manual refresh
+    lastRoleCheck
   };
 
   console.log("AuthContext current state:", { 
@@ -211,7 +261,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     userId: user?.id,
     isAdmin, 
     isClient, 
-    isLoading 
+    isLoading,
+    lastRoleCheck: new Date(lastRoleCheck).toISOString()
   });
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

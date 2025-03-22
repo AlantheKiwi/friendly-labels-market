@@ -9,7 +9,9 @@ export type AuthContextType = {
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, userData: any) => Promise<void>;
-  signOut: () => Promise<void>; // Changed back to Promise<void>
+  signOut: () => Promise<void>;
+  refreshRoles: () => Promise<UserRoles>; // Added for manual role refresh
+  lastRoleCheck: number; // Timestamp of last role check
 };
 
 export type UserRoles = {
