@@ -33,6 +33,7 @@ import ClientNotesPage from "./pages/client/ClientNotesPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminCompleteDashboardPage from "./pages/admin/AdminCompleteDashboardPage";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -99,6 +100,11 @@ const App = () => {
                 <Route path="/admin/dashboard" element={
                   <ProtectedRoute requireAdmin>
                     <AdminDashboardPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/complete-dashboard" element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminCompleteDashboardPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/admin/clients" element={
