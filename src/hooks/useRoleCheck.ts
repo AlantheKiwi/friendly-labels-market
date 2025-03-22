@@ -49,6 +49,15 @@ export const checkUserRoles = async (userId: string): Promise<UserRoles> => {
             isClient: !!isClientRole 
           };
         }
+        
+        // If we're here, user has no roles, let's assign the client role automatically
+        console.log("User has no roles, attempting to assign client role");
+        const assigned = await ensureClientRole(userId);
+        
+        if (assigned) {
+          console.log("Successfully assigned client role, returning updated roles");
+          return { isAdmin: false, isClient: true };
+        }
       } catch (rpcError) {
         console.error("Fallback role check failed:", rpcError);
       }
