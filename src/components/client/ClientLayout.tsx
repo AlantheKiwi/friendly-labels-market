@@ -11,6 +11,7 @@ interface ClientLayoutProps {
 const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
   const { isLoading } = useAuth();
   
+  // Simple loading state that doesn't cause re-renders
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
