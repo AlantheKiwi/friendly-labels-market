@@ -37,7 +37,7 @@ export const useAuthListeners = ({
     }
     
     // Set up auth state listener first
-    const { data } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         console.log("Auth state changed:", event, currentSession?.user?.id);
         
@@ -109,7 +109,7 @@ export const useAuthListeners = ({
     );
     
     // Store subscription reference for cleanup
-    subscriptionRef.current = data;
+    subscriptionRef.current = { unsubscribe: subscription.unsubscribe };
     
     // Then check for existing session - only once
     initialCheckDoneRef.current = true;
