@@ -24,7 +24,7 @@ export const useAuthState = (): AuthState & {
   const roleCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const roleCheckInProgressRef = useRef<boolean>(false);
 
-  // Helper function to check roles with improved logic
+  // Helper function to check roles with improved logic - memoized to prevent recreation
   const checkRolesWithTimeout = useCallback(async (userId: string): Promise<UserRoles> => {
     console.log("Starting role check with timeout for user:", userId);
     
@@ -100,6 +100,16 @@ export const useAuthState = (): AuthState & {
       return { isAdmin: false, isClient: true };
     }
   }, [toast, isAdmin, isClient]);
+
+  // Clean up the timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (roleCheckTimeoutRef.current) {
+        clearTimeout(roleCheckTimeoutRef.current);
+        roleCheckTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   return {
     session,

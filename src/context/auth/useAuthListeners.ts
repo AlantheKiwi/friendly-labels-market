@@ -138,7 +138,7 @@ export const useAuthListeners = ({
             // Set loading to true before checking roles
             setIsLoading(true);
             
-            // Check roles with timeout
+            // Check roles with timeout - prevent multiple redirects
             if (!redirectInProgressRef.current) {
               redirectInProgressRef.current = true;
               
@@ -146,11 +146,13 @@ export const useAuthListeners = ({
               setIsAdmin(roles.isAdmin);
               setIsClient(roles.isClient);
               
-              // Redirect based on roles if on homepage or auth pages
+              // FIXED: Only redirect if not already on a protected route
               const currentPath = window.location.pathname;
-              if (currentPath === "/" || 
+              if ((currentPath === "/" || 
                   currentPath === "/auth/login" || 
-                  currentPath === "/auth/register") {
+                  currentPath === "/auth/register") &&
+                  !currentPath.startsWith("/client/") &&
+                  !currentPath.startsWith("/admin/")) {
                 if (roles.isClient) {
                   console.log("Initial load - redirecting client to dashboard");
                   navigate("/client/dashboard", { replace: true });
