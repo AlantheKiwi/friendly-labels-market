@@ -62,7 +62,7 @@ export const useRoleCheck = (
     
     try {
       // Check if this is the admin email (direct check) - a simplified approach
-      const adminEmail = "alan@insight-ai-systems.com"; // Hard-coded admin email for direct check
+      const adminEmail = "alan@insight-ai-systems.com"; 
       
       // Try to get the user's email from the user object in memory
       const userEmail = user?.email?.toLowerCase();
@@ -73,11 +73,28 @@ export const useRoleCheck = (
         isMatch: userEmail === adminEmail
       });
       
-      // If this is the admin email, set admin role to true
+      // IMPORTANT CHANGE: Directly assign admin role if email matches, bypassing database checks
       if (userEmail === adminEmail) {
-        console.log("Admin email match found - granting admin role");
+        console.log("Admin email match found - granting admin role directly");
         setIsAdmin(true);
         setIsClient(true);
+        
+        // Record when we last checked roles
+        setLastRoleCheck(Date.now());
+        
+        // Clear the timeout since we got the roles successfully
+        if (roleCheckTimeoutRef.current) {
+          clearTimeout(roleCheckTimeoutRef.current);
+          roleCheckTimeoutRef.current = null;
+        }
+        
+        setIsLoading(false);
+        roleCheckInProgressRef.current = false;
+        
+        return { 
+          isAdmin: true, 
+          isClient: true 
+        };
       } else {
         // For all other users, default to client role only 
         setIsAdmin(false);

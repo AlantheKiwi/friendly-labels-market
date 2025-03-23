@@ -86,6 +86,8 @@ export const useAdminLoginFlow = (props: UseAdminLoginFlowProps) => {
           // Try login with default password first
           const defaultLoginSuccess = await attemptLoginWithDefaultPassword();
           if (defaultLoginSuccess) {
+            // Force admin role assignment for known admin email
+            await authService.checkUserRoles("admin");
             setIsLoading(false);
             return;
           }
@@ -93,6 +95,8 @@ export const useAdminLoginFlow = (props: UseAdminLoginFlowProps) => {
           // Try login with entered password
           const userPasswordLoginSuccess = await attemptLoginWithEnteredPassword();
           if (userPasswordLoginSuccess) {
+            // Force admin role assignment for known admin email
+            await authService.checkUserRoles("admin");
             setIsLoading(false);
             return;
           }

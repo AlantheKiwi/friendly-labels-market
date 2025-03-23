@@ -19,6 +19,15 @@ const UserDebugInfo = () => {
         description: "Please wait while we check your access privileges...",
       });
       
+      // Direct email check for admin
+      if (user?.email?.toLowerCase() === "alan@insight-ai-systems.com") {
+        toast({
+          title: "Admin access granted",
+          description: "You have administrator access based on your email address."
+        });
+        return { isAdmin: true, isClient: true };
+      }
+      
       const roles = await refreshRoles();
       
       if (roles.isAdmin || roles.isClient) {

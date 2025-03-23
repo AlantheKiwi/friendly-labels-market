@@ -39,9 +39,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Get auth operations - wrapped in useMemo to prevent unnecessary recalculations
   const authOperations = useAuthOperations();
 
-  // Implement the refreshRoles function
+  // Implement the refreshRoles function with direct email check fallback
   const refreshRoles = async () => {
     if (!user) return { isAdmin: false, isClient: false };
+    
+    // Directly check admin email as a fallback
+    if (user.email?.toLowerCase() === "alan@insight-ai-systems.com") {
+      setIsAdmin(true);
+      setIsClient(true);
+      return { isAdmin: true, isClient: true };
+    }
+    
     return await checkRolesWithTimeout(user.id);
   };
 
