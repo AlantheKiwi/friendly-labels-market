@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Printer } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { RefreshCcw } from "lucide-react";
 
 export const usePrinterManagement = (initialPrinters: Printer[]) => {
   const [printerData, setPrinterData] = useState<Printer[]>(
@@ -131,6 +133,7 @@ export const usePrinterManagement = (initialPrinters: Printer[]) => {
     setSuspendAll(false);
   };
 
+  // Keep this function for compatibility, but it won't be used anymore
   const handleSuspendAllPrinters = () => {
     setSelectedPrinter(null);
     setIsSuspendDialogOpen(true);
@@ -138,31 +141,7 @@ export const usePrinterManagement = (initialPrinters: Printer[]) => {
   };
 
   const confirmSuspendPrinter = () => {
-    if (suspendAll) {
-      // Suspend all printers
-      setPrinterData(prev => 
-        prev.map(printer => ({
-          ...printer,
-          suspended: true
-        }))
-      );
-      
-      toast({
-        title: "All printers suspended",
-        description: "All printers have been suspended",
-        action: (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleUndoSuspendAll}
-            className="gap-1"
-          >
-            <RefreshCcw className="h-3.5 w-3.5" />
-            Undo
-          </Button>
-        ),
-      });
-    } else if (selectedPrinter) {
+    if (selectedPrinter) {
       // Suspend single printer
       setPrinterData(prev => 
         prev.map(p => {
@@ -215,6 +194,7 @@ export const usePrinterManagement = (initialPrinters: Printer[]) => {
     });
   };
 
+  // Keep this function for compatibility, but it won't be used anymore
   const handleUndoSuspendAll = () => {
     setPrinterData(prev => 
       prev.map(printer => ({
@@ -315,6 +295,3 @@ export const usePrinterManagement = (initialPrinters: Printer[]) => {
     isSaving
   };
 };
-
-import { Button } from "@/components/ui/button";
-import { RefreshCcw } from "lucide-react";

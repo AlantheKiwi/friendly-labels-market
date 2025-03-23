@@ -27,10 +27,8 @@ const SuspendPrinterDialog: React.FC<SuspendPrinterDialogProps> = ({
   printer,
   suspendAll,
 }) => {
-  const title = suspendAll ? "Suspend All Printers" : "Suspend Printer";
-  const description = suspendAll
-    ? "Are you sure you want to suspend all printers? This will make them unavailable for customers."
-    : `Are you sure you want to suspend ${printer?.name}? This will make the printer unavailable for customers.`;
+  const title = "Suspend Printer";
+  const description = `Are you sure you want to suspend ${printer?.name}? This will make the printer unavailable for customers.`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
