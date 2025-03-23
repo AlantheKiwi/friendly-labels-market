@@ -1,7 +1,5 @@
 
-import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
-import { RefreshCcw } from "lucide-react";
+import { useState } from "react";
 import { Printer } from "@/types";
 
 export const usePriceActions = (
@@ -13,95 +11,68 @@ export const usePriceActions = (
   setSavingIds: React.Dispatch<React.SetStateAction<number[]>>,
   initialPrinters: Printer[]
 ) => {
-  const { toast } = useToast();
-
   const handlePriceChange = (printerId: number, value: string) => {
-    const numericValue = parseFloat(value);
-    if (isNaN(numericValue) && value !== "") return;
-    
-    setEditedPrices(prev => {
-      const currentEdits = prev[printerId] || { 
-        price: printerData.find(p => p.id === printerId)?.price || 0
-      };
-      
-      return {
+    const newPrice = parseFloat(value);
+    if (!isNaN(newPrice)) {
+      setEditedPrices((prev) => ({
         ...prev,
-        [printerId]: {
-          ...currentEdits,
-          price: value === "" ? 0 : numericValue
-        }
-      };
-    });
+        [printerId]: { price: newPrice },
+      }));
+    }
   };
 
-  const handleSavePrice = (printerId: number) => {
-    setSavingIds(prev => [...prev, printerId]);
-    
-    // Simulate saving to backend
-    setTimeout(() => {
-      setPrinterData(prev => 
-        prev.map(printer => {
+  const handleSavePrice = async (printerId: number) => {
+    // Check if price is edited
+    if (!editedPrices[printerId]) return;
+
+    // Start loading state
+    setSavingIds((prev) => [...prev, printerId]);
+
+    try {
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Update printer data
+      setPrinterData((prev) =>
+        prev.map((printer) => {
           if (printer.id === printerId) {
-            const updatedPrinter = { ...printer };
-            if (editedPrices[printerId]) {
-              if (editedPrices[printerId].price !== undefined) {
-                updatedPrinter.price = editedPrices[printerId].price;
-              }
-            }
-            return updatedPrinter;
+            return {
+              ...printer,
+              price: editedPrices[printerId].price,
+            };
           }
           return printer;
         })
       );
-      
-      // Remove from editing state
-      setEditedPrices(prev => {
+
+      // Save updated printers to localStorage
+      const updatedPrinters = printerData.map((printer) => {
+        if (printer.id === printerId) {
+          return {
+            ...printer,
+            price: editedPrices[printerId].price,
+          };
+        }
+        return printer;
+      });
+      localStorage.setItem('printers', JSON.stringify(updatedPrinters));
+
+      // Clear edited price after successful save
+      setEditedPrices((prev) => {
         const newState = { ...prev };
         delete newState[printerId];
         return newState;
       });
-      
-      setSavingIds(prev => prev.filter(id => id !== printerId));
-      
-      // Show success toast with undo option
-      toast({
-        title: "Price updated",
-        description: "Printer price has been updated successfully",
-        action: (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleRevertPrice(printerId)}
-            className="gap-1"
-          >
-            <RefreshCcw className="h-3.5 w-3.5" />
-            Undo
-          </Button>
-        ),
-      });
-    }, 800);
-  };
-
-  const handleRevertPrice = (printerId: number) => {
-    // In a real app, you'd fetch the original value from the server
-    // For demonstration, we'll use the initial data
-    const originalPrinter = initialPrinters.find(p => p.id === printerId);
-    if (!originalPrinter) return;
-    
-    setPrinterData(prev => 
-      prev.map(printer => 
-        printer.id === printerId ? { ...originalPrinter } : printer
-      )
-    );
-    
-    toast({
-      title: "Price reverted",
-      description: "The price change has been undone",
-    });
+    } catch (error) {
+      console.error("Error saving price:", error);
+    } finally {
+      // End loading state
+      setSavingIds((prev) => prev.filter((id) => id !== printerId));
+    }
   };
 
   const isPriceEdited = (printerId: number) => {
-    return !!editedPrices[printerId];
+    return Boolean(editedPrices[printerId]);
   };
 
   const isSaving = (printerId: number) => {
@@ -111,8 +82,7 @@ export const usePriceActions = (
   return {
     handlePriceChange,
     handleSavePrice,
-    handleRevertPrice,
     isPriceEdited,
-    isSaving
+    isSaving,
   };
 };

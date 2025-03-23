@@ -1,3 +1,4 @@
+
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
@@ -122,12 +123,24 @@ export const usePrinterDialogs = (
     setIsDeleting(true);
     
     try {
-      // Permanent deletion from data
+      // Remove from local state
       setPrinterData(prev => prev.filter(p => p.id !== selectedPrinter.id));
       
-      // In a real application with a database, you would delete the printer from the database here
-      // For example, with Supabase:
-      // await supabase.from('printers').delete().eq('id', selectedPrinter.id);
+      // Update the source data file to permanently delete
+      // Get current printers from localStorage or create new array if none exists
+      const storedPrinters = localStorage.getItem('printers');
+      let updatedPrinters = storedPrinters ? JSON.parse(storedPrinters) : [];
+      
+      // If there's no localStorage data yet, use the current printerData as base
+      if (!updatedPrinters.length) {
+        updatedPrinters = [...printerData];
+      }
+      
+      // Filter out the deleted printer
+      updatedPrinters = updatedPrinters.filter((p: Printer) => p.id !== selectedPrinter.id);
+      
+      // Save the updated printers list back to localStorage
+      localStorage.setItem('printers', JSON.stringify(updatedPrinters));
       
       toast({
         title: "Printer deleted permanently",
@@ -155,10 +168,33 @@ export const usePrinterDialogs = (
       setPrinterData(prev => 
         prev.map(p => p.id === printer.id ? printer : p)
       );
+      
+      // Update localStorage
+      const storedPrinters = localStorage.getItem('printers');
+      if (storedPrinters) {
+        let updatedPrinters = JSON.parse(storedPrinters);
+        updatedPrinters = updatedPrinters.map((p: Printer) => 
+          p.id === printer.id ? printer : p
+        );
+        localStorage.setItem('printers', JSON.stringify(updatedPrinters));
+      }
+      
       setIsEditDialogOpen(false);
     } else {
       // Add new printer
-      setPrinterData(prev => [...prev, printer].sort((a, b) => a.id - b.id));
+      // Generate a new ID that's higher than any existing ID
+      const highestId = printerData.reduce((max, p) => Math.max(max, p.id), 0);
+      const newPrinter = {
+        ...printer,
+        id: highestId + 1
+      };
+      
+      const updatedPrinters = [...printerData, newPrinter].sort((a, b) => a.id - b.id);
+      setPrinterData(updatedPrinters);
+      
+      // Update localStorage
+      localStorage.setItem('printers', JSON.stringify(updatedPrinters));
+      
       setIsAddDialogOpen(false);
     }
   };

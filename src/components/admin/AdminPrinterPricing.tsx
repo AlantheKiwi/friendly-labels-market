@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { printers as initialPrinters } from "@/data/printerData";
 import PrinterFormDialog from "./printers/PrinterFormDialog";
 import DeletePrinterDialog from "./printers/DeletePrinterDialog";
@@ -7,8 +7,20 @@ import SuspendPrinterDialog from "./printers/SuspendPrinterDialog";
 import PrinterHeader from "./printers/PrinterHeader";
 import PrinterTable from "./printers/PrinterTable";
 import { usePrinterManagement } from "@/hooks/usePrinterManagement";
+import { Printer } from "@/types";
 
 const AdminPrinterPricing = () => {
+  // Check localStorage for saved printers on initial load
+  const getPrinters = (): Printer[] => {
+    const storedPrinters = localStorage.getItem('printers');
+    if (storedPrinters) {
+      return JSON.parse(storedPrinters);
+    }
+    // Initialize localStorage on first load
+    localStorage.setItem('printers', JSON.stringify(initialPrinters));
+    return initialPrinters;
+  };
+
   const {
     searchQuery,
     setSearchQuery,
@@ -38,7 +50,7 @@ const AdminPrinterPricing = () => {
     handleSavePrinter,
     isPriceEdited,
     isSaving
-  } = usePrinterManagement(initialPrinters);
+  } = usePrinterManagement(getPrinters());
 
   return (
     <div className="space-y-6">

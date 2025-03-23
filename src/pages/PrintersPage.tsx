@@ -1,19 +1,34 @@
 
-import React, { useRef, useCallback } from "react";
+import React, { useRef, useCallback, useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CallToAction from "@/components/CallToAction";
-import { printers } from "@/data/printerData";
+import { printers as defaultPrinters } from "@/data/printerData";
 import PrinterGrid from "@/components/PrinterGrid";
 import { Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useReactToPrint } from "react-to-print";
 import PrinterCatalog from "@/components/PrinterCatalog";
+import { Printer as PrinterType } from "@/types";
 
 const PrintersPage = () => {
-  // Filter out printers with "Zebra" in their name
+  const [printers, setPrinters] = useState<PrinterType[]>([]);
+  
+  // Load printers from localStorage or default data
+  useEffect(() => {
+    const storedPrinters = localStorage.getItem('printers');
+    if (storedPrinters) {
+      setPrinters(JSON.parse(storedPrinters));
+    } else {
+      setPrinters(defaultPrinters);
+    }
+  }, []);
+
+  // Filter out printers with "Zebra" in their name and suspended printers
   const filteredPrinters = printers.filter(printer => 
-    printer.name.includes("TSC") && !printer.name.includes("Zebra")
+    printer.name.includes("TSC") && 
+    !printer.name.includes("Zebra") &&
+    !printer.suspended
   );
 
   const pdfCatalogRef = useRef<HTMLDivElement>(null);
