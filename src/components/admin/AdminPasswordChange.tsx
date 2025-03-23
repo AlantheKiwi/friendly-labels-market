@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuthService } from "@/hooks/useAuthService";
 
 interface AdminPasswordChangeProps {
   onComplete: () => void;
@@ -18,10 +17,6 @@ const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete })
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const authService = useAuthService();
-  
-  // Get the default password from the auth service for consistency
-  const DEFAULT_ADMIN_PASSWORD = authService.DEFAULT_ADMIN_PASSWORD;
 
   // Password strength validation
   const validatePassword = (password: string) => {
@@ -54,14 +49,6 @@ const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete })
     e.preventDefault();
     setError("");
     
-    console.log("Validating current password against:", DEFAULT_ADMIN_PASSWORD);
-    
-    // Validate current password - compare with default password constant
-    if (currentPassword !== DEFAULT_ADMIN_PASSWORD) {
-      setError("Current password is incorrect");
-      return;
-    }
-    
     // Validate passwords match
     if (newPassword !== confirmPassword) {
       setError("New passwords do not match");
@@ -78,18 +65,24 @@ const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete })
     setLoading(true);
     
     try {
-      // Get current session
-      const { data: sessionData } = await supabase.auth.getSession();
+      console.log("Starting password verification and update process");
       
-      if (!sessionData.session) {
-        setError("No active session found. Please log in again.");
+      // First, attempt to sign in with the current password to verify it
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: (await supabase.auth.getUser()).data.user?.email || "",
+        password: currentPassword
+      });
+      
+      if (signInError) {
+        console.error("Error during password verification:", signInError);
+        setError("Current password is incorrect");
         setLoading(false);
         return;
       }
       
-      console.log("Updating password in Supabase");
+      console.log("Current password verified successfully, updating password");
       
-      // Actually update the password in Supabase
+      // If verification succeeds, update the password
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword
       });
@@ -131,7 +124,6 @@ const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete })
           onChange={(e) => setCurrentPassword(e.target.value)}
           required
         />
-        <p className="text-xs text-gray-500">Default password: {DEFAULT_ADMIN_PASSWORD}</p>
       </div>
       
       <div className="space-y-2">
@@ -163,17 +155,6 @@ const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete })
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Updating..." : "Change Password"}
       </Button>
-      
-      <div className="text-center">
-        <Button 
-          type="button" 
-          variant="ghost" 
-          className="text-xs"
-          onClick={() => setCurrentPassword(DEFAULT_ADMIN_PASSWORD)}
-        >
-          Fill default password
-        </Button>
-      </div>
     </form>
   );
 };
