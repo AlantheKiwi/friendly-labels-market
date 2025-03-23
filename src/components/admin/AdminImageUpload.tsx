@@ -1,13 +1,14 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Upload, X, Check, Image as ImageIcon, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { printers } from "@/data/printerData";
+import { printers as defaultPrinters } from "@/data/printerData";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Printer } from "@/types";
 
 const AdminImageUpload = () => {
   const [selectedPrinterId, setSelectedPrinterId] = useState<string>("");
@@ -15,7 +16,34 @@ const AdminImageUpload = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
+  const [printers, setPrinters] = useState<Printer[]>([]);
   const { toast } = useToast();
+
+  // Load current printers from localStorage
+  useEffect(() => {
+    const loadPrinters = () => {
+      const storedPrinters = localStorage.getItem('printers');
+      if (storedPrinters) {
+        setPrinters(JSON.parse(storedPrinters));
+      } else {
+        setPrinters(defaultPrinters);
+      }
+    };
+    
+    loadPrinters();
+    
+    // Listen for storage events to update the printer list if it changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'printers') {
+        loadPrinters();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const handlePrinterChange = (value: string) => {
     setSelectedPrinterId(value);
@@ -111,11 +139,13 @@ const AdminImageUpload = () => {
                 <SelectValue placeholder="Select a printer" />
               </SelectTrigger>
               <SelectContent>
-                {printers.map((printer) => (
-                  <SelectItem key={printer.id} value={printer.id.toString()}>
-                    {printer.name}
-                  </SelectItem>
-                ))}
+                {printers
+                  .filter(printer => !printer.suspended) // Only show non-suspended printers
+                  .map((printer) => (
+                    <SelectItem key={printer.id} value={printer.id.toString()}>
+                      {printer.name}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
