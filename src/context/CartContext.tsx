@@ -131,13 +131,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     selectedQuantity: ProductQuantity
   ) => {
     const newItem: CartItem = {
+      // Nested objects
+      product: product,
+      size: selectedSize,
+      quantity: selectedQuantity,
+      count: 1,
+      // Flattened properties for backward compatibility
       productId: product.id,
       productName: product.name,
       sizeId: selectedSize.id,
       sizeName: selectedSize.name,
       dimensions: selectedSize.dimensions,
       quantityId: selectedQuantity.id,
-      quantity: selectedQuantity.amount,
       price: selectedQuantity.price,
       imageUrl: product.imageUrl,
     };

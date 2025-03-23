@@ -61,4 +61,13 @@ export interface CartItem {
   size: ProductSize;
   quantity: ProductQuantity;
   count: number;
+  // Adding these flattened properties to maintain compatibility with existing code
+  productId: string;
+  productName: string;
+  sizeId: string;
+  sizeName: string;
+  dimensions: string;
+  quantityId: string;
+  price: number;
+  imageUrl: string;
 }

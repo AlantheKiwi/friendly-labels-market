@@ -43,7 +43,7 @@ const OrderSummary: React.FC = () => {
                   <p className="ml-4">${item.price.toFixed(2)}</p>
                 </div>
                 <p className="mt-1 text-sm text-gray-500">{item.dimensions}</p>
-                <p className="mt-1 text-sm text-gray-500">Qty: {item.quantity}</p>
+                <p className="mt-1 text-sm text-gray-500">Qty: {item.quantity.amount}</p>
                 <div className="flex justify-end mt-2">
                   <Button
                     variant="ghost"
