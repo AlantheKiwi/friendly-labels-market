@@ -1,33 +1,29 @@
 
-import React, { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
-import AdminHeader from "@/components/admin/AdminHeader";
-import OrdersSection from "@/components/admin/dashboard/OrdersSection";
-import PaymentsSection from "@/components/admin/dashboard/PaymentsSection";
-import InvoicesSection from "@/components/admin/dashboard/InvoicesSection";
-import TicketsSection from "@/components/admin/dashboard/TicketsSection";
+import AdminLogoutButton from "@/components/admin/AdminLogoutButton";
 
 const AdminCompleteDashboardPage = () => {
-  const { isAdmin, loading } = useAdminAuth();
+  const { user, isAdmin, isLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("orders");
 
-  React.useEffect(() => {
-    if (!loading && !isAdmin) {
+  useEffect(() => {
+    // Redirect non-admin users to login
+    if (!isLoading && (!user || !isAdmin)) {
+      console.log("User is not admin, redirecting to login page");
       toast({
         title: "Access Denied",
-        description: "You must be an admin to view this page",
-        variant: "destructive"
+        description: "You need to log in as an administrator to access this page",
+        variant: "destructive",
       });
       navigate("/admin/login");
     }
-  }, [isAdmin, loading, navigate, toast]);
+  }, [user, isAdmin, isLoading, navigate, toast]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
@@ -35,44 +31,30 @@ const AdminCompleteDashboardPage = () => {
     );
   }
 
-  if (!isAdmin) {
-    return null;
+  // Only render the dashboard if the user is admin
+  if (!user || !isAdmin) {
+    return null; // Will redirect in useEffect
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <AdminHeader />
-      
-      <main className="flex-grow bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
-          
-          <Tabs defaultValue="orders" onValueChange={setActiveTab} value={activeTab}>
-            <TabsList className="mb-6">
-              <TabsTrigger value="orders">Client Orders</TabsTrigger>
-              <TabsTrigger value="payments">Payments</TabsTrigger>
-              <TabsTrigger value="invoices">Invoices</TabsTrigger>
-              <TabsTrigger value="tickets">Support Tickets</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="orders">
-              <OrdersSection />
-            </TabsContent>
-            
-            <TabsContent value="payments">
-              <PaymentsSection />
-            </TabsContent>
-            
-            <TabsContent value="invoices">
-              <InvoicesSection />
-            </TabsContent>
-            
-            <TabsContent value="tickets">
-              <TicketsSection />
-            </TabsContent>
-          </Tabs>
+    <div className="min-h-screen p-6 bg-gray-50">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Admin Complete Dashboard</h1>
+          <AdminLogoutButton />
         </div>
-      </main>
+        <div className="bg-white rounded-lg shadow p-6">
+          <p className="text-lg">
+            Welcome to the complete admin dashboard. You are successfully logged in as an administrator.
+          </p>
+          <div className="mt-4 p-4 bg-amber-50 rounded border border-amber-200">
+            <h2 className="font-semibold text-amber-800">Admin User Information</h2>
+            <p className="text-sm text-amber-700 mt-2">Email: {user.email}</p>
+            <p className="text-sm text-amber-700">User ID: {user.id}</p>
+            <p className="text-sm text-amber-700">Admin Status: {isAdmin ? "Yes" : "No"}</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

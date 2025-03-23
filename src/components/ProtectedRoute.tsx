@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -21,7 +20,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { toast } = useToast();
   const redirectAttempted = useRef(false);
   
-  // Memoize the refresh roles function to prevent recreating it on every render
   const handleRefreshRoles = useCallback(async () => {
     if (isRefreshing || !user) return;
     
@@ -35,7 +33,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [user, refreshRoles, isRefreshing]);
   
-  // If more than 60 seconds have passed since the last role check, refresh roles
   useEffect(() => {
     if (isLoading || !user || isRefreshing) return;
     
@@ -50,10 +47,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [user, lastRoleCheck, handleRefreshRoles, requireAdmin, requireClient, isLoading, isRefreshing]);
 
-  // Handle redirect logic in a separate effect to prevent render loops
   useEffect(() => {
-    // Only determine redirect after loading is complete and not during refresh
     if (!isLoading && !isRefreshing) {
+      console.log("ProtectedRoute checking access:", { 
+        user: !!user, 
+        requireAdmin, 
+        isAdmin, 
+        requireClient, 
+        isClient 
+      });
+      
       if (!user) {
         setShouldRedirect(true);
       } else if (
@@ -67,7 +70,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [user, isAdmin, isClient, isLoading, isRefreshing, requireAdmin, requireClient]);
 
-  // If still loading or refreshing, show a spinner
   if (isLoading || isRefreshing || shouldRedirect === null) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -76,15 +78,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // If we should redirect
   if (shouldRedirect && !redirectAttempted.current) {
     redirectAttempted.current = true;
     
-    // No user is logged in, go to login page
     if (!user) {
       console.log("No user found, redirecting to login");
       
-      // Don't show toast during initial redirect or when already on the auth pages
       const currentPath = window.location.pathname;
       if (!currentPath.includes("/auth/")) {
         toast({
@@ -94,10 +93,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         });
       }
       
-      return <Navigate to="/auth/login" replace />;
+      if (requireAdmin && window.location.pathname.includes("/admin/")) {
+        return <Navigate to="/admin/login" replace />;
+      } else {
+        return <Navigate to="/auth/login" replace />;
+      }
     }
     
-    // If admin access is required but user is not admin
     if (requireAdmin && !isAdmin) {
       console.log("Admin access required but user is not admin");
       toast({
@@ -108,7 +110,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       return <Navigate to="/" replace />;
     }
 
-    // If client access is required but user is not client
     if (requireClient && !isClient) {
       console.log("Client access required but user is not client");
       toast({
@@ -120,12 +121,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }
 
-  // Reset redirect attempt ref when we're not redirecting
   if (!shouldRedirect) {
     redirectAttempted.current = false;
   }
 
-  // User has necessary permissions, render the protected content
   return <>{children}</>;
 };
 
