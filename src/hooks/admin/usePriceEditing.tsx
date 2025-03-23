@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Product } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
+import { productList } from "@/data/products/index";
 
 export const usePriceEditing = (
   products: Product[],
