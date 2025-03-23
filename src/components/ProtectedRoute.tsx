@@ -43,7 +43,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       if (userEmail === ADMIN_EMAIL.toLowerCase()) {
         console.log("Admin email match found in ProtectedRoute");
         setIsAdmin(true);
-        setIsClient(true); // Admin has client privileges too
+        setIsClient(false); // Admin is not a client
         return true;
       } else {
         // Regular user, always set as client for now

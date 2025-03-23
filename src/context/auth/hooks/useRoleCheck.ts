@@ -78,7 +78,7 @@ export const useRoleCheck = (
       if (userEmail === adminEmail.toLowerCase()) {
         console.log("Admin email match found - granting admin role directly");
         setIsAdmin(true);
-        setIsClient(true);
+        setIsClient(false); // Admin is not a client
         
         // Record when we last checked roles
         setLastRoleCheck(Date.now());
@@ -94,7 +94,7 @@ export const useRoleCheck = (
         
         return { 
           isAdmin: true, 
-          isClient: true 
+          isClient: false  // Admin is not treated as a client
         };
       } else {
         // For all other users, default to client role only 
@@ -116,7 +116,7 @@ export const useRoleCheck = (
       
       return { 
         isAdmin: userEmail === adminEmail.toLowerCase(), 
-        isClient: true 
+        isClient: userEmail !== adminEmail.toLowerCase() // Admin is not a client
       };
     } catch (error) {
       console.error("Error checking roles:", error);
