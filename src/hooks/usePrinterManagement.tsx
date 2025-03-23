@@ -1,16 +1,22 @@
-
 import { useState } from "react";
 import { Printer } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 
 export const usePrinterManagement = (initialPrinters: Printer[]) => {
-  const [printerData, setPrinterData] = useState<Printer[]>(initialPrinters);
+  const [printerData, setPrinterData] = useState<Printer[]>(
+    initialPrinters.map(printer => ({
+      ...printer,
+      suspended: printer.suspended || false
+    }))
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [editedPrices, setEditedPrices] = useState<Record<number, { price: number }>>({});
   const [savingIds, setSavingIds] = useState<number[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isSuspendDialogOpen, setIsSuspendDialogOpen] = useState(false);
+  const [suspendAll, setSuspendAll] = useState(false);
   const [selectedPrinter, setSelectedPrinter] = useState<Printer | null>(null);
   const { toast } = useToast();
 
@@ -119,6 +125,110 @@ export const usePrinterManagement = (initialPrinters: Printer[]) => {
     setIsDeleteDialogOpen(true);
   };
 
+  const handleSuspendPrinter = (printer: Printer) => {
+    setSelectedPrinter(printer);
+    setIsSuspendDialogOpen(true);
+    setSuspendAll(false);
+  };
+
+  const handleSuspendAllPrinters = () => {
+    setSelectedPrinter(null);
+    setIsSuspendDialogOpen(true);
+    setSuspendAll(true);
+  };
+
+  const confirmSuspendPrinter = () => {
+    if (suspendAll) {
+      // Suspend all printers
+      setPrinterData(prev => 
+        prev.map(printer => ({
+          ...printer,
+          suspended: true
+        }))
+      );
+      
+      toast({
+        title: "All printers suspended",
+        description: "All printers have been suspended",
+        action: (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleUndoSuspendAll}
+            className="gap-1"
+          >
+            <RefreshCcw className="h-3.5 w-3.5" />
+            Undo
+          </Button>
+        ),
+      });
+    } else if (selectedPrinter) {
+      // Suspend single printer
+      setPrinterData(prev => 
+        prev.map(p => {
+          if (p.id === selectedPrinter.id) {
+            return {
+              ...p,
+              suspended: true
+            };
+          }
+          return p;
+        })
+      );
+      
+      toast({
+        title: "Printer suspended",
+        description: `${selectedPrinter.name} has been suspended`,
+        action: (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleUndoSuspend(selectedPrinter)}
+            className="gap-1"
+          >
+            <RefreshCcw className="h-3.5 w-3.5" />
+            Undo
+          </Button>
+        ),
+      });
+    }
+    
+    setIsSuspendDialogOpen(false);
+  };
+
+  const handleUndoSuspend = (printer: Printer) => {
+    setPrinterData(prev => 
+      prev.map(p => {
+        if (p.id === printer.id) {
+          return {
+            ...p,
+            suspended: false
+          };
+        }
+        return p;
+      })
+    );
+    
+    toast({
+      title: "Suspension removed",
+      description: `${printer.name} is now active again`,
+    });
+  };
+
+  const handleUndoSuspendAll = () => {
+    setPrinterData(prev => 
+      prev.map(printer => ({
+        ...printer,
+        suspended: false
+      }))
+    );
+    
+    toast({
+      title: "All suspensions removed",
+      description: "All printers are now active again",
+    });
+  };
+
   const confirmDeletePrinter = () => {
     if (!selectedPrinter) return;
     
@@ -186,6 +296,9 @@ export const usePrinterManagement = (initialPrinters: Printer[]) => {
     setIsEditDialogOpen,
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
+    isSuspendDialogOpen,
+    setIsSuspendDialogOpen,
+    suspendAll,
     selectedPrinter,
     filteredPrinters,
     handlePriceChange,
@@ -193,7 +306,10 @@ export const usePrinterManagement = (initialPrinters: Printer[]) => {
     handleAddPrinter,
     handleEditPrinter,
     handleDeletePrinter,
+    handleSuspendPrinter,
+    handleSuspendAllPrinters,
     confirmDeletePrinter,
+    confirmSuspendPrinter,
     handleSavePrinter,
     isPriceEdited,
     isSaving
