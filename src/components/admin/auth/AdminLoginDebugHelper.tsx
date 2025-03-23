@@ -41,22 +41,18 @@ const AdminLoginDebugHelper: React.FC<AdminLoginDebugHelperProps> = ({
       
       console.log("Password details:", passwordDetails);
       
-      // Try to get the user (will work even if not authenticated)
-      const { data: userData, error: userError } = await supabase.auth.admin
-        .getUserByEmail(adminEmail)
-        .catch(err => {
-          console.error("Error in getUserByEmail:", err);
-          return { data: null, error: err };
-        });
+      // Try to get the user - we need to use the adminGetUser API properly
+      // Note: We can't directly search by email as a non-admin, so we'll try to sign in with default credentials
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: adminEmail,
+        password: defaultPassword
+      });
       
-      if (userError) {
-        setDebugInfo(`Error checking admin: ${userError.message}`);
-        console.error("Admin check error:", userError);
-        return;
-      }
+      let userData = signInData?.user;
       
-      if (!userData) {
-        setDebugInfo("Admin account does not exist. Please create it.");
+      if (signInError || !userData) {
+        console.log("Could not verify admin through signin:", signInError?.message);
+        setDebugInfo(`Could not verify admin account directly. Try the reset options.\n\nDetails: ${signInError?.message || "Unknown error"}`);
         return;
       }
       

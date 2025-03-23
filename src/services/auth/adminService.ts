@@ -113,19 +113,32 @@ export const resetAdminPassword = async () => {
     // First, verify user exists by trying to find the admin user
     console.log("Checking if admin exists:", ADMIN_EMAIL);
     
-    // Try to look up if the user exists first
-    const { data: adminUser, error: adminLookupError } = await supabase.auth.admin
-      .getUserByEmail(ADMIN_EMAIL)
-      .catch(err => {
-        console.log("Admin lookup error (expected if not authenticated as admin):", err);
-        return { data: null, error: err };
-      });
-      
-    console.log("Admin lookup result:", adminUser ? "Found" : "Not found");
-    if (adminLookupError) {
-      console.log("Admin lookup error details:", adminLookupError);
+    // Try to look up if the user exists first - we can't directly query by email
+    // Instead, we'll try to sign in with the default credentials to see if the account exists
+    const { data: signInData, error: signInError } = await signInWithPassword(
+      ADMIN_EMAIL,
+      DEFAULT_ADMIN_PASSWORD
+    );
+    
+    let adminFound = !!signInData?.user;
+    
+    if (signInError && !signInError.message.includes("Invalid login credentials")) {
+      // An error other than invalid credentials indicates some other issue
+      console.log("Error checking admin account:", signInError);
+      return { 
+        data: null, 
+        error: { message: "Error checking admin account: " + signInError.message } 
+      };
     }
     
+    if (adminFound) {
+      console.log("Admin exists and default password is valid");
+      return { 
+        data: { message: "Admin account exists and default password is valid" }, 
+        error: null 
+      };
+    }
+      
     // Call the server to reset the admin password (this would be a custom function in Supabase)
     // For now, we'll simulate this by signing up with the same email which will error if it exists
     const { data: signUpData, error: signUpError } = await signUp(
