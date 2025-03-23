@@ -54,6 +54,7 @@ export const forceResetAdminPassword = async (): Promise<{ success: boolean; mes
     }
     
     // Find the admin user by email
+    // Fix: Properly type and access the user email property
     const adminUser = data.users.find(
       user => user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
     );
