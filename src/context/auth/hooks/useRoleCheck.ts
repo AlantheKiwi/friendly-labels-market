@@ -2,6 +2,7 @@
 import { useCallback, useRef } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { UserRoles } from "@/types/auth";
+import { ADMIN_EMAIL } from "@/services/auth/constants";
 
 export const useRoleCheck = (
   isAdmin: boolean, 
@@ -62,7 +63,7 @@ export const useRoleCheck = (
     
     try {
       // Check if this is the admin email (direct check) - a simplified approach
-      const adminEmail = "alan@insight-ai-systems.com"; 
+      const adminEmail = ADMIN_EMAIL;
       
       // Try to get the user's email from the user object in memory
       const userEmail = user?.email?.toLowerCase();
@@ -70,11 +71,11 @@ export const useRoleCheck = (
       console.log("Comparing emails for admin check:", { 
         userEmail, 
         adminEmail,
-        isMatch: userEmail === adminEmail
+        isMatch: userEmail === adminEmail.toLowerCase()
       });
       
       // IMPORTANT CHANGE: Directly assign admin role if email matches, bypassing database checks
-      if (userEmail === adminEmail) {
+      if (userEmail === adminEmail.toLowerCase()) {
         console.log("Admin email match found - granting admin role directly");
         setIsAdmin(true);
         setIsClient(true);
@@ -114,7 +115,7 @@ export const useRoleCheck = (
       roleCheckInProgressRef.current = false;
       
       return { 
-        isAdmin: userEmail === adminEmail, 
+        isAdmin: userEmail === adminEmail.toLowerCase(), 
         isClient: true 
       };
     } catch (error) {

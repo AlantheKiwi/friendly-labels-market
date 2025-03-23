@@ -26,7 +26,7 @@ export const createAdminIfNotExists = async (): Promise<{ success: boolean; mess
     // Use explicit type checking and optional chaining for safety
     const adminExists = data?.users?.some(
       user => {
-        if (user && typeof user === 'object' && user.email) {
+        if (user && typeof user === 'object' && 'email' in user && user.email) {
           return user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
         }
         return false;

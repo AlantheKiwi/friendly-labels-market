@@ -1,8 +1,8 @@
-
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuthService } from "./useAuthService";
+import { ADMIN_EMAIL } from "@/services/auth/constants";
 
 export const useAuthOperations = () => {
   const navigate = useNavigate();
@@ -33,17 +33,25 @@ export const useAuthOperations = () => {
       
       if (data.user) {
         console.log("User authenticated:", data.user.id);
+        
+        // Direct admin check by email - for faster login experience
+        if (data.user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+          console.log("Admin email match found - bypassing role check and redirecting to admin dashboard");
+          navigate("/admin/dashboard", { replace: true });
+          return;
+        }
+        
         try {
           const roles = await authService.checkUserRoles(data.user.id);
           
           console.log("User roles determined:", roles);
           
-          if (roles.isClient) {
-            console.log("User is a client, redirecting to client dashboard");
-            navigate("/client/dashboard", { replace: true });
-          } else if (roles.isAdmin) {
+          if (roles.isAdmin) {
             console.log("User is an admin, redirecting to admin dashboard");
             navigate("/admin/dashboard", { replace: true });
+          } else if (roles.isClient) {
+            console.log("User is a client, redirecting to client dashboard");
+            navigate("/client/dashboard", { replace: true });
           } else {
             console.log("User has no specific role, redirecting to home");
             navigate("/");
