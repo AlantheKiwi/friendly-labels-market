@@ -1,7 +1,7 @@
 
 import React, { memo } from "react";
 import ClientSidebar from "./ClientSidebar";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/auth/AuthContext";
 import Header from "@/components/Header";
 
 interface ClientLayoutProps {
