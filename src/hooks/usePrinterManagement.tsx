@@ -3,6 +3,7 @@ import { Printer } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const usePrinterManagement = (initialPrinters: Printer[]) => {
   const [printerData, setPrinterData] = useState<Printer[]>(
@@ -20,6 +21,7 @@ export const usePrinterManagement = (initialPrinters: Printer[]) => {
   const [isSuspendDialogOpen, setIsSuspendDialogOpen] = useState(false);
   const [suspendAll, setSuspendAll] = useState(false);
   const [selectedPrinter, setSelectedPrinter] = useState<Printer | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
   // Filter printers based on search query
@@ -209,37 +211,37 @@ export const usePrinterManagement = (initialPrinters: Printer[]) => {
     });
   };
 
-  const confirmDeletePrinter = () => {
+  const confirmDeletePrinter = async () => {
     if (!selectedPrinter) return;
     
-    setPrinterData(prev => prev.filter(p => p.id !== selectedPrinter.id));
+    setIsDeleting(true);
     
-    toast({
-      title: "Printer deleted",
-      description: `${selectedPrinter.name} has been removed`,
-      action: (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleUndoDelete(selectedPrinter)}
-          className="gap-1"
-        >
-          <RefreshCcw className="h-3.5 w-3.5" />
-          Undo
-        </Button>
-      ),
-    });
-    
-    setIsDeleteDialogOpen(false);
-  };
-
-  const handleUndoDelete = (printer: Printer) => {
-    setPrinterData(prev => [...prev, printer].sort((a, b) => a.id - b.id));
-    
-    toast({
-      title: "Deletion undone",
-      description: `${printer.name} has been restored`,
-    });
+    try {
+      // Permanent deletion from data
+      setPrinterData(prev => prev.filter(p => p.id !== selectedPrinter.id));
+      
+      // In a real application with a database, you would delete the printer from the database here
+      // For example, with Supabase:
+      // await supabase.from('printers').delete().eq('id', selectedPrinter.id);
+      
+      toast({
+        title: "Printer deleted permanently",
+        description: `${selectedPrinter.name} has been permanently removed from the system`,
+      });
+    } catch (error) {
+      console.error("Error deleting printer:", error);
+      toast({
+        title: "Error deleting printer",
+        description: "There was an error deleting the printer. Please try again.",
+        variant: "destructive"
+      });
+      
+      // Restore the printer in the UI if deletion failed
+      setPrinterData(prev => [...prev, selectedPrinter]);
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }
   };
 
   const handleSavePrinter = (printer: Printer) => {
@@ -281,6 +283,7 @@ export const usePrinterManagement = (initialPrinters: Printer[]) => {
     suspendAll,
     selectedPrinter,
     filteredPrinters,
+    isDeleting,
     handlePriceChange,
     handleSavePrice,
     handleAddPrinter,

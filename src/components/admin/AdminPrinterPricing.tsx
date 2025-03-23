@@ -25,6 +25,7 @@ const AdminPrinterPricing = () => {
     filteredPrinters,
     editedPrices,
     savingIds,
+    isDeleting,
     handlePriceChange,
     handleSavePrice,
     handleAddPrinter,
@@ -82,6 +83,7 @@ const AdminPrinterPricing = () => {
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={confirmDeletePrinter}
         printer={selectedPrinter}
+        isDeleting={isDeleting}
       />
 
       {/* Suspend Confirmation Dialog */}
