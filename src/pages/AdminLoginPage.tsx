@@ -10,7 +10,7 @@ import { Eye, EyeOff, Lock } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuthService } from "@/hooks/useAuthService";
 
 const AdminLoginPage = () => {
   const [email, setEmail] = useState("");
@@ -20,8 +20,10 @@ const AdminLoginPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, isAdmin } = useAuth();
+  const authService = useAuthService();
 
   useEffect(() => {
+    // If user is already logged in and is admin, redirect to admin dashboard
     if (user && isAdmin) {
       navigate("/admin/dashboard");
     }
@@ -33,10 +35,7 @@ const AdminLoginPage = () => {
 
     try {
       // First, attempt to sign in
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      const { data, error } = await authService.signInWithPassword(email, password);
 
       if (error) {
         toast({
@@ -48,39 +47,24 @@ const AdminLoginPage = () => {
         return;
       }
 
-      // Check if user has admin role
-      const { data: adminRole, error: roleError } = await supabase.rpc('has_role', {
-        user_id: data.user.id,
-        role: 'admin'
-      });
-
-      if (roleError) {
-        toast({
-          title: "Authentication error",
-          description: roleError.message,
-          variant: "destructive",
-        });
-        // Sign out since this is not an admin
-        await supabase.auth.signOut();
-        setIsLoading(false);
-        return;
-      }
-
-      if (!adminRole) {
+      // Check if the email is the admin email
+      if (email.toLowerCase() !== "alan@insight-ai-systems.com") {
         toast({
           title: "Access denied",
           description: "You do not have administrator privileges",
           variant: "destructive",
         });
         // Sign out since this is not an admin
-        await supabase.auth.signOut();
+        await authService.signOut();
         setIsLoading(false);
         return;
       }
 
+      // Check if admin role check is needed
+      await authService.checkUserRoles(data.user.id);
+
       // If initial password, require change
-      if (email === "brendan@hyper.net.nz" && password === "letmein1983!!" ||
-          email === "alan@insight-ai-systems.com" && password === "letmein1983!!") {
+      if (email.toLowerCase() === "alan@insight-ai-systems.com" && password === "letmein1983!!") {
         localStorage.setItem("requirePasswordChange", "true");
       }
 

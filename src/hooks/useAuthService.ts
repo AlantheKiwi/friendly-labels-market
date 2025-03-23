@@ -34,7 +34,17 @@ export const useAuthService = () => {
   };
 
   // Reusing the checkUserRoles function but exposing it through our service
+  // Also adding special handling for admin email
   const checkUserRoles = async (userId: string): Promise<UserRoles> => {
+    // First get the user to check if it's our admin
+    const { data: userData } = await supabase.auth.getUser();
+    
+    if (userData?.user?.email?.toLowerCase() === "alan@insight-ai-systems.com") {
+      // For our specific admin, we automatically assign admin role
+      return { isAdmin: true, isClient: true };
+    }
+    
+    // For all other users, check roles normally
     return await checkRoles(userId);
   };
 
