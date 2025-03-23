@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuthService } from '@/hooks/useAuthService';
+import { AlertCircle } from 'lucide-react';
 
 interface AdminPasswordResetButtonProps {
   className?: string;
@@ -10,6 +11,7 @@ interface AdminPasswordResetButtonProps {
 
 const AdminPasswordResetButton: React.FC<AdminPasswordResetButtonProps> = ({ className }) => {
   const [isResetting, setIsResetting] = useState(false);
+  const [devModeInfo, setDevModeInfo] = useState<string | null>(null);
   const { toast } = useToast();
   const authService = useAuthService();
   
@@ -19,6 +21,7 @@ const AdminPasswordResetButton: React.FC<AdminPasswordResetButtonProps> = ({ cla
     }
     
     setIsResetting(true);
+    setDevModeInfo(null);
     
     try {
       const { data, error } = await authService.resetAdminPassword();
@@ -34,6 +37,12 @@ const AdminPasswordResetButton: React.FC<AdminPasswordResetButtonProps> = ({ cla
         variant: success ? 'default' : 'destructive',
       });
       
+      // Development mode helper information
+      if (process.env.NODE_ENV === 'development') {
+        setDevModeInfo(`Development mode: Default admin password is "${authService.DEFAULT_ADMIN_PASSWORD}". 
+          Email: ${authService.ADMIN_EMAIL}`);
+      }
+      
       if (success) {
         // If successful, you might want to update the UI or redirect
         setTimeout(() => {
@@ -47,6 +56,12 @@ const AdminPasswordResetButton: React.FC<AdminPasswordResetButtonProps> = ({ cla
         description: 'An unexpected error occurred',
         variant: 'destructive',
       });
+      
+      // Provide development helper info on error
+      if (process.env.NODE_ENV === 'development') {
+        setDevModeInfo(`Development mode: Try using the default password "${authService.DEFAULT_ADMIN_PASSWORD}" directly.
+          Email: ${authService.ADMIN_EMAIL}`);
+      }
     } finally {
       setIsResetting(false);
     }
@@ -65,6 +80,15 @@ const AdminPasswordResetButton: React.FC<AdminPasswordResetButtonProps> = ({ cla
       >
         {isResetting ? 'Resetting password...' : 'Reset Admin Password to Default'}
       </Button>
+      
+      {devModeInfo && (
+        <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-md text-xs text-amber-800">
+          <div className="flex items-start">
+            <AlertCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+            <p className="whitespace-pre-line">{devModeInfo}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
