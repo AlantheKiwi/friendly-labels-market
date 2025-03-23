@@ -76,6 +76,15 @@ const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete })
     setLoading(true);
     
     try {
+      // Get current session
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      if (!sessionData.session) {
+        setError("No active session found. Please log in again.");
+        setLoading(false);
+        return;
+      }
+      
       // Actually update the password in Supabase
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword

@@ -41,88 +41,80 @@ export const useAuthService = () => {
   };
 
   // Special function to handle admin login or creation
-  const createAdminIfNotExists = async (email: string, password: string) => {
-    console.log("Checking if admin account exists for:", email);
-    console.log("Using admin password:", DEFAULT_ADMIN_PASSWORD);
+  const createAdminIfNotExists = async () => {
+    console.log("Checking if admin account exists and creating it if needed");
     
     try {
-      // Always use the default admin password for consistency
-      console.log("Using standard admin password for setup:", DEFAULT_ADMIN_PASSWORD);
-      
-      // First try to sign in with the default password
-      const { data: signInData, error: signInError } = await signInWithPassword(
-        email, 
-        DEFAULT_ADMIN_PASSWORD
-      );
-      
-      if (!signInError) {
-        console.log("Admin sign-in successful with default password");
-        return { data: signInData, error: null };
-      }
-      
-      console.log("Sign in with default password failed:", signInError.message);
-      
-      // Try password reset to see if user exists
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      // First check if the user exists by trying to request a password reset
+      // This will succeed if the user exists, fail if not
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(ADMIN_EMAIL, {
         redirectTo: window.location.origin + "/admin/password-reset"
       });
       
+      // If there's no error, the user exists
       if (!resetError) {
-        // User exists but password is wrong
-        console.log("Admin user exists but password is incorrect");
+        console.log("Admin user exists, creating new password");
+        
+        // Try to sign up the user anyway, this will fail if already exists
+        const { error: signUpError } = await signUp(
+          ADMIN_EMAIL,
+          DEFAULT_ADMIN_PASSWORD,
+          {
+            full_name: "Administrator",
+            is_admin: true
+          }
+        );
+        
+        if (signUpError && !signUpError.message.includes("already registered")) {
+          console.error("Unexpected error creating admin:", signUpError);
+        } else {
+          console.log("Admin signup attempted, now trying to sign in");
+        }
+      } else {
+        console.log("Admin user does not exist, creating new user");
+        
+        // User does not exist, create the admin user
+        const { error: createError } = await signUp(
+          ADMIN_EMAIL,
+          DEFAULT_ADMIN_PASSWORD,
+          {
+            full_name: "Administrator",
+            is_admin: true
+          }
+        );
+        
+        if (createError) {
+          console.error("Error creating admin user:", createError);
+          return { 
+            data: null, 
+            error: createError 
+          };
+        }
+        
+        console.log("Admin user created successfully");
+      }
+      
+      // Now try to sign in with the default password
+      const { data, error } = await signInWithPassword(
+        ADMIN_EMAIL, 
+        DEFAULT_ADMIN_PASSWORD
+      );
+      
+      if (error) {
+        console.error("Error signing in admin after setup:", error);
         return { 
           data: null, 
           error: {
-            message: "Admin account exists but the password may be incorrect. Try the default password: " + DEFAULT_ADMIN_PASSWORD
+            message: "Admin account exists but there was a problem signing in. Try using the default password: " + DEFAULT_ADMIN_PASSWORD
           } 
         };
       }
       
-      // If we get here, the user likely doesn't exist, so let's create them
-      console.log("Admin user does not exist, creating account for:", email);
-      
-      // Create admin user with default password
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password: DEFAULT_ADMIN_PASSWORD,
-        options: {
-          data: {
-            full_name: "Administrator",
-            is_admin: true
-          }
-        }
-      });
-      
-      if (signUpError) {
-        console.error("Error creating admin user:", signUpError.message);
-        
-        if (signUpError.message.includes("already registered")) {
-          // One more attempt to sign in with default password
-          const { data: finalSignInData, error: finalSignInError } = await signInWithPassword(
-            email, 
-            DEFAULT_ADMIN_PASSWORD
-          );
-          
-          if (!finalSignInError) {
-            console.log("Final sign in attempt successful");
-            return { data: finalSignInData, error: null };
-          }
-          
-          return { 
-            data: null, 
-            error: {
-              message: "Admin account exists but has login issues. Please try resetting the password or contact support."
-            } 
-          };
-        }
-        
-        return { data: null, error: signUpError };
-      }
-      
-      console.log("Admin user created successfully");
+      // Successfully signed in
+      console.log("Admin sign-in successful");
       return { data, error: null };
     } catch (error) {
-      console.error("Unexpected error during admin account check:", error);
+      console.error("Unexpected error during admin setup:", error);
       return { 
         data: null, 
         error: { message: "An unexpected error occurred while setting up admin access" } 

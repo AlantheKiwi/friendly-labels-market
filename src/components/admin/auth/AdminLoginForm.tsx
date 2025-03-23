@@ -35,17 +35,19 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
 
     try {
       // Normalize email to lowercase for consistency
-      const normalizedEmail = email.toLowerCase();
+      const normalizedEmail = email.toLowerCase().trim();
       
       // Check if this is the admin email
-      const isAdminEmail = normalizedEmail === ADMIN_EMAIL;
+      const isAdminEmail = normalizedEmail === ADMIN_EMAIL.toLowerCase().trim();
       
       if (isAdminEmail) {
         console.log("Admin login attempt detected");
         
-        // Try with entered password first
-        console.log("Trying with entered password");
-        const { data, error } = await authService.signInWithPassword(normalizedEmail, password);
+        // First try with entered password
+        const { data, error } = await authService.signInWithPassword(
+          ADMIN_EMAIL, // Always use the exact admin email
+          password
+        );
         
         if (!error) {
           // Direct login successful
@@ -62,51 +64,80 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
         
         console.log("Login with entered password failed:", error.message);
         
-        // If entered password failed and it's not the default password, try the default
-        if (password !== DEFAULT_ADMIN_PASSWORD) {
-          console.log("Trying default admin password:", DEFAULT_ADMIN_PASSWORD);
-          const { data: defaultPassData, error: defaultPassError } = await authService.signInWithPassword(
-            normalizedEmail, 
+        // If the password is already the default but still failed, try to create admin
+        if (password === DEFAULT_ADMIN_PASSWORD) {
+          console.log("Already using default password, trying admin setup");
+          setIsCreatingAdmin(true);
+          
+          const { data: adminData, error: setupError } = await authService.createAdminIfNotExists();
+          
+          setIsCreatingAdmin(false);
+          
+          if (setupError) {
+            console.error("Admin setup failed:", setupError);
+            setErrorMessage(setupError.message);
+            toast({
+              title: "Admin setup failed",
+              description: setupError.message,
+              variant: "destructive",
+            });
+            setIsLoading(false);
+            return;
+          }
+          
+          if (adminData) {
+            // Admin was created or we got logged in
+            console.log("Admin setup successful");
+            await authService.checkUserRoles(adminData.user.id);
+            toast({
+              title: "Login successful",
+              description: "Welcome to the admin dashboard. Please update your password.",
+            });
+            localStorage.setItem("requirePasswordChange", "true");
+            onLoginSuccess();
+            setIsLoading(false);
+            return;
+          }
+        } else {
+          // Try with default password
+          console.log("Trying with default admin password:", DEFAULT_ADMIN_PASSWORD);
+          
+          const { data: defaultData, error: defaultError } = await authService.signInWithPassword(
+            ADMIN_EMAIL,
             DEFAULT_ADMIN_PASSWORD
           );
           
-          if (!defaultPassError) {
+          if (!defaultError) {
             // Login with default password successful
             console.log("Admin login successful with default password");
-            await authService.checkUserRoles(defaultPassData.user.id);
+            await authService.checkUserRoles(defaultData.user.id);
             toast({
               title: "Login successful",
               description: "Welcome to the admin dashboard. Please change your default password.",
             });
-            // Set flag for password change
             localStorage.setItem("requirePasswordChange", "true");
             onLoginSuccess();
             setIsLoading(false);
             return;
           }
           
-          console.log("Default password login failed:", defaultPassError.message);
+          console.log("Login with default password failed:", defaultError.message);
         }
         
-        // If login failed with both passwords, try our special admin setup function
-        console.log("All direct logins failed, trying admin setup");
+        // If we're here, all normal login attempts failed, so try creating the admin
+        console.log("All login attempts failed, trying admin setup");
         setIsCreatingAdmin(true);
         
-        // This will attempt to create the admin if it doesn't exist,
-        // or return appropriate error messages if it does
-        const { data: adminData, error: adminSetupError } = await authService.createAdminIfNotExists(
-          normalizedEmail, 
-          DEFAULT_ADMIN_PASSWORD
-        );
+        const { data: adminData, error: setupError } = await authService.createAdminIfNotExists();
         
         setIsCreatingAdmin(false);
         
-        if (adminSetupError) {
-          console.error("Admin setup error:", adminSetupError);
-          setErrorMessage(adminSetupError.message);
+        if (setupError) {
+          console.error("Admin setup failed:", setupError);
+          setErrorMessage(setupError.message);
           toast({
-            title: "Admin login issue",
-            description: adminSetupError.message,
+            title: "Admin setup failed",
+            description: setupError.message,
             variant: "destructive",
           });
           setIsLoading(false);
@@ -114,12 +145,12 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
         }
         
         if (adminData) {
-          // Admin was created or we got logged in through the setup process
-          console.log("Admin setup successful, user logged in");
+          // Admin was created or we got logged in
+          console.log("Admin setup successful");
           await authService.checkUserRoles(adminData.user.id);
           toast({
             title: "Login successful",
-            description: "Welcome to the admin dashboard",
+            description: "Welcome to the admin dashboard. Please update your password.",
           });
           localStorage.setItem("requirePasswordChange", "true");
           onLoginSuccess();
@@ -127,37 +158,16 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
           return;
         }
         
-        // If we get here, try one more login with default password
-        console.log("Final attempt with default admin password");
-        const { data: loginData, error: loginError } = await authService.signInWithPassword(
-          normalizedEmail, 
-          DEFAULT_ADMIN_PASSWORD
-        );
-
-        if (loginError) {
-          console.error("Login with default password failed in final attempt:", loginError);
-          setErrorMessage(`Login failed. Please try with the default password '${DEFAULT_ADMIN_PASSWORD}'`);
-          toast({
-            title: "Login failed",
-            description: `Please try with the default password '${DEFAULT_ADMIN_PASSWORD}'`,
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return;
-        }
-
-        // Login successful
-        await authService.checkUserRoles(loginData.user.id);
+        // If we get here, all attempts failed
+        setErrorMessage(`Could not log in. Please try again with the default password: ${DEFAULT_ADMIN_PASSWORD}`);
         toast({
-          title: "Login successful",
-          description: "Welcome to the admin dashboard",
+          title: "Login failed",
+          description: `Could not log in. Please try with the default password: ${DEFAULT_ADMIN_PASSWORD}`,
+          variant: "destructive",
         });
-        
-        // Set flag for password change if using default
-        localStorage.setItem("requirePasswordChange", "true");
-        onLoginSuccess();
       } else {
         // Not the admin email - reject
+        setErrorMessage("You do not have administrator privileges");
         toast({
           title: "Access denied",
           description: "You do not have administrator privileges",
