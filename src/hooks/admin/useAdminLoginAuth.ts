@@ -1,6 +1,6 @@
 
-import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useAdminLoginFlow } from "./useAdminLoginFlow";
+import { useAdminPasswordReset } from "./useAdminPasswordReset";
 
 interface UseAdminLoginAuthProps {
   email: string;
@@ -14,23 +14,23 @@ interface UseAdminLoginAuthProps {
   onLoginSuccess: () => void;
 }
 
-export const useAdminLoginAuth = ({
-  email,
-  password,
-  ADMIN_EMAIL,
-  DEFAULT_ADMIN_PASSWORD,
-  setIsLoading,
-  setIsCreatingAdmin,
-  setErrorMessage,
-  authService,
-  onLoginSuccess
-}: UseAdminLoginAuthProps) => {
-  const { toast } = useToast();
+export const useAdminLoginAuth = (props: UseAdminLoginAuthProps) => {
+  const {
+    email,
+    password,
+    ADMIN_EMAIL,
+    setIsLoading,
+    authService
+  } = props;
+
+  // Use the more focused hooks
+  const loginFlow = useAdminLoginFlow(props);
+  const passwordReset = useAdminPasswordReset(props);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setErrorMessage("");
+    props.setErrorMessage("");
 
     try {
       console.log("Starting admin login process with email:", email);
@@ -44,171 +44,49 @@ export const useAdminLoginAuth = ({
       if (isAdminEmail) {
         console.log("Admin login attempt detected");
         
-        // Try first with default password regardless of entered password
-        // This helps users who might be stuck
-        console.log("Trying login with default password:", DEFAULT_ADMIN_PASSWORD.replace(/./g, "*"));
-        const { data: defaultData, error: defaultError } = await authService.signInWithPassword(
-          ADMIN_EMAIL,
-          DEFAULT_ADMIN_PASSWORD
-        );
-        
-        if (!defaultError) {
-          // Default password login successful
-          console.log("Admin login successful with default password");
-          await authService.checkUserRoles(defaultData.user.id);
-          toast({
-            title: "Login successful",
-            description: "Welcome to the admin dashboard. Using default password.",
-          });
-          localStorage.setItem("requirePasswordChange", "true");
-          onLoginSuccess();
+        // Try login with default password first
+        const defaultLoginSuccess = await loginFlow.attemptLoginWithDefaultPassword();
+        if (defaultLoginSuccess) {
           setIsLoading(false);
           return;
         }
         
-        console.log("Login with default password failed, trying entered password");
-        
-        // Next try with entered password if it's not the default
-        if (password !== DEFAULT_ADMIN_PASSWORD) {
-          const { data, error } = await authService.signInWithPassword(
-            ADMIN_EMAIL,
-            password
-          );
-          
-          if (!error) {
-            // User password login successful
-            console.log("Admin login successful with entered password");
-            await authService.checkUserRoles(data.user.id);
-            toast({
-              title: "Login successful",
-              description: "Welcome to the admin dashboard",
-            });
-            onLoginSuccess();
-            setIsLoading(false);
-            return;
-          }
-          
-          console.log("Login with entered password failed:", error.message);
-        }
-        
-        // If standard login failed, try the admin setup process
-        console.log("Starting admin account setup process");
-        setIsCreatingAdmin(true);
-        
-        const { data: adminData, error: setupError } = await authService.createAdminIfNotExists();
-        
-        setIsCreatingAdmin(false);
-        
-        if (setupError) {
-          console.error("Admin setup failed:", setupError.message);
-          setErrorMessage(setupError.message);
-          toast({
-            title: "Admin setup failed",
-            description: setupError.message,
-            variant: "destructive",
-          });
+        // Try login with entered password
+        const userPasswordLoginSuccess = await loginFlow.attemptLoginWithEnteredPassword();
+        if (userPasswordLoginSuccess) {
           setIsLoading(false);
           return;
         }
         
-        if (adminData) {
-          // Admin was created or we got logged in
-          console.log("Admin setup successful");
-          await authService.checkUserRoles(adminData.user.id);
-          toast({
-            title: "Login successful",
-            description: "Welcome to the admin dashboard. Please update your password.",
-          });
-          localStorage.setItem("requirePasswordChange", "true");
-          onLoginSuccess();
+        // Try admin account setup
+        const adminSetupSuccess = await loginFlow.attemptAdminAccountSetup();
+        if (adminSetupSuccess) {
           setIsLoading(false);
           return;
         }
         
-        // If we get here, all attempts failed
-        setErrorMessage(`Could not log in. Please try again with the default password: ${DEFAULT_ADMIN_PASSWORD}`);
-        toast({
-          title: "Login failed",
-          description: `Could not log in. Please try with the default password: ${DEFAULT_ADMIN_PASSWORD}`,
-          variant: "destructive",
-        });
+        // All attempts failed
+        loginFlow.handleAllLoginAttemptsFailed();
       } else {
         // Not the admin email - reject
-        setErrorMessage("You do not have administrator privileges");
-        toast({
-          title: "Access denied",
-          description: "You do not have administrator privileges",
-          variant: "destructive",
-        });
+        loginFlow.handleInvalidEmail();
       }
     } catch (err) {
       console.error("Login error:", err);
-      setErrorMessage("An unexpected error occurred during login");
-      toast({
-        title: "Login failed",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
+      props.setErrorMessage("An unexpected error occurred during login");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleForgotPassword = async () => {
-    if (!email) {
-      setErrorMessage("Please enter your email address first");
-      toast({
-        title: "Email required",
-        description: "Please enter your email address before requesting a password reset",
-        variant: "destructive",
-      });
+    if (!passwordReset.validateEmailForReset()) {
       return;
     }
 
     setIsLoading(true);
     try {
-      // Normalize email to lowercase for consistency
-      const normalizedEmail = email.toLowerCase().trim();
-      
-      // Only allow password reset for the admin email
-      if (normalizedEmail !== ADMIN_EMAIL.toLowerCase().trim()) {
-        setErrorMessage("Password reset is only available for administrator accounts");
-        toast({
-          title: "Access denied",
-          description: "Password reset is only available for administrator accounts",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-      
-      const { error } = await supabase.auth.resetPasswordForEmail(ADMIN_EMAIL, {
-        redirectTo: `${window.location.origin}/admin/reset-password`,
-      });
-      
-      if (error) {
-        console.error("Password reset error:", error.message);
-        setErrorMessage(error.message);
-        toast({
-          title: "Password reset failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        setErrorMessage("");
-        toast({
-          title: "Password reset email sent",
-          description: "Check your email for a password reset link",
-        });
-      }
-    } catch (err) {
-      console.error("Password reset error:", err);
-      setErrorMessage("An unexpected error occurred during password reset");
-      toast({
-        title: "Password reset failed",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
+      await passwordReset.sendPasswordResetEmail();
     } finally {
       setIsLoading(false);
     }
