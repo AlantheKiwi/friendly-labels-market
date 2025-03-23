@@ -35,6 +35,10 @@ export const useAdminLoginAuth = (props: UseAdminLoginAuthProps) => {
     try {
       console.log("Starting admin login process with email:", email);
       
+      // Log the actual credentials being used (mask the password)
+      console.log("ADMIN_EMAIL from props:", ADMIN_EMAIL);
+      console.log("DEFAULT_PASSWORD length:", props.DEFAULT_ADMIN_PASSWORD.length);
+      
       // Normalize email to lowercase for consistency
       const normalizedEmail = email.toLowerCase().trim();
       

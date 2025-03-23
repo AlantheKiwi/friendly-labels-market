@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { checkUserRoles as checkRoles } from "./useRoleCheck";
 import { UserRoles } from "@/types/auth";
@@ -40,13 +39,16 @@ export const useAuthService = () => {
     return await supabase.auth.getSession();
   };
 
-  // Completely rewritten admin creation function with simplified logic
+  // Completely rewritten admin creation function with simplified logic and debugging
   const createAdminIfNotExists = async () => {
     console.log("Running simplified admin account setup");
     
     try {
       // First try to sign in with the default admin credentials
       console.log("Attempting direct sign-in with default credentials");
+      console.log("Admin email:", ADMIN_EMAIL);
+      console.log("Admin password length:", DEFAULT_ADMIN_PASSWORD.length);
+      
       const { data: signInData, error: signInError } = await signInWithPassword(
         ADMIN_EMAIL, 
         DEFAULT_ADMIN_PASSWORD
@@ -59,10 +61,14 @@ export const useAuthService = () => {
       }
       
       console.log("Default sign-in failed, checking if admin exists");
+      console.log("Sign-in error details:", JSON.stringify(signInError, null, 2));
       
       // If signin failed, check if it's because the admin exists but password is wrong,
       // or if the admin doesn't exist at all
-      const { data: { user: existingUser }, error: getUserError } = await supabase.auth.getUser();
+      const { data: userData, error: getUserError } = await supabase.auth.getUser();
+      
+      console.log("GetUser data:", userData ? "Data exists" : "No data");
+      console.log("GetUser error:", getUserError ? getUserError.message : "No error");
       
       // First case - attempting to create the admin account
       console.log("Attempting to create new admin account");
@@ -74,6 +80,11 @@ export const useAuthService = () => {
           is_admin: true
         }
       );
+      
+      if (signUpError) {
+        console.log("Sign-up error:", signUpError.message);
+        console.log("Full sign-up error:", JSON.stringify(signUpError, null, 2));
+      }
       
       // If there was no error or the only error is that the user already exists,
       // try signing in again with the default password
@@ -90,8 +101,9 @@ export const useAuthService = () => {
           return { data: retryData, error: null };
         }
         
-        // If we still can't sign in, inform the user to use the password reset option
         console.log("Still cannot sign in after creation attempt:", retryError);
+        
+        // If we still can't sign in, inform the user to use the password reset option
         return { 
           data: null, 
           error: { 

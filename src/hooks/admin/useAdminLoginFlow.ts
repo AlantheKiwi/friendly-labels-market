@@ -28,6 +28,10 @@ export const useAdminLoginFlow = ({
 
   const attemptLoginWithDefaultPassword = async () => {
     console.log("Trying login with default password:", DEFAULT_ADMIN_PASSWORD.replace(/./g, "*"));
+    // Log both credentials to verify what we're attempting to use
+    console.log("Admin email being used:", ADMIN_EMAIL);
+    console.log("Input validation - Email matches admin email:", email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim());
+    
     const { data, error } = await authService.signInWithPassword(
       ADMIN_EMAIL,
       DEFAULT_ADMIN_PASSWORD
@@ -45,16 +49,19 @@ export const useAdminLoginFlow = ({
       return true;
     }
     
-    console.log("Login with default password failed");
+    console.log("Login with default password failed:", error.message);
     return false;
   };
 
   const attemptLoginWithEnteredPassword = async () => {
     if (password === DEFAULT_ADMIN_PASSWORD) {
+      console.log("Entered password is the same as default, skipping duplicate attempt");
       return false; // No need to try the same password twice
     }
     
     console.log("Trying login with entered password");
+    console.log("Admin email being used:", ADMIN_EMAIL);
+    
     const { data, error } = await authService.signInWithPassword(
       ADMIN_EMAIL,
       password
@@ -72,6 +79,7 @@ export const useAdminLoginFlow = ({
     }
     
     console.log("Login with entered password failed:", error.message);
+    console.log("Error object details:", JSON.stringify(error, null, 2));
     return false;
   };
 
@@ -79,12 +87,16 @@ export const useAdminLoginFlow = ({
     console.log("Starting admin account setup process");
     setIsCreatingAdmin(true);
     
+    // Log createAdminIfNotExists parameters to ensure it's receiving what we expect
+    console.log("Creating admin with email:", ADMIN_EMAIL);
+    
     const { data, error } = await authService.createAdminIfNotExists();
     
     setIsCreatingAdmin(false);
     
     if (error) {
       console.error("Admin setup failed:", error.message);
+      console.error("Full error object:", JSON.stringify(error, null, 2));
       setErrorMessage(error.message);
       toast({
         title: "Admin setup failed",
@@ -95,7 +107,7 @@ export const useAdminLoginFlow = ({
     }
     
     if (data) {
-      console.log("Admin setup successful");
+      console.log("Admin setup successful, user data:", JSON.stringify(data, null, 2));
       await authService.checkUserRoles(data.user.id);
       toast({
         title: "Login successful",
@@ -106,6 +118,7 @@ export const useAdminLoginFlow = ({
       return true;
     }
     
+    console.log("Admin setup did not return data or error");
     return false;
   };
 
@@ -119,6 +132,11 @@ export const useAdminLoginFlow = ({
   };
 
   const handleAllLoginAttemptsFailed = () => {
+    // Log details about what we know at this point
+    console.log("All login attempts failed with email:", email);
+    console.log("Default admin email:", ADMIN_EMAIL);
+    console.log("Default admin password:", DEFAULT_ADMIN_PASSWORD.replace(/./g, "*"));
+    
     setErrorMessage(`Could not log in. Please try again with the default password: ${DEFAULT_ADMIN_PASSWORD}`);
     toast({
       title: "Login failed",
