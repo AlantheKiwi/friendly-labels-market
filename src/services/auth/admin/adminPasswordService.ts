@@ -57,7 +57,8 @@ export const forceResetAdminPassword = async (): Promise<{ success: boolean; mes
     const adminUser = data.users?.find(user => {
       // Ensure user has an email property before comparing
       if (user && typeof user === 'object' && 'email' in user) {
-        return user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+        const userEmail = user.email as string | null | undefined;
+        return userEmail?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
       }
       return false;
     });
