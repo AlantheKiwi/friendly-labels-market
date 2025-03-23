@@ -1,13 +1,10 @@
-
 import React from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ContactForm from "@/components/ContactForm";
 import { PhoneCall, Mail, MapPin, Clock } from "lucide-react";
-
 const ContactPage = () => {
-  return (
-    <div className="flex flex-col min-h-screen">
+  return <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
         <div className="bg-brand-blue py-12">
@@ -57,8 +54,8 @@ const ContactPage = () => {
                   <div>
                     <p className="font-medium text-gray-700">Business Hours</p>
                     <p className="text-gray-600">Monday to Friday: 9am - 5pm</p>
-                    <p className="text-gray-600">Saturday: 10am - 2pm</p>
-                    <p className="text-gray-600">Sunday: Closed</p>
+                    
+                    
                   </div>
                 </div>
               </div>
@@ -72,8 +69,6 @@ const ContactPage = () => {
         </div>
       </main>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default ContactPage;
