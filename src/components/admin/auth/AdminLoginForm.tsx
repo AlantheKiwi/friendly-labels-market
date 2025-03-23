@@ -8,6 +8,7 @@ import LoginErrorMessage from "./LoginErrorMessage";
 import AdminCredentialHints from "./AdminCredentialHints";
 import LoginButton from "./LoginButton";
 import DefaultCredentialsButton from "./DefaultCredentialsButton";
+import ForgotPasswordButton from "./ForgotPasswordButton";
 
 interface AdminLoginFormProps {
   onLoginSuccess: () => void;
@@ -27,7 +28,8 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
     ADMIN_EMAIL,
     handleLogin,
     toggleShowPassword,
-    handleSetDefaultValues
+    handleSetDefaultValues,
+    handleForgotPassword
   } = useAdminLogin(onLoginSuccess);
 
   return (
@@ -68,7 +70,10 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
         isCreatingAdmin={isCreatingAdmin} 
       />
       
-      <DefaultCredentialsButton onClick={handleSetDefaultValues} />
+      <div className="flex flex-col space-y-1">
+        <DefaultCredentialsButton onClick={handleSetDefaultValues} />
+        <ForgotPasswordButton onClick={handleForgotPassword} />
+      </div>
       
       <AdminCredentialHints 
         adminEmail={ADMIN_EMAIL} 

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuthService } from "@/hooks/useAuthService";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useAdminLogin = (onLoginSuccess: () => void) => {
   const [email, setEmail] = useState("");
@@ -129,6 +130,66 @@ export const useAdminLogin = (onLoginSuccess: () => void) => {
     setPassword(DEFAULT_ADMIN_PASSWORD);
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setErrorMessage("Please enter your email address first");
+      toast({
+        title: "Email required",
+        description: "Please enter your email address before requesting a password reset",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Normalize email to lowercase for consistency
+      const normalizedEmail = email.toLowerCase().trim();
+      
+      // Only allow password reset for the admin email
+      if (normalizedEmail !== ADMIN_EMAIL.toLowerCase().trim()) {
+        setErrorMessage("Password reset is only available for administrator accounts");
+        toast({
+          title: "Access denied",
+          description: "Password reset is only available for administrator accounts",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(ADMIN_EMAIL, {
+        redirectTo: `${window.location.origin}/admin/reset-password`,
+      });
+      
+      if (error) {
+        console.error("Password reset error:", error.message);
+        setErrorMessage(error.message);
+        toast({
+          title: "Password reset failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        setErrorMessage("");
+        toast({
+          title: "Password reset email sent",
+          description: "Check your email for a password reset link",
+        });
+      }
+    } catch (err) {
+      console.error("Password reset error:", err);
+      setErrorMessage("An unexpected error occurred during password reset");
+      toast({
+        title: "Password reset failed",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     email,
     setEmail,
@@ -142,6 +203,7 @@ export const useAdminLogin = (onLoginSuccess: () => void) => {
     ADMIN_EMAIL,
     handleLogin,
     toggleShowPassword,
-    handleSetDefaultValues
+    handleSetDefaultValues,
+    handleForgotPassword
   };
 };
