@@ -39,8 +39,42 @@ export const useLoginNotifications = ({
     });
   };
 
+  const handleNetworkError = (error: Error) => {
+    console.error("Network error during login:", error);
+    setErrorMessage("Connection error. Please check your internet connection and try again.");
+    toast({
+      title: "Connection error",
+      description: "Please check your internet connection and try again.",
+      variant: "destructive",
+    });
+  };
+
+  const handleAuthenticationError = (errorMessage: string) => {
+    console.error("Authentication error:", errorMessage);
+    setErrorMessage(`Authentication error: ${errorMessage}`);
+    toast({
+      title: "Authentication error",
+      description: errorMessage,
+      variant: "destructive",
+    });
+  };
+
+  const handleUnexpectedError = (error: unknown) => {
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    console.error("Unexpected error during login:", error);
+    setErrorMessage(`An unexpected error occurred: ${errorMessage}`);
+    toast({
+      title: "Error",
+      description: "An unexpected error occurred. Please try again later.",
+      variant: "destructive",
+    });
+  };
+
   return {
     handleInvalidEmail,
-    handleAllLoginAttemptsFailed
+    handleAllLoginAttemptsFailed,
+    handleNetworkError,
+    handleAuthenticationError,
+    handleUnexpectedError
   };
 };

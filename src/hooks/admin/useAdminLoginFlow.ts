@@ -47,10 +47,13 @@ export const useAdminLoginFlow = (props: UseAdminLoginFlowProps) => {
     onLoginSuccess: props.onLoginSuccess
   });
 
-  // Use the login notifications hook
+  // Use the login notifications hook with enhanced error handling
   const {
     handleInvalidEmail,
-    handleAllLoginAttemptsFailed
+    handleAllLoginAttemptsFailed,
+    handleNetworkError,
+    handleAuthenticationError,
+    handleUnexpectedError
   } = useLoginNotifications({
     email,
     ADMIN_EMAIL,
@@ -79,36 +82,52 @@ export const useAdminLoginFlow = (props: UseAdminLoginFlowProps) => {
       if (isAdminEmail) {
         console.log("Admin login attempt detected");
         
-        // Try login with default password first
-        const defaultLoginSuccess = await attemptLoginWithDefaultPassword();
-        if (defaultLoginSuccess) {
-          setIsLoading(false);
-          return;
+        try {
+          // Try login with default password first
+          const defaultLoginSuccess = await attemptLoginWithDefaultPassword();
+          if (defaultLoginSuccess) {
+            setIsLoading(false);
+            return;
+          }
+          
+          // Try login with entered password
+          const userPasswordLoginSuccess = await attemptLoginWithEnteredPassword();
+          if (userPasswordLoginSuccess) {
+            setIsLoading(false);
+            return;
+          }
+          
+          // Try admin account setup
+          const adminSetupSuccess = await attemptAdminAccountSetup();
+          if (adminSetupSuccess) {
+            setIsLoading(false);
+            return;
+          }
+          
+          // All attempts failed
+          handleAllLoginAttemptsFailed();
+        } catch (err: any) {
+          // Check for specific error types
+          if (err.message && err.message.includes("network")) {
+            handleNetworkError(err);
+          } else if (err.message && (
+            err.message.includes("auth") || 
+            err.message.includes("credentials") || 
+            err.message.includes("password") || 
+            err.message.includes("unauthorized")
+          )) {
+            handleAuthenticationError(err.message);
+          } else {
+            handleUnexpectedError(err);
+          }
         }
-        
-        // Try login with entered password
-        const userPasswordLoginSuccess = await attemptLoginWithEnteredPassword();
-        if (userPasswordLoginSuccess) {
-          setIsLoading(false);
-          return;
-        }
-        
-        // Try admin account setup
-        const adminSetupSuccess = await attemptAdminAccountSetup();
-        if (adminSetupSuccess) {
-          setIsLoading(false);
-          return;
-        }
-        
-        // All attempts failed
-        handleAllLoginAttemptsFailed();
       } else {
         // Not the admin email - reject
         handleInvalidEmail();
       }
     } catch (err) {
       console.error("Login error:", err);
-      props.setErrorMessage("An unexpected error occurred during login");
+      handleUnexpectedError(err);
     } finally {
       setIsLoading(false);
     }
@@ -121,6 +140,9 @@ export const useAdminLoginFlow = (props: UseAdminLoginFlowProps) => {
     resetAdminPassword: props.authService.resetAdminPassword,
     handleInvalidEmail,
     handleAllLoginAttemptsFailed,
+    handleNetworkError,
+    handleAuthenticationError,
+    handleUnexpectedError,
     handleLogin
   };
 };

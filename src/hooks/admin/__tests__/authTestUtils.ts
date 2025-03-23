@@ -1,5 +1,6 @@
 
 import { vi } from 'vitest';
+import React from 'react';
 
 // Create mock auth service
 export const createMockAuthService = () => ({
@@ -21,7 +22,7 @@ export const createMockToast = () => ({
 // Mock form event
 export const createMockFormEvent = () => ({
   preventDefault: vi.fn(),
-});
+} as unknown as React.FormEvent);
 
 // Mock set state functions
 export const createMockSetState = () => vi.fn();

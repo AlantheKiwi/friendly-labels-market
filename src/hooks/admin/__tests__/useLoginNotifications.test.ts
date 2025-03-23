@@ -38,4 +38,48 @@ describe('useLoginNotifications', () => {
       `Could not log in. Please try again with the default password: ${mockProps.DEFAULT_ADMIN_PASSWORD}`
     );
   });
+
+  it('should handle network error notification', () => {
+    const { result } = renderHook(() => useLoginNotifications(mockProps));
+    const mockError = new Error('Network error');
+    
+    result.current.handleNetworkError(mockError);
+    
+    expect(mockProps.setErrorMessage).toHaveBeenCalledWith(
+      'Connection error. Please check your internet connection and try again.'
+    );
+  });
+
+  it('should handle authentication error notification', () => {
+    const { result } = renderHook(() => useLoginNotifications(mockProps));
+    const errorMessage = 'Invalid credentials';
+    
+    result.current.handleAuthenticationError(errorMessage);
+    
+    expect(mockProps.setErrorMessage).toHaveBeenCalledWith(
+      `Authentication error: ${errorMessage}`
+    );
+  });
+
+  it('should handle unexpected error notification', () => {
+    const { result } = renderHook(() => useLoginNotifications(mockProps));
+    const mockError = new Error('Unexpected error');
+    
+    result.current.handleUnexpectedError(mockError);
+    
+    expect(mockProps.setErrorMessage).toHaveBeenCalledWith(
+      `An unexpected error occurred: Unexpected error`
+    );
+  });
+
+  it('should handle unknown error type in unexpected error', () => {
+    const { result } = renderHook(() => useLoginNotifications(mockProps));
+    const unknownError = { custom: 'error' };
+    
+    result.current.handleUnexpectedError(unknownError);
+    
+    expect(mockProps.setErrorMessage).toHaveBeenCalledWith(
+      `An unexpected error occurred: An unknown error occurred`
+    );
+  });
 });

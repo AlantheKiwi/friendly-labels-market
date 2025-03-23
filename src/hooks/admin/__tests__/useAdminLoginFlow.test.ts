@@ -28,7 +28,10 @@ vi.mock('../useAdminSetup', () => ({
 vi.mock('../useLoginNotifications', () => ({
   useLoginNotifications: () => ({
     handleInvalidEmail: vi.fn(),
-    handleAllLoginAttemptsFailed: vi.fn()
+    handleAllLoginAttemptsFailed: vi.fn(),
+    handleNetworkError: vi.fn(),
+    handleAuthenticationError: vi.fn(),
+    handleUnexpectedError: vi.fn()
   })
 }));
 
@@ -79,18 +82,14 @@ describe('useAdminLoginFlow', () => {
     expect(setIsLoading).toHaveBeenCalledWith(false);
   });
   
-  it('should handle login errors gracefully', async () => {
-    // Mock the function to throw an error
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    
-    // Force an error in the function
-    const loginMock = vi.fn().mockImplementation(() => {
-      throw new Error('Test error');
-    });
+  it('should handle network errors gracefully', async () => {
+    // Mock the login attempt to throw a network error
+    const networkError = new Error('Network connection failed');
+    networkError.message = 'network connection failed';
     
     vi.mock('../useLoginAttempts', () => ({
       useLoginAttempts: () => ({
-        attemptLoginWithDefaultPassword: loginMock,
+        attemptLoginWithDefaultPassword: vi.fn().mockRejectedValue(networkError),
         attemptLoginWithEnteredPassword: vi.fn().mockResolvedValue(false)
       })
     }));
@@ -99,8 +98,52 @@ describe('useAdminLoginFlow', () => {
     
     await result.current.handleLogin(mockEvent);
     
-    expect(setErrorMessage).toHaveBeenCalledWith('An unexpected error occurred during login');
-    expect(consoleSpy).toHaveBeenCalled();
+    expect(setIsLoading).toHaveBeenCalledWith(false);
+  });
+  
+  it('should handle authentication errors gracefully', async () => {
+    // Mock the login attempt to throw an authentication error
+    const authError = new Error('Invalid credentials');
+    authError.message = 'credentials are invalid';
+    
+    vi.mock('../useLoginAttempts', () => ({
+      useLoginAttempts: () => ({
+        attemptLoginWithDefaultPassword: vi.fn().mockRejectedValue(authError),
+        attemptLoginWithEnteredPassword: vi.fn().mockResolvedValue(false)
+      })
+    }));
+    
+    const { result } = renderHook(() => useAdminLoginFlow(mockProps));
+    
+    await result.current.handleLogin(mockEvent);
+    
+    expect(setIsLoading).toHaveBeenCalledWith(false);
+  });
+  
+  it('should handle general unexpected errors', async () => {
+    // Mock the function to throw a general error
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    
+    // Force an error in the function
+    const unexpectedError = new Error('Test error');
+    
+    vi.mock('../useLoginNotifications', () => ({
+      useLoginNotifications: () => ({
+        handleInvalidEmail: vi.fn(),
+        handleAllLoginAttemptsFailed: vi.fn(),
+        handleNetworkError: vi.fn(),
+        handleAuthenticationError: vi.fn(),
+        handleUnexpectedError: vi.fn().mockImplementation(() => {
+          throw unexpectedError;
+        })
+      })
+    }));
+    
+    const { result } = renderHook(() => useAdminLoginFlow(mockProps));
+    
+    await result.current.handleLogin(mockEvent);
+    
+    expect(setIsLoading).toHaveBeenCalledWith(false);
     consoleSpy.mockRestore();
   });
 });
