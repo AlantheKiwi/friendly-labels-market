@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, EyeOff, Lock } from "lucide-react";
+import { Eye, EyeOff, Lock, Bug } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from "@/services/auth/constants";
+import { createAdminIfNotExists, forceResetAdminPassword } from "@/services/auth/adminService";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -18,6 +19,7 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
+  const [adminSetupStatus, setAdminSetupStatus] = useState("");
   const redirectedRef = useRef(false);
   const { signIn, user, isClient, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -73,6 +75,48 @@ const LoginPage = () => {
   const fillAdminCredentials = () => {
     setEmail(ADMIN_EMAIL);
     setPassword(DEFAULT_ADMIN_PASSWORD);
+  };
+
+  const setupAdminUser = async () => {
+    setAdminSetupStatus("Setting up admin user...");
+    try {
+      const result = await createAdminIfNotExists();
+      setAdminSetupStatus(result.message);
+      toast({
+        title: result.success ? "Success" : "Error",
+        description: result.message,
+        variant: result.success ? "default" : "destructive"
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setAdminSetupStatus(`Error: ${message}`);
+      toast({
+        title: "Setup Error",
+        description: message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const resetAdmin = async () => {
+    setAdminSetupStatus("Resetting admin password...");
+    try {
+      const result = await forceResetAdminPassword();
+      setAdminSetupStatus(result.message);
+      toast({
+        title: result.success ? "Success" : "Error",
+        description: result.message,
+        variant: result.success ? "default" : "destructive"
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setAdminSetupStatus(`Error: ${message}`);
+      toast({
+        title: "Reset Error",
+        description: message,
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -154,9 +198,10 @@ const LoginPage = () => {
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <button 
                   onClick={toggleDebug}
-                  className="text-xs text-gray-500 hover:text-gray-700"
+                  className="text-xs text-gray-500 hover:text-gray-700 flex items-center"
                   type="button"
                 >
+                  <Bug className="h-3 w-3 mr-1" />
                   {showDebug ? "Hide Debug Info" : "Show Debug Info"}
                 </button>
                 
@@ -166,15 +211,40 @@ const LoginPage = () => {
                       <p className="font-semibold mb-1">Admin credentials:</p>
                       <p>Email: {ADMIN_EMAIL}</p>
                       <p>Password: {DEFAULT_ADMIN_PASSWORD}</p>
-                      <Button 
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="mt-2 text-xs h-6"
-                        onClick={fillAdminCredentials}
-                      >
-                        Fill Admin Credentials
-                      </Button>
+                      <div className="flex gap-2 mt-2">
+                        <Button 
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="text-xs h-7"
+                          onClick={fillAdminCredentials}
+                        >
+                          Fill Admin Credentials
+                        </Button>
+                        <Button 
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="text-xs h-7"
+                          onClick={setupAdminUser}
+                        >
+                          Create Admin
+                        </Button>
+                        <Button 
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="text-xs h-7"
+                          onClick={resetAdmin}
+                        >
+                          Reset Admin
+                        </Button>
+                      </div>
+                      {adminSetupStatus && (
+                        <div className="mt-2 p-2 bg-blue-50 rounded">
+                          <p className="text-xs">{adminSetupStatus}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

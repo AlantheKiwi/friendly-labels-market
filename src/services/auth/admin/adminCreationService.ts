@@ -9,9 +9,9 @@ import { ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from "@/services/auth/constants";
 export const createAdminIfNotExists = async (): Promise<{ success: boolean; message: string }> => {
   try {
     // Check if admin already exists
-    const { data: existingUsers, error: searchError } = await supabase.auth.admin.listUsers({
+    const { data, error: searchError } = await supabase.auth.admin.listUsers({
       page: 1,
-      perPage: 1
+      perPage: 100
     });
     
     if (searchError) {
@@ -23,7 +23,7 @@ export const createAdminIfNotExists = async (): Promise<{ success: boolean; mess
     }
     
     // Check if admin email exists in the returned users
-    const adminExists = existingUsers?.users.some(
+    const adminExists = data?.users.some(
       user => user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
     );
     
