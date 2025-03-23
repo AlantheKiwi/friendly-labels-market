@@ -1,6 +1,8 @@
 
-import { useState } from "react";
 import { Printer } from "@/types";
+import { usePriceChange } from "./price-hooks/usePriceChange";
+import { usePriceSave } from "./price-hooks/usePriceSave";
+import { usePriceStatus } from "./price-hooks/usePriceStatus";
 
 export const usePriceActions = (
   printerData: Printer[],
@@ -11,73 +13,21 @@ export const usePriceActions = (
   setSavingIds: React.Dispatch<React.SetStateAction<number[]>>,
   initialPrinters: Printer[]
 ) => {
-  const handlePriceChange = (printerId: number, value: string) => {
-    const newPrice = parseFloat(value);
-    if (!isNaN(newPrice)) {
-      setEditedPrices((prev) => ({
-        ...prev,
-        [printerId]: { price: newPrice },
-      }));
-    }
-  };
+  // Hook for handling price changes
+  const { handlePriceChange } = usePriceChange(setEditedPrices);
 
-  const handleSavePrice = async (printerId: number) => {
-    // Check if price is edited
-    if (!editedPrices[printerId]) return;
+  // Hook for saving prices
+  const { handleSavePrice } = usePriceSave(
+    printerData,
+    setPrinterData,
+    editedPrices,
+    setEditedPrices,
+    savingIds,
+    setSavingIds
+  );
 
-    // Start loading state
-    setSavingIds((prev) => [...prev, printerId]);
-
-    try {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Update printer data
-      setPrinterData((prev) =>
-        prev.map((printer) => {
-          if (printer.id === printerId) {
-            return {
-              ...printer,
-              price: editedPrices[printerId].price,
-            };
-          }
-          return printer;
-        })
-      );
-
-      // Save updated printers to localStorage
-      const updatedPrinters = printerData.map((printer) => {
-        if (printer.id === printerId) {
-          return {
-            ...printer,
-            price: editedPrices[printerId].price,
-          };
-        }
-        return printer;
-      });
-      localStorage.setItem('printers', JSON.stringify(updatedPrinters));
-
-      // Clear edited price after successful save
-      setEditedPrices((prev) => {
-        const newState = { ...prev };
-        delete newState[printerId];
-        return newState;
-      });
-    } catch (error) {
-      console.error("Error saving price:", error);
-    } finally {
-      // End loading state
-      setSavingIds((prev) => prev.filter((id) => id !== printerId));
-    }
-  };
-
-  const isPriceEdited = (printerId: number) => {
-    return Boolean(editedPrices[printerId]);
-  };
-
-  const isSaving = (printerId: number) => {
-    return savingIds.includes(printerId);
-  };
+  // Hook for checking price status
+  const { isPriceEdited, isSaving } = usePriceStatus(editedPrices, savingIds);
 
   return {
     handlePriceChange,
