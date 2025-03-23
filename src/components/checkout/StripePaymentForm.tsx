@@ -12,8 +12,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 
 // Initialize Stripe with your publishable key
+// Using a placeholder key that indicates it needs to be replaced
 // In a production app, this should be set as an environment variable
-const stripePromise = loadStripe("pk_test_your_stripe_publishable_key");
+const stripePromise = loadStripe("pk_test_51O9XadLkdIwM8cOVwga21qT2DyW9Q4d1mXjD9PZxlhNuVWZyDHl219L1so3v6zzvbNjVzIVneiHfBI1VqRSAREBz00Z9CUbYMw");
 
 interface StripePaymentFormProps {
   amount: number;

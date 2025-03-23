@@ -39,45 +39,58 @@ const CheckoutPage = () => {
   };
 
   const handlePaymentSuccess = (paymentId: string) => {
-    // Generate order number
-    const orderNumber = `ORD-${Date.now().toString().slice(-6)}`;
-    const orderDate = new Date().toLocaleDateString('en-NZ', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    // Set processing state
+    setIsProcessingPayment(true);
     
-    // Prepare order data for the invoice
-    const orderData = {
-      orderNumber,
-      orderDate,
-      customerInfo: customerInfo!,
-      items: items.map(item => ({
-        productId: item.productId,
-        productName: item.productName,
-        quantity: item.quantity,
-        price: item.price,
-        dimensions: item.dimensions
-      })),
-      paymentMethod: selectedPaymentMethod,
-      paymentId: paymentId,
-      subtotal,
-      shipping: shippingCost,
-      gst: gstAmount,
-      total
-    };
-    
-    // Show toast
-    toast({
-      title: "Payment Successful",
-      description: "Your order has been placed successfully.",
-    });
-    
-    // Clear cart
-    clearCart();
-    
-    // Navigate to thank you page with order data
-    navigate("/thank-you", { state: { orderData } });
+    try {
+      // Generate order number
+      const orderNumber = `ORD-${Date.now().toString().slice(-6)}`;
+      const orderDate = new Date().toLocaleDateString('en-NZ', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      
+      // Prepare order data for the invoice
+      const orderData = {
+        orderNumber,
+        orderDate,
+        customerInfo: customerInfo!,
+        items: items.map(item => ({
+          productId: item.productId,
+          productName: item.productName,
+          quantity: item.quantity,
+          price: item.price,
+          dimensions: item.dimensions
+        })),
+        paymentMethod: selectedPaymentMethod,
+        paymentId: paymentId,
+        subtotal,
+        shipping: shippingCost,
+        gst: gstAmount,
+        total
+      };
+      
+      // Show toast
+      toast({
+        title: "Payment Successful",
+        description: "Your order has been placed successfully.",
+      });
+      
+      // Clear cart
+      clearCart();
+      
+      // Navigate to thank you page with order data
+      navigate("/thank-you", { state: { orderData } });
+    } catch (error) {
+      // Show error toast
+      toast({
+        title: "Order Processing Error",
+        description: "There was an error processing your order. Please try again.",
+        variant: "destructive"
+      });
+      setIsProcessingPayment(false);
+    }
   };
 
   const handleBack = () => {
