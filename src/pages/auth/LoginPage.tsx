@@ -10,30 +10,40 @@ import { Eye, EyeOff, Lock } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from "@/services/auth/constants";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
   const redirectedRef = useRef(false);
-  const { signIn, user, isClient } = useAuth();
+  const { signIn, user, isClient, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Only redirect if user is logged in, has client role, and we haven't already redirected
-    if (user && isClient && !redirectedRef.current && !isLoading) {
-      console.log("User logged in and has client role, redirecting to dashboard");
+    // Only redirect if user is logged in and we haven't already redirected
+    if (user && !redirectedRef.current && !isLoading) {
+      console.log("User logged in, redirecting based on role:", { isAdmin, isClient });
       redirectedRef.current = true;
-      navigate("/client/dashboard", { replace: true });
+      
+      if (isAdmin) {
+        navigate("/admin/dashboard", { replace: true });
+      } else if (isClient) {
+        navigate("/client/dashboard", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
     }
-  }, [user, isClient, navigate, isLoading]);
+  }, [user, isAdmin, isClient, navigate, isLoading]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLoading) return;
     
+    console.log("Attempting login with:", email);
     setIsLoading(true);
     
     try {
@@ -54,6 +64,15 @@ const LoginPage = () => {
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
+  };
+
+  const toggleDebug = () => {
+    setShowDebug(!showDebug);
+  };
+
+  const fillAdminCredentials = () => {
+    setEmail(ADMIN_EMAIL);
+    setPassword(DEFAULT_ADMIN_PASSWORD);
   };
 
   return (
@@ -130,6 +149,36 @@ const LoginPage = () => {
                   )}
                 </Button>
               </form>
+              
+              {/* Dev tools for easy login */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <button 
+                  onClick={toggleDebug}
+                  className="text-xs text-gray-500 hover:text-gray-700"
+                  type="button"
+                >
+                  {showDebug ? "Hide Debug Info" : "Show Debug Info"}
+                </button>
+                
+                {showDebug && (
+                  <div className="mt-2 p-3 bg-gray-50 rounded-md text-xs">
+                    <div>
+                      <p className="font-semibold mb-1">Admin credentials:</p>
+                      <p>Email: {ADMIN_EMAIL}</p>
+                      <p>Password: {DEFAULT_ADMIN_PASSWORD}</p>
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="mt-2 text-xs h-6"
+                        onClick={fillAdminCredentials}
+                      >
+                        Fill Admin Credentials
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-2">
               <div className="text-center text-sm">

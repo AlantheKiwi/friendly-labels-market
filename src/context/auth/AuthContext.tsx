@@ -4,6 +4,7 @@ import { AuthContextType } from "./authTypes";
 import { useAuthState } from "./useAuthState";
 import { useAuthListeners } from "./useAuthListeners";
 import { useAuthOperations } from "@/hooks/useAuthOperations";
+import { ADMIN_EMAIL } from "@/services/auth/constants";
 
 // Create the auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,8 +44,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshRoles = async () => {
     if (!user) return { isAdmin: false, isClient: false };
     
+    console.log("Checking admin status for:", user.email);
+    
     // Directly check admin email as a fallback
-    if (user.email?.toLowerCase() === "alan@insight-ai-systems.com") {
+    if (user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+      console.log("Admin email match found");
       setIsAdmin(true);
       setIsClient(true);
       return { isAdmin: true, isClient: true };

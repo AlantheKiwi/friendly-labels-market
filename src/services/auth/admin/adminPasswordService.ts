@@ -42,8 +42,7 @@ export const forceResetAdminPassword = async (): Promise<{ success: boolean; mes
     // Get the admin user ID
     const { data: users, error: userError } = await supabase.auth.admin.listUsers({
       page: 1,
-      perPage: 1,
-      query: ADMIN_EMAIL
+      perPage: 100
     });
     
     if (userError || !users || users.users.length === 0) {
@@ -54,7 +53,19 @@ export const forceResetAdminPassword = async (): Promise<{ success: boolean; mes
       };
     }
     
-    const adminId = users.users[0].id;
+    // Find the admin user by email
+    const adminUser = users.users.find(
+      user => user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
+    );
+    
+    if (!adminUser) {
+      return {
+        success: false,
+        message: "Admin user not found"
+      };
+    }
+    
+    const adminId = adminUser.id;
     
     // Update the password
     const { error } = await supabase.auth.admin.updateUserById(
