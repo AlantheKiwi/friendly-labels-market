@@ -1,5 +1,5 @@
 
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -11,23 +11,24 @@ import { Button } from "@/components/ui/button";
 const ClientInvoicesPage = () => {
   const { invoices, isLoading, error } = useClientInvoices();
   
-  // Use memoized function to prevent recreation on each render
-  const getStatusBadge = useCallback((status: string) => {
-    switch (status.toLowerCase()) {
-      case "paid":
-        return <Badge className="bg-green-500">Paid</Badge>;
-      case "pending":
-        return <Badge className="bg-yellow-500">Pending</Badge>;
-      case "overdue":
-        return <Badge className="bg-red-500">Overdue</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
-    }
+  // Memoize the status badge rendering function
+  const getStatusBadge = useMemo(() => {
+    return (status: string) => {
+      switch (status.toLowerCase()) {
+        case "paid":
+          return <Badge className="bg-green-500">Paid</Badge>;
+        case "pending":
+          return <Badge className="bg-yellow-500">Pending</Badge>;
+        case "overdue":
+          return <Badge className="bg-red-500">Overdue</Badge>;
+        default:
+          return <Badge>{status}</Badge>;
+      }
+    };
   }, []);
 
-  // Use memoized function to prevent recreation on each render
-  const handleDownload = useCallback((e: React.MouseEvent, invoiceId: string) => {
-    e.preventDefault();
+  // Memoize the download handler to prevent recreation on each render
+  const handleDownload = useCallback((invoiceId: string) => {
     console.log(`Download invoice: ${invoiceId}`);
     alert("Download functionality will be implemented soon");
   }, []);
@@ -75,7 +76,7 @@ const ClientInvoicesPage = () => {
                       <Button 
                         variant="link" 
                         className="text-primary hover:underline p-0 h-auto"
-                        onClick={(e) => handleDownload(e, invoice.id)}
+                        onClick={() => handleDownload(invoice.id)}
                       >
                         Download
                       </Button>

@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
@@ -19,6 +19,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [shouldRedirect, setShouldRedirect] = useState<boolean | null>(null);
   const { toast } = useToast();
+  const redirectAttempted = useRef(false);
   
   // Memoize the refresh roles function to prevent recreating it on every render
   const handleRefreshRoles = useCallback(async () => {
@@ -76,7 +77,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // If we should redirect
-  if (shouldRedirect) {
+  if (shouldRedirect && !redirectAttempted.current) {
+    redirectAttempted.current = true;
+    
     // No user is logged in, go to login page
     if (!user) {
       console.log("No user found, redirecting to login");
@@ -115,6 +118,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       });
       return <Navigate to="/" replace />;
     }
+  }
+
+  // Reset redirect attempt ref when we're not redirecting
+  if (!shouldRedirect) {
+    redirectAttempted.current = false;
   }
 
   // User has necessary permissions, render the protected content
