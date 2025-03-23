@@ -1,12 +1,15 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import AdminLogoutButton from "@/components/admin/AdminLogoutButton";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 const AdminCompleteDashboardPage = () => {
-  const { user, isAdmin, isLoading } = useAuth();
+  const { user, isAdmin, isLoading, refreshRoles } = useAuth();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -23,7 +26,31 @@ const AdminCompleteDashboardPage = () => {
     }
   }, [user, isAdmin, isLoading, navigate, toast]);
 
-  if (isLoading) {
+  const handleManualRefresh = async () => {
+    if (isRefreshing) return;
+    
+    setIsRefreshing(true);
+    try {
+      console.log("Manually refreshing admin status");
+      await refreshRoles();
+      
+      toast({
+        title: "Refreshed",
+        description: "Your admin status has been refreshed",
+      });
+    } catch (error) {
+      console.error("Error refreshing roles:", error);
+      toast({
+        title: "Refresh Failed",
+        description: "Failed to refresh your admin status",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  if (isLoading || isRefreshing) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
@@ -41,7 +68,18 @@ const AdminCompleteDashboardPage = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Admin Complete Dashboard</h1>
-          <AdminLogoutButton />
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+            >
+              <RefreshCw className="h-4 w-4 mr-1" />
+              Refresh Admin Status
+            </Button>
+            <AdminLogoutButton />
+          </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
           <p className="text-lg">

@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { useToast } from "@/components/ui/use-toast";
@@ -69,17 +68,27 @@ export const useAuthState = (): AuthState & {
     }, 5000); // 5 second timeout
     
     try {
-      // For now, use a simplified approach to avoid DB issues
-      // Instead of checking with the DB which has errors, assign default roles
-      console.log("Using simplified role assignment due to DB issues");
+      // Check if this is the admin email (direct check) - a simplified approach
+      const adminEmail = "alan@insight-ai-systems.com"; // Hard-coded admin email for direct check
       
-      // Set default roles for authenticated users
-      if (userId) {
+      // Try to get the user's email from the user object in memory
+      const userEmail = user?.email?.toLowerCase();
+      
+      console.log("Comparing emails for admin check:", { 
+        userEmail, 
+        adminEmail,
+        isMatch: userEmail === adminEmail
+      });
+      
+      // If this is the admin email, set admin role to true
+      if (userEmail === adminEmail) {
+        console.log("Admin email match found - granting admin role");
+        setIsAdmin(true);
         setIsClient(true);
-        setIsAdmin(false);
       } else {
-        setIsClient(false);
+        // For all other users, default to client role only 
         setIsAdmin(false);
+        setIsClient(true);
       }
       
       // Record when we last checked roles
@@ -93,7 +102,11 @@ export const useAuthState = (): AuthState & {
       
       setIsLoading(false);
       roleCheckInProgressRef.current = false;
-      return { isAdmin: userId ? false : false, isClient: userId ? true : false };
+      
+      return { 
+        isAdmin: userEmail === adminEmail, 
+        isClient: true 
+      };
     } catch (error) {
       console.error("Error checking roles:", error);
       setIsLoading(false);
@@ -111,7 +124,7 @@ export const useAuthState = (): AuthState & {
       roleCheckInProgressRef.current = false;
       return { isAdmin: false, isClient: userId ? true : false };
     }
-  }, [toast, isAdmin, isClient]);
+  }, [toast, isAdmin, isClient, user]);
 
   // Clean up the timeout on unmount
   useEffect(() => {

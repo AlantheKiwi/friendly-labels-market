@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -25,6 +26,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     
     setIsRefreshing(true);
     try {
+      console.log("Explicitly refreshing user roles");
       await refreshRoles();
     } catch (error) {
       console.error("Auto-refresh roles error:", error);
@@ -33,12 +35,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [user, refreshRoles, isRefreshing]);
   
+  // Force role refresh on mount for admin pages
+  useEffect(() => {
+    if (requireAdmin && user && !isRefreshing && !isLoading) {
+      console.log("Admin page - forcing role refresh");
+      handleRefreshRoles();
+    }
+  }, [requireAdmin, user, handleRefreshRoles, isRefreshing, isLoading]);
+  
   useEffect(() => {
     if (isLoading || !user || isRefreshing) return;
     
     const shouldRefresh = 
       lastRoleCheck && 
-      Date.now() - lastRoleCheck > 60000 && // 60 seconds
+      Date.now() - lastRoleCheck > 30000 && // Reduced to 30 seconds for more frequent checks
       (requireAdmin || requireClient);
       
     if (shouldRefresh) {
