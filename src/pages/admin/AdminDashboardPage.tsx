@@ -7,6 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminHeader from "@/components/admin/AdminHeader";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useToast } from "@/components/ui/use-toast";
+import OrdersSection from "@/components/admin/dashboard/OrdersSection";
+import InvoicesSection from "@/components/admin/dashboard/InvoicesSection";
+import PaymentsSection from "@/components/admin/dashboard/PaymentsSection";
+import ClientsSection from "@/components/admin/dashboard/ClientsSection";
+import { Users, FileText, CreditCard, ShoppingCart } from "lucide-react";
 
 const AdminDashboardPage: React.FC = () => {
   const { isAdmin, isLoading, adminEmail } = useAdminAuth();
@@ -43,10 +48,13 @@ const AdminDashboardPage: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle>Clients</CardTitle>
+                <CardTitle className="flex items-center">
+                  <Users className="mr-2 h-5 w-5" />
+                  Clients
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold">Management</p>
@@ -62,7 +70,10 @@ const AdminDashboardPage: React.FC = () => {
             
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle>Orders</CardTitle>
+                <CardTitle className="flex items-center">
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                  Orders
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold">Processing</p>
@@ -78,46 +89,69 @@ const AdminDashboardPage: React.FC = () => {
             
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle>Quote Requests</CardTitle>
+                <CardTitle className="flex items-center">
+                  <FileText className="mr-2 h-5 w-5" />
+                  Invoices
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">Quotations</p>
-                <p className="text-sm text-gray-500 mb-4">Handle custom quote requests</p>
+                <p className="text-2xl font-bold">Billing</p>
+                <p className="text-sm text-gray-500 mb-4">Manage invoices and payments</p>
                 <Button 
-                  onClick={() => navigate("/admin/quotes")} 
                   className="w-full"
+                  onClick={() => navigate("/admin/invoices")}
                 >
-                  View Quotes
+                  View Invoices
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center">
+                  <CreditCard className="mr-2 h-5 w-5" />
+                  Payments
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">Transactions</p>
+                <p className="text-sm text-gray-500 mb-4">Monitor payment transactions</p>
+                <Button 
+                  className="w-full"
+                  onClick={() => navigate("/admin/payments")}
+                >
+                  View Payments
                 </Button>
               </CardContent>
             </Card>
           </div>
           
-          <Tabs defaultValue="system">
+          <Tabs defaultValue="orders">
             <TabsList className="mb-6">
-              <TabsTrigger value="system">System Settings</TabsTrigger>
-              <TabsTrigger value="content">Content Management</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="orders">Recent Orders</TabsTrigger>
+              <TabsTrigger value="invoices">Recent Invoices</TabsTrigger>
+              <TabsTrigger value="payments">Recent Payments</TabsTrigger>
+              <TabsTrigger value="clients">Client Directory</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="system" className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-2xl font-bold mb-4">System Settings</h2>
-              <p className="mb-4">Configure system-wide settings and preferences.</p>
-              <div className="space-y-4">
-                <Button variant="outline" onClick={() => navigate("/admin/complete-dashboard")}>
-                  Advanced Dashboard
-                </Button>
-              </div>
+            <TabsContent value="orders" className="bg-white p-6 rounded-lg shadow">
+              <h2 className="text-2xl font-bold mb-4">Recent Orders</h2>
+              <OrdersSection />
             </TabsContent>
             
-            <TabsContent value="content" className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-2xl font-bold mb-4">Content Management</h2>
-              <p>Manage website content, products, and pricing.</p>
+            <TabsContent value="invoices" className="bg-white p-6 rounded-lg shadow">
+              <h2 className="text-2xl font-bold mb-4">Recent Invoices</h2>
+              <InvoicesSection />
             </TabsContent>
             
-            <TabsContent value="analytics" className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-2xl font-bold mb-4">Analytics</h2>
-              <p>View reports and analytics data.</p>
+            <TabsContent value="payments" className="bg-white p-6 rounded-lg shadow">
+              <h2 className="text-2xl font-bold mb-4">Recent Payments</h2>
+              <PaymentsSection />
+            </TabsContent>
+            
+            <TabsContent value="clients" className="bg-white p-6 rounded-lg shadow">
+              <h2 className="text-2xl font-bold mb-4">Client Directory</h2>
+              <ClientsSection />
             </TabsContent>
           </Tabs>
         </div>

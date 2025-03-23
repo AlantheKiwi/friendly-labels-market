@@ -54,12 +54,13 @@ export const forceResetAdminPassword = async (): Promise<{ success: boolean; mes
     }
     
     // Find the admin user by email with proper type checking
-    const adminUser = data.users?.find(user => {
-      // Ensure user has an email property before comparing
+    const adminUser = data.users?.find((user: any) => {
+      // Ensure user exists and has an email property
       if (user && typeof user === 'object') {
-        // Access email safely with optional chaining and type assertion
-        const userEmail = user.email as string | undefined;
-        return userEmail?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+        // Access email safely
+        const userEmail = user.email;
+        return typeof userEmail === 'string' && 
+               userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase();
       }
       return false;
     });

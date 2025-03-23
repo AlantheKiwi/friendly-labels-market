@@ -23,14 +23,14 @@ export const createAdminIfNotExists = async (): Promise<{ success: boolean; mess
     }
     
     // Check if admin email exists in the returned users
-    // Use explicit type checking and optional chaining for safety
     const adminExists = data?.users?.some(
-      user => {
-        // Ensure user has an email property before comparing
+      (user: any) => {
+        // Ensure user exists and has an email property
         if (user && typeof user === 'object') {
-          // Access email safely with optional chaining and type assertion
-          const userEmail = user.email as string | undefined;
-          return userEmail?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+          // Access email safely
+          const userEmail = user.email;
+          return typeof userEmail === 'string' && 
+                 userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase();
         }
         return false;
       }
