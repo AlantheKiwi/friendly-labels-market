@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import Header from "@/components/Header";
@@ -9,11 +9,22 @@ import RegisterForm from "@/components/auth/RegisterForm";
 import RegisterSuccessScreen from "@/components/auth/RegisterSuccessScreen";
 import { useRegister } from "@/hooks/useRegister";
 
+interface LocationState {
+  fromCheckout?: boolean;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  receiveUpdates?: boolean;
+}
+
 const RegisterPage = () => {
-  const [email, setEmail] = useState("");
+  const location = useLocation();
+  const state = location.state as LocationState;
+  
+  const [email, setEmail] = useState(state?.email || "");
   const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useState(state?.firstName || "");
+  const [lastName, setLastName] = useState(state?.lastName || "");
   const [company, setCompany] = useState("");
   const [phone, setPhone] = useState("");
   const { user } = useAuth();
@@ -22,9 +33,14 @@ const RegisterPage = () => {
 
   useEffect(() => {
     if (user) {
-      navigate("/client/dashboard");
+      // If coming from checkout, redirect back to checkout
+      if (state?.fromCheckout) {
+        navigate("/checkout");
+      } else {
+        navigate("/client/dashboard");
+      }
     }
-  }, [user, navigate]);
+  }, [user, navigate, state?.fromCheckout]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +61,9 @@ const RegisterPage = () => {
             <CardHeader className="space-y-1 text-center">
               <CardTitle className="text-2xl font-bold">Register</CardTitle>
               <CardDescription>
-                Create a new account
+                {state?.fromCheckout 
+                  ? "Create an account for faster checkout and special offers" 
+                  : "Create a new account"}
               </CardDescription>
             </CardHeader>
             <CardContent>

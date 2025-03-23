@@ -12,6 +12,7 @@ import CustomerInformationForm from "@/components/checkout/CustomerInformationFo
 import PaymentMethodSelector from "@/components/checkout/PaymentMethodSelector";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import EmptyCart from "@/components/checkout/EmptyCart";
+import CreateAccountPrompt from "@/components/checkout/CreateAccountPrompt";
 import { CustomerInfo, CheckoutFormData } from "@/types/checkout";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -208,10 +209,21 @@ const CheckoutPage = () => {
                     <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
                   </div>
                 ) : (
-                  <CustomerInformationForm 
-                    onSubmit={handleCustomerInfoSubmit}
-                    initialData={initialFormData} 
-                  />
+                  <>
+                    <CustomerInformationForm 
+                      onSubmit={handleCustomerInfoSubmit}
+                      initialData={initialFormData} 
+                    />
+                    
+                    {/* Account Creation Prompt - only show if user is not logged in */}
+                    {!user && initialFormData?.contactInfo.email && (
+                      <CreateAccountPrompt 
+                        email={initialFormData.contactInfo.email}
+                        firstName={initialFormData.contactInfo.firstName}
+                        lastName={initialFormData.contactInfo.lastName}
+                      />
+                    )}
+                  </>
                 )
               ) : (
                 <>
@@ -231,6 +243,15 @@ const CheckoutPage = () => {
                       showStripeForm={true}
                     />
                   </div>
+                  
+                  {/* Account Creation Prompt - also show in payment step if user is not logged in */}
+                  {!user && customerInfo?.email && (
+                    <CreateAccountPrompt 
+                      email={customerInfo.email}
+                      firstName={customerInfo.firstName}
+                      lastName={customerInfo.lastName}
+                    />
+                  )}
                 </>
               )}
             </div>
