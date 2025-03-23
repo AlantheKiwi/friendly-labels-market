@@ -9,6 +9,7 @@ import AdminCredentialHints from "./AdminCredentialHints";
 import LoginButton from "./LoginButton";
 import DefaultCredentialsButton from "./DefaultCredentialsButton";
 import ForgotPasswordButton from "./ForgotPasswordButton";
+import ResetAdminPasswordButton from "./ResetAdminPasswordButton";
 
 interface AdminLoginFormProps {
   onLoginSuccess: () => void;
@@ -29,7 +30,8 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
     handleLogin,
     toggleShowPassword,
     handleSetDefaultValues,
-    handleForgotPassword
+    handleForgotPassword,
+    handleResetAdminPassword
   } = useAdminLogin(onLoginSuccess);
 
   return (
@@ -73,6 +75,7 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
       <div className="flex flex-col space-y-1">
         <DefaultCredentialsButton onClick={handleSetDefaultValues} />
         <ForgotPasswordButton onClick={handleForgotPassword} />
+        <ResetAdminPasswordButton onClick={handleResetAdminPassword} />
       </div>
       
       <AdminCredentialHints 

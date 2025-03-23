@@ -129,6 +129,76 @@ export const useAuthService = () => {
     }
   };
 
+  // New function to reset admin password
+  const resetAdminPassword = async () => {
+    console.log("Attempting to reset admin password to default");
+    
+    try {
+      // First, verify user exists by trying to find the admin user
+      console.log("Checking if admin exists:", ADMIN_EMAIL);
+      
+      // Call the server to reset the admin password (this would be a custom function in Supabase)
+      // For now, we'll simulate this by signing up with the same email which will error if it exists
+      const { data: signUpData, error: signUpError } = await signUp(
+        ADMIN_EMAIL,
+        DEFAULT_ADMIN_PASSWORD,
+        {
+          full_name: "Administrator",
+          is_admin: true
+        }
+      );
+      
+      // If user already exists, try to update password via Supabase's password reset
+      if (signUpError && signUpError.message.includes("already registered")) {
+        console.log("Admin exists, sending password reset email");
+        
+        // For direct password reset (not email-based), we would need a Supabase function
+        // As a workaround, we can use the password reset email flow
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+          ADMIN_EMAIL,
+          {
+            redirectTo: `${window.location.origin}/admin/reset-password`,
+          }
+        );
+        
+        if (resetError) {
+          console.log("Password reset email failed:", resetError.message);
+          return { 
+            data: null, 
+            error: { message: "Failed to send password reset email: " + resetError.message } 
+          };
+        }
+        
+        console.log("Password reset email sent successfully");
+        return { 
+          data: { message: "Password reset email sent. Please check your email." }, 
+          error: null 
+        };
+      }
+      
+      if (signUpError) {
+        console.log("Error checking admin account:", signUpError.message);
+        return { 
+          data: null, 
+          error: { message: "Error checking admin account: " + signUpError.message } 
+        };
+      }
+      
+      // If we got here, admin account was just created
+      console.log("Admin account created with default password");
+      return { 
+        data: { message: "Admin account created with default password" }, 
+        error: null 
+      };
+    } catch (error: any) {
+      console.error("Unexpected error during admin password reset:", error);
+      return { 
+        data: null, 
+        error: { message: "An unexpected error occurred during admin password reset" } 
+      };
+    }
+  };
+
   // Reusing the checkUserRoles function but exposing it through our service
   const checkUserRoles = async (userId: string): Promise<UserRoles> => {
     // First get the user to check if it's our admin
@@ -151,6 +221,7 @@ export const useAuthService = () => {
     getSession,
     checkUserRoles,
     createAdminIfNotExists,
+    resetAdminPassword,
     DEFAULT_ADMIN_PASSWORD,
     ADMIN_EMAIL
   };

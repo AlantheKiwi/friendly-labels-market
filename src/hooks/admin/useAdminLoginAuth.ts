@@ -96,8 +96,13 @@ export const useAdminLoginAuth = (props: UseAdminLoginAuthProps) => {
     }
   };
 
+  const handleResetAdminPassword = async () => {
+    return await loginFlow.resetAdminPassword();
+  };
+
   return {
     handleLogin,
-    handleForgotPassword
+    handleForgotPassword,
+    handleResetAdminPassword
   };
 };

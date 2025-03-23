@@ -32,7 +32,8 @@ export const useAdminLogin = (onLoginSuccess: () => void) => {
   // Auth operations
   const { 
     handleLogin, 
-    handleForgotPassword 
+    handleForgotPassword,
+    handleResetAdminPassword
   } = useAdminLoginAuth({
     email,
     password,
@@ -59,6 +60,7 @@ export const useAdminLogin = (onLoginSuccess: () => void) => {
     handleLogin,
     toggleShowPassword,
     handleSetDefaultValues,
-    handleForgotPassword
+    handleForgotPassword,
+    handleResetAdminPassword
   };
 };
