@@ -1,7 +1,7 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Settings, User, Users, ShoppingCart, FileText } from "lucide-react";
+import { LogOut, Settings, User, Users, ShoppingCart, FileText, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -9,10 +9,15 @@ import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 const AdminHeader = () => {
@@ -49,6 +54,30 @@ const AdminHeader = () => {
                       </ListItem>
                     </ul>
                   </NavigationMenuContent>
+                </NavigationMenuItem>
+                
+                <NavigationMenuItem>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        className="bg-transparent text-white hover:bg-white/20 focus:bg-white/20 data-[state=open]:bg-white/20 h-10 p-0 px-4 flex items-center gap-1"
+                      >
+                        <Printer className="h-4 w-4 mr-1" />
+                        Printers
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-white rounded-md shadow-lg p-2 w-[200px]">
+                      <DropdownMenuItem onClick={() => navigate('/admin/dashboard?tab=printers')} className="flex items-center gap-2 cursor-pointer">
+                        <Printer className="h-4 w-4" />
+                        <span>Printer Pricing</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/admin/dashboard?tab=images')} className="flex items-center gap-2 cursor-pointer">
+                        <FileText className="h-4 w-4" />
+                        <span>Printer Images</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>

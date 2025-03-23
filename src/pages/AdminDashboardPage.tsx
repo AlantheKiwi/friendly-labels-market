@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -17,7 +17,12 @@ const AdminDashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  
+  // Get tab from URL query params
+  const queryParams = new URLSearchParams(location.search);
+  const defaultTab = queryParams.get('tab') || 'images';
 
   // Check if current user is admin
   const checkAdminStatus = async () => {
@@ -107,7 +112,7 @@ const AdminDashboardPage = () => {
           <div className="max-w-7xl mx-auto">
             <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
             
-            <Tabs defaultValue="images">
+            <Tabs defaultValue={defaultTab}>
               <TabsList className="mb-6">
                 <TabsTrigger value="images">Printer Images</TabsTrigger>
                 <TabsTrigger value="printers">Printer Pricing</TabsTrigger>
