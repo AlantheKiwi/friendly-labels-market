@@ -36,6 +36,7 @@ const StripeForm = ({ amount, onPaymentSuccess, customerEmail }: StripePaymentFo
     }
 
     setProcessing(true);
+    setError(null);
 
     // Get the CardElement
     const cardElement = elements.getElement(CardElement);
@@ -56,6 +57,14 @@ const StripeForm = ({ amount, onPaymentSuccess, customerEmail }: StripePaymentFo
       // Simulate a network delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
+      // Validate card info (simplified validation for demo)
+      // In a real app, this would be handled by Stripe's API
+      const cardValue = cardElement.value;
+      if (!cardValue || !cardValue.complete) {
+        throw new Error("Please enter complete card information");
+      }
+      
+      // If everything is successful, call onPaymentSuccess with the payment ID
       onPaymentSuccess(mockPaymentId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unknown error occurred");

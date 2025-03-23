@@ -15,6 +15,11 @@ const ThankYouPage = () => {
     return <Navigate to="/" />;
   }
 
+  // Verify payment ID is present (ensuring payment was completed)
+  if (!orderData.paymentId) {
+    return <Navigate to="/checkout" />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
