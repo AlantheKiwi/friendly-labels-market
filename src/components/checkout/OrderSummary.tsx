@@ -9,8 +9,8 @@ import { Trash2 } from "lucide-react";
 const OrderSummary: React.FC = () => {
   const { items, subtotal, removeFromCart } = useCart();
   
-  // Shipping cost calculation (simplified)
-  const shippingCost = 9.99;
+  // Updated: Free shipping
+  const shippingCost = 0.00;
   
   // GST calculation (15% in New Zealand)
   const gstRate = 0.15;
@@ -65,7 +65,7 @@ const OrderSummary: React.FC = () => {
             <p>${subtotal.toFixed(2)}</p>
           </div>
           <div className="flex justify-between text-sm">
-            <p>Shipping</p>
+            <p>Free Shipping</p>
             <p>${shippingCost.toFixed(2)}</p>
           </div>
           <div className="flex justify-between text-sm">

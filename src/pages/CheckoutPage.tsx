@@ -28,8 +28,8 @@ const CheckoutPage = () => {
   const [initialFormData, setInitialFormData] = useState<CheckoutFormData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Shipping cost calculation (simplified)
-  const shippingCost = 9.99;
+  // Updated: Free shipping
+  const shippingCost = 0.00;
   
   // GST calculation (15% in New Zealand)
   const gstRate = 0.15;
