@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AdminPasswordChangeProps {
   onComplete: () => void;
@@ -44,7 +45,7 @@ const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete })
     return "";
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     
@@ -69,14 +70,34 @@ const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete })
     
     setLoading(true);
     
-    // Simulate password change (would connect to backend in real app)
-    setTimeout(() => {
-      // In a real application, you would update the password in a secure backend
-      // For demo purposes, we'll just simulate success
+    try {
+      // Actually update the password in Supabase
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      
+      if (updateError) {
+        console.error("Error updating password:", updateError);
+        setError(updateError.message);
+        setLoading(false);
+        return;
+      }
+      
+      toast({
+        title: "Password updated",
+        description: "Your password has been successfully changed",
+      });
+      
+      // Remove the flag that required password change
+      localStorage.removeItem("requirePasswordChange");
       
       setLoading(false);
       onComplete();
-    }, 1500);
+    } catch (err) {
+      console.error("Error updating password:", err);
+      setError("An unexpected error occurred while updating your password");
+      setLoading(false);
+    }
   };
 
   return (
@@ -92,6 +113,7 @@ const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete })
           onChange={(e) => setCurrentPassword(e.target.value)}
           required
         />
+        <p className="text-xs text-gray-500">Default password: letmein1983!!</p>
       </div>
       
       <div className="space-y-2">

@@ -39,7 +39,7 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
       if (isAdminEmail) {
         console.log("Admin login attempt detected");
         
-        // Try to sign in directly first - this will work if account exists with correct password
+        // Try direct login first with the provided password
         const { data, error } = await authService.signInWithPassword(normalizedEmail, password);
         
         if (!error) {
@@ -55,13 +55,43 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
           return;
         }
         
+        console.log("Direct login failed with error:", error.message);
+        
+        // Try the default password (for users who haven't changed it yet)
+        const DEFAULT_ADMIN_PASSWORD = "letmein1983!!";
+        
+        if (password !== DEFAULT_ADMIN_PASSWORD) {
+          console.log("Trying default admin password");
+          const { data: defaultPassData, error: defaultPassError } = await authService.signInWithPassword(
+            normalizedEmail, 
+            DEFAULT_ADMIN_PASSWORD
+          );
+          
+          if (!defaultPassError) {
+            // Login with default password successful
+            console.log("Admin login successful with default password");
+            await authService.checkUserRoles(defaultPassData.user.id);
+            toast({
+              title: "Login successful",
+              description: "Welcome to the admin dashboard. Please change your default password.",
+            });
+            // Set flag for password change
+            localStorage.setItem("requirePasswordChange", "true");
+            onLoginSuccess();
+            setIsLoading(false);
+            return;
+          }
+          
+          console.log("Default password login failed with error:", defaultPassError.message);
+        }
+        
         // If login failed, try our special admin setup function
-        console.log("Direct login failed, trying admin setup");
+        console.log("All direct logins failed, trying admin setup");
         setIsCreatingAdmin(true);
         
         // This will attempt to create the admin if it doesn't exist,
         // or return appropriate error messages if it does
-        const { error: adminSetupError } = await authService.createAdminIfNotExists(normalizedEmail, "letmein1983!!");
+        const { error: adminSetupError } = await authService.createAdminIfNotExists(normalizedEmail, DEFAULT_ADMIN_PASSWORD);
         setIsCreatingAdmin(false);
         
         if (adminSetupError) {
@@ -78,18 +108,18 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
         
         // If we get here, we successfully created the admin account or confirmed it exists
         // Try to log in with default password
-        console.log("Attempting login with default admin password");
+        console.log("Attempting login with default admin password after setup");
         const { data: loginData, error: loginError } = await authService.signInWithPassword(
           normalizedEmail, 
-          "letmein1983!!"
+          DEFAULT_ADMIN_PASSWORD
         );
 
         if (loginError) {
           console.error("Login with default password failed:", loginError);
-          setErrorMessage("Login failed. Please try with the password you set or the default 'letmein1983!!'");
+          setErrorMessage(`Login failed. Please try with the default password '${DEFAULT_ADMIN_PASSWORD}'`);
           toast({
             title: "Login failed",
-            description: "Please try with the password you set or the default 'letmein1983!!'",
+            description: `Please try with the default password '${DEFAULT_ADMIN_PASSWORD}'`,
             variant: "destructive",
           });
           setIsLoading(false);
