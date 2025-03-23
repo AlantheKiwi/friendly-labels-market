@@ -1,19 +1,25 @@
 
 import React, { useState, useEffect } from "react";
-import { printers } from "@/data/printerData";
+import { printers as initialPrinters } from "@/data/printerData";
 import { Printer as PrinterType } from "@/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, Save, Check, RefreshCcw } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, Save, Check, RefreshCcw } from "lucide-react";
+import PrinterFormDialog from "./printers/PrinterFormDialog";
+import DeletePrinterDialog from "./printers/DeletePrinterDialog";
 
 const AdminPrinterPricing = () => {
-  const [printerData, setPrinterData] = useState<PrinterType[]>(printers);
+  const [printerData, setPrinterData] = useState<PrinterType[]>(initialPrinters);
   const [searchQuery, setSearchQuery] = useState("");
   const [editedPrices, setEditedPrices] = useState<Record<number, { price: number }>>({});
   const [savingIds, setSavingIds] = useState<number[]>([]);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedPrinter, setSelectedPrinter] = useState<PrinterType | null>(null);
   const { toast } = useToast();
 
   // Filter printers based on search query
@@ -40,7 +46,7 @@ const AdminPrinterPricing = () => {
     });
   };
 
-  const handleSave = (printerId: number) => {
+  const handleSavePrice = (printerId: number) => {
     setSavingIds(prev => [...prev, printerId]);
     
     // Simulate saving to backend
@@ -91,7 +97,7 @@ const AdminPrinterPricing = () => {
   const handleRevertPrice = (printerId: number) => {
     // In a real app, you'd fetch the original value from the server
     // For demonstration, we'll use the initial data
-    const originalPrinter = printers.find(p => p.id === printerId);
+    const originalPrinter = initialPrinters.find(p => p.id === printerId);
     if (!originalPrinter) return;
     
     setPrinterData(prev => 
@@ -106,6 +112,68 @@ const AdminPrinterPricing = () => {
     });
   };
 
+  const handleAddPrinter = () => {
+    setSelectedPrinter(null);
+    setIsAddDialogOpen(true);
+  };
+
+  const handleEditPrinter = (printer: PrinterType) => {
+    setSelectedPrinter(printer);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDeletePrinter = (printer: PrinterType) => {
+    setSelectedPrinter(printer);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeletePrinter = () => {
+    if (!selectedPrinter) return;
+    
+    setPrinterData(prev => prev.filter(p => p.id !== selectedPrinter.id));
+    
+    toast({
+      title: "Printer deleted",
+      description: `${selectedPrinter.name} has been removed`,
+      action: (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleUndoDelete(selectedPrinter)}
+          className="gap-1"
+        >
+          <RefreshCcw className="h-3.5 w-3.5" />
+          Undo
+        </Button>
+      ),
+    });
+    
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleUndoDelete = (printer: PrinterType) => {
+    setPrinterData(prev => [...prev, printer].sort((a, b) => a.id - b.id));
+    
+    toast({
+      title: "Deletion undone",
+      description: `${printer.name} has been restored`,
+    });
+  };
+
+  const handleSavePrinter = (printer: PrinterType) => {
+    if (selectedPrinter) {
+      // Edit existing printer
+      setPrinterData(prev => 
+        prev.map(p => p.id === printer.id ? printer : p)
+      );
+      setIsEditDialogOpen(false);
+    } else {
+      // Add new printer
+      setPrinterData(prev => [...prev, printer].sort((a, b) => a.id - b.id));
+      setIsAddDialogOpen(false);
+    }
+  };
+
   const isPriceEdited = (printerId: number) => {
     return !!editedPrices[printerId];
   };
@@ -116,7 +184,7 @@ const AdminPrinterPricing = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center justify-between space-x-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
@@ -126,6 +194,10 @@ const AdminPrinterPricing = () => {
             className="pl-10"
           />
         </div>
+        <Button onClick={handleAddPrinter} className="flex items-center gap-1">
+          <Plus className="h-4 w-4" />
+          Add Printer
+        </Button>
       </div>
       
       <div className="border rounded-md">
@@ -136,7 +208,7 @@ const AdminPrinterPricing = () => {
               <TableHead>Printer Name</TableHead>
               <TableHead className="w-40">Price (NZD)</TableHead>
               <TableHead className="w-32">Status</TableHead>
-              <TableHead className="w-32">Actions</TableHead>
+              <TableHead className="w-40">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -177,24 +249,43 @@ const AdminPrinterPricing = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      size="sm"
-                      onClick={() => handleSave(printer.id)}
-                      disabled={!isPriceEdited(printer.id) || isSaving(printer.id) || printer.contactForPrice}
-                    >
-                      {isSaving(printer.id) ? (
-                        <span className="h-3.5 w-3.5 border-2 border-current border-t-transparent rounded-full animate-spin mr-1"></span>
-                      ) : isPriceEdited(printer.id) ? (
-                        <Save className="h-3.5 w-3.5 mr-1" />
-                      ) : (
-                        <Check className="h-3.5 w-3.5 mr-1" />
-                      )}
-                      {isSaving(printer.id)
-                        ? "Saving"
-                        : isPriceEdited(printer.id)
-                        ? "Save"
-                        : "Saved"}
-                    </Button>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleSavePrice(printer.id)}
+                        disabled={!isPriceEdited(printer.id) || isSaving(printer.id) || printer.contactForPrice}
+                      >
+                        {isSaving(printer.id) ? (
+                          <span className="h-3.5 w-3.5 border-2 border-current border-t-transparent rounded-full animate-spin mr-1"></span>
+                        ) : isPriceEdited(printer.id) ? (
+                          <Save className="h-3.5 w-3.5 mr-1" />
+                        ) : (
+                          <Check className="h-3.5 w-3.5 mr-1" />
+                        )}
+                        {isSaving(printer.id)
+                          ? "Saving"
+                          : isPriceEdited(printer.id)
+                          ? "Save"
+                          : "Saved"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEditPrinter(printer)}
+                      >
+                        <Pencil className="h-3.5 w-3.5 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+                        onClick={() => handleDeletePrinter(printer)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -208,6 +299,29 @@ const AdminPrinterPricing = () => {
           </TableBody>
         </Table>
       </div>
+
+      {/* Add Printer Dialog */}
+      <PrinterFormDialog
+        isOpen={isAddDialogOpen}
+        onClose={() => setIsAddDialogOpen(false)}
+        onSave={handleSavePrinter}
+      />
+
+      {/* Edit Printer Dialog */}
+      <PrinterFormDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        onSave={handleSavePrinter}
+        printer={selectedPrinter || undefined}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <DeletePrinterDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={confirmDeletePrinter}
+        printer={selectedPrinter}
+      />
     </div>
   );
 };
