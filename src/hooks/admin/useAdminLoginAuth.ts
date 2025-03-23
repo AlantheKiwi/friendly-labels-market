@@ -44,27 +44,52 @@ export const useAdminLoginAuth = ({
       if (isAdminEmail) {
         console.log("Admin login attempt detected");
         
-        // First try with entered password
-        console.log("Trying login with provided password:", password);
-        const { data, error } = await authService.signInWithPassword(
-          ADMIN_EMAIL, // Always use the exact admin email
-          password
+        // Try first with default password regardless of entered password
+        // This helps users who might be stuck
+        console.log("Trying login with default password:", DEFAULT_ADMIN_PASSWORD);
+        const { data: defaultData, error: defaultError } = await authService.signInWithPassword(
+          ADMIN_EMAIL,
+          DEFAULT_ADMIN_PASSWORD
         );
         
-        if (!error) {
-          // Direct login successful
-          console.log("Admin login successful with entered password");
-          await authService.checkUserRoles(data.user.id);
+        if (!defaultError) {
+          // Default password login successful
+          console.log("Admin login successful with default password");
+          await authService.checkUserRoles(defaultData.user.id);
           toast({
             title: "Login successful",
-            description: "Welcome to the admin dashboard",
+            description: "Welcome to the admin dashboard. Using default password.",
           });
+          localStorage.setItem("requirePasswordChange", "true");
           onLoginSuccess();
           setIsLoading(false);
           return;
         }
         
-        console.log("Login with entered password failed:", error.message);
+        console.log("Login with default password failed, trying entered password");
+        
+        // Next try with entered password if it's not the default
+        if (password !== DEFAULT_ADMIN_PASSWORD) {
+          const { data, error } = await authService.signInWithPassword(
+            ADMIN_EMAIL,
+            password
+          );
+          
+          if (!error) {
+            // User password login successful
+            console.log("Admin login successful with entered password");
+            await authService.checkUserRoles(data.user.id);
+            toast({
+              title: "Login successful",
+              description: "Welcome to the admin dashboard",
+            });
+            onLoginSuccess();
+            setIsLoading(false);
+            return;
+          }
+          
+          console.log("Login with entered password failed:", error.message);
+        }
         
         // If standard login failed, try the admin setup process
         console.log("Starting admin account setup process");
