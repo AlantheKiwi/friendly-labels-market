@@ -10,6 +10,8 @@ interface AdminPasswordChangeProps {
   onComplete: () => void;
 }
 
+const DEFAULT_ADMIN_PASSWORD = "letmein1983!!";
+
 const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete }) => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -49,8 +51,8 @@ const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete })
     e.preventDefault();
     setError("");
     
-    // Validate current password
-    if (currentPassword !== "letmein1983!!") {
+    // Validate current password - compare with default password constant
+    if (currentPassword !== DEFAULT_ADMIN_PASSWORD) {
       setError("Current password is incorrect");
       return;
     }
@@ -113,7 +115,7 @@ const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete })
           onChange={(e) => setCurrentPassword(e.target.value)}
           required
         />
-        <p className="text-xs text-gray-500">Default password: letmein1983!!</p>
+        <p className="text-xs text-gray-500">Default password: {DEFAULT_ADMIN_PASSWORD}</p>
       </div>
       
       <div className="space-y-2">

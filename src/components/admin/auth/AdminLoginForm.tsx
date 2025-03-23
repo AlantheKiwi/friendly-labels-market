@@ -13,6 +13,9 @@ interface AdminLoginFormProps {
   onLoginSuccess: () => void;
 }
 
+const DEFAULT_ADMIN_PASSWORD = "letmein1983!!";
+const ADMIN_EMAIL = "alan@insight-ai-systems.com";
+
 const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +37,7 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
       const normalizedEmail = email.toLowerCase();
       
       // Check if this is the admin email
-      const isAdminEmail = normalizedEmail === "alan@insight-ai-systems.com";
+      const isAdminEmail = normalizedEmail === ADMIN_EMAIL;
       
       if (isAdminEmail) {
         console.log("Admin login attempt detected");
@@ -58,8 +61,6 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
         console.log("Direct login failed with error:", error.message);
         
         // Try the default password (for users who haven't changed it yet)
-        const DEFAULT_ADMIN_PASSWORD = "letmein1983!!";
-        
         if (password !== DEFAULT_ADMIN_PASSWORD) {
           console.log("Trying default admin password");
           const { data: defaultPassData, error: defaultPassError } = await authService.signInWithPassword(
@@ -218,10 +219,10 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
           </span>
         )}
       </Button>
-      {email.toLowerCase() === "alan@insight-ai-systems.com" && (
+      {email.toLowerCase() === ADMIN_EMAIL && (
         <div>
           <p className="text-xs text-amber-600 mt-2">
-            Default admin password: letmein1983!!
+            Default admin password: {DEFAULT_ADMIN_PASSWORD}
           </p>
           <p className="text-xs text-gray-500">
             If you're having trouble logging in, try this default password.

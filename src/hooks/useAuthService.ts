@@ -3,6 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { checkUserRoles as checkRoles } from "./useRoleCheck";
 import { UserRoles } from "@/types/auth";
 
+// Default admin credentials - centralized for consistency
+const DEFAULT_ADMIN_PASSWORD = "letmein1983!!";
+const ADMIN_EMAIL = "alan@insight-ai-systems.com";
+
 // This service handles pure authentication operations without UI dependencies
 export const useAuthService = () => {
   const signInWithPassword = async (email: string, password: string) => {
@@ -40,11 +44,18 @@ export const useAuthService = () => {
   const createAdminIfNotExists = async (email: string, password: string) => {
     console.log("Checking if admin account exists for:", email);
     
+    // For debugging, explicitly log the attempted password
+    console.log("Using admin password:", password);
+    
     try {
+      // Force using default password for admin creation
+      const adminPassword = DEFAULT_ADMIN_PASSWORD;
+      console.log("Using standard admin password for setup:", adminPassword);
+      
       // First try to sign in directly - if this works, the user exists with the correct password
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ 
         email, 
-        password
+        password: adminPassword 
       });
       
       if (!signInError) {
@@ -54,12 +65,7 @@ export const useAuthService = () => {
       
       console.log("Sign in failed:", signInError.message);
       
-      // If error is "Invalid login credentials", it could mean:
-      // 1. User exists but password is wrong
-      // 2. User doesn't exist
-      
       // Let's check if the user exists by trying a password reset
-      // This is a better way to check user existence
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.origin + "/admin/password-reset"
       });
@@ -70,7 +76,7 @@ export const useAuthService = () => {
         return { 
           data: null, 
           error: {
-            message: "Invalid password for existing admin account. If you've forgotten your password, check your email for reset instructions."
+            message: "Admin account exists but the password may be incorrect. Try the default password: " + DEFAULT_ADMIN_PASSWORD
           } 
         };
       }
@@ -78,10 +84,10 @@ export const useAuthService = () => {
       // If we get here, the user likely doesn't exist, so let's create them
       console.log("Admin user does not exist, creating account for:", email);
       
-      // Create admin user
+      // Create admin user with default password
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
-        password,
+        password: adminPassword,
         options: {
           data: {
             full_name: "Administrator",
@@ -91,15 +97,13 @@ export const useAuthService = () => {
       });
       
       if (signUpError) {
-        // If signup also fails, there might be an existing user with auth issues
-        // or another type of error
         console.error("Error creating admin user:", signUpError.message);
         
         if (signUpError.message.includes("already registered")) {
           return { 
             data: null, 
             error: {
-              message: "Admin account already exists but has login issues. Try the password 'letmein1983!!' or contact support."
+              message: "Admin account already exists but has login issues. Try the default password '" + DEFAULT_ADMIN_PASSWORD + "' or contact support."
             } 
           };
         }
@@ -124,7 +128,7 @@ export const useAuthService = () => {
     // First get the user to check if it's our admin
     const { data: userData } = await supabase.auth.getUser();
     
-    if (userData?.user?.email?.toLowerCase() === "alan@insight-ai-systems.com") {
+    if (userData?.user?.email?.toLowerCase() === ADMIN_EMAIL) {
       // For our specific admin, we automatically assign admin role
       return { isAdmin: true, isClient: true };
     }
