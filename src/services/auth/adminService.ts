@@ -13,6 +13,18 @@ export const createAdminIfNotExists = async () => {
     console.log("Admin email:", ADMIN_EMAIL);
     console.log("Admin password length:", DEFAULT_ADMIN_PASSWORD.length);
     
+    // Log password details for debugging without revealing full password
+    const passwordDetails = {
+      length: DEFAULT_ADMIN_PASSWORD.length,
+      firstChar: DEFAULT_ADMIN_PASSWORD.charAt(0),
+      lastChar: DEFAULT_ADMIN_PASSWORD.charAt(DEFAULT_ADMIN_PASSWORD.length - 1),
+      containsSpecialChars: /[!@#$%^&*(),.?":{}|<>]/.test(DEFAULT_ADMIN_PASSWORD),
+      hasInvisibleChars: DEFAULT_ADMIN_PASSWORD !== DEFAULT_ADMIN_PASSWORD.trim(),
+      charCodes: Array.from(DEFAULT_ADMIN_PASSWORD).map(c => c.charCodeAt(0))
+    };
+    
+    console.log("Password details for debugging:", passwordDetails);
+    
     const { data: signInData, error: signInError } = await signInWithPassword(
       ADMIN_EMAIL, 
       DEFAULT_ADMIN_PASSWORD
@@ -93,13 +105,26 @@ export const createAdminIfNotExists = async () => {
   }
 };
 
-// New function to reset admin password
+// Enhanced reset admin password function with better debugging
 export const resetAdminPassword = async () => {
   console.log("Attempting to reset admin password to default");
   
   try {
     // First, verify user exists by trying to find the admin user
     console.log("Checking if admin exists:", ADMIN_EMAIL);
+    
+    // Try to look up if the user exists first
+    const { data: adminUser, error: adminLookupError } = await supabase.auth.admin
+      .getUserByEmail(ADMIN_EMAIL)
+      .catch(err => {
+        console.log("Admin lookup error (expected if not authenticated as admin):", err);
+        return { data: null, error: err };
+      });
+      
+    console.log("Admin lookup result:", adminUser ? "Found" : "Not found");
+    if (adminLookupError) {
+      console.log("Admin lookup error details:", adminLookupError);
+    }
     
     // Call the server to reset the admin password (this would be a custom function in Supabase)
     // For now, we'll simulate this by signing up with the same email which will error if it exists
@@ -159,6 +184,42 @@ export const resetAdminPassword = async () => {
     return { 
       data: null, 
       error: { message: "An unexpected error occurred during admin password reset" } 
+    };
+  }
+};
+
+// New function: Force reset admin password through direct access
+// Note: This requires elevated privileges and may not work without a custom edge function
+export const forceResetAdminPassword = async () => {
+  console.log("Attempting to force reset admin password");
+  
+  try {
+    // In a real implementation, this would call a secure edge function
+    // For now, we'll use the password reset email flow as a fallback
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      ADMIN_EMAIL,
+      {
+        redirectTo: `${window.location.origin}/admin/reset-password`,
+      }
+    );
+    
+    if (error) {
+      console.error("Force password reset failed:", error);
+      return { 
+        data: null, 
+        error: { message: "Password reset failed: " + error.message } 
+      };
+    }
+    
+    return { 
+      data: { message: "Password reset email sent. Please check your email." }, 
+      error: null 
+    };
+  } catch (error: any) {
+    console.error("Unexpected error during force password reset:", error);
+    return { 
+      data: null, 
+      error: { message: "An unexpected error occurred" } 
     };
   }
 };

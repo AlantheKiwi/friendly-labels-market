@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAdminLogin } from "@/hooks/admin";
@@ -10,12 +10,15 @@ import LoginButton from "./LoginButton";
 import DefaultCredentialsButton from "./DefaultCredentialsButton";
 import ForgotPasswordButton from "./ForgotPasswordButton";
 import ResetAdminPasswordButton from "./ResetAdminPasswordButton";
+import AdminLoginDebugHelper from "./AdminLoginDebugHelper";
 
 interface AdminLoginFormProps {
   onLoginSuccess: () => void;
 }
 
 const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
+  const [showDebugTools, setShowDebugTools] = useState(false);
+  
   const {
     email,
     setEmail,
@@ -34,8 +37,16 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
     handleResetAdminPassword
   } = useAdminLogin(onLoginSuccess);
 
+  // Function to toggle debug tools with keyboard shortcut
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.shiftKey && e.key === 'D') {
+      setShowDebugTools(prev => !prev);
+      console.log("Debug mode toggled:", !showDebugTools);
+    }
+  };
+
   return (
-    <form onSubmit={handleLogin} className="space-y-4">
+    <form onSubmit={handleLogin} className="space-y-4" onKeyDown={handleKeyDown}>
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -82,6 +93,18 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
         adminEmail={ADMIN_EMAIL} 
         defaultPassword={DEFAULT_ADMIN_PASSWORD} 
       />
+      
+      {showDebugTools && (
+        <AdminLoginDebugHelper 
+          adminEmail={ADMIN_EMAIL}
+          defaultPassword={DEFAULT_ADMIN_PASSWORD}
+        />
+      )}
+      
+      {/* Hidden hint for debug mode */}
+      <p className="text-xs text-gray-400 text-center mt-4">
+        Press Shift+D to toggle admin debug tools
+      </p>
     </form>
   );
 };

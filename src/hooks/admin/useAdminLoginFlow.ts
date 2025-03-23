@@ -26,11 +26,43 @@ export const useAdminLoginFlow = ({
 }: UseAdminLoginFlowProps) => {
   const { toast } = useToast();
 
+  // Helper to compare passwords and detect issues
+  const comparePasswords = (input: string, expected: string) => {
+    if (input === expected) return true;
+    
+    // If not an exact match, log details to help debug
+    console.log("Password comparison failed. Details:");
+    console.log("Input length:", input.length, "Expected length:", expected.length);
+    console.log("Input first/last chars:", input.charAt(0), input.charAt(input.length-1));
+    console.log("Expected first/last chars:", expected.charAt(0), expected.charAt(expected.length-1));
+    
+    // Check for whitespace issues
+    if (input.trim() === expected || input === expected.trim()) {
+      console.log("Password match failed due to whitespace");
+    }
+    
+    // Check for case sensitivity issues
+    if (input.toLowerCase() === expected.toLowerCase()) {
+      console.log("Password match failed due to case sensitivity");
+    }
+    
+    // Check for special character encoding
+    const inputCodes = Array.from(input).map(c => c.charCodeAt(0));
+    const expectedCodes = Array.from(expected).map(c => c.charCodeAt(0));
+    console.log("Input char codes:", inputCodes);
+    console.log("Expected char codes:", expectedCodes);
+    
+    return false;
+  };
+
   const attemptLoginWithDefaultPassword = async () => {
     console.log("Trying login with default password:", DEFAULT_ADMIN_PASSWORD.replace(/./g, "*"));
     // Log both credentials to verify what we're attempting to use
     console.log("Admin email being used:", ADMIN_EMAIL);
     console.log("Input validation - Email matches admin email:", email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim());
+    
+    // Extra validation for password
+    comparePasswords(password, DEFAULT_ADMIN_PASSWORD);
     
     const { data, error } = await authService.signInWithPassword(
       ADMIN_EMAIL,
