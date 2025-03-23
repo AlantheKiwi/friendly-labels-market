@@ -23,9 +23,9 @@ export const createAdminIfNotExists = async (): Promise<{ success: boolean; mess
     }
     
     // Check if admin email exists in the returned users
-    // Fix: Properly type and access the user email property
-    const adminExists = data?.users.some(
-      user => user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
+    // Make sure to handle potential undefined values with optional chaining
+    const adminExists = data?.users?.some(
+      user => user?.email?.toLowerCase?.() === ADMIN_EMAIL.toLowerCase()
     );
     
     if (adminExists) {
