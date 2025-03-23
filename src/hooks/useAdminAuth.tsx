@@ -13,7 +13,22 @@ interface UseAdminAuthReturn {
 }
 
 export const useAdminAuth = (): UseAdminAuthReturn => {
-  const { user, isAdmin: isAdminFromContext, isLoading, signOut } = useAuth();
+  // Try to use auth context, but provide fallbacks if it fails
+  let user = null;
+  let isAdmin = false;
+  let isLoading = true;
+  let signOut = async () => {};
+  
+  try {
+    const authContext = useAuth();
+    user = authContext.user;
+    isAdmin = authContext.isAdmin;
+    isLoading = authContext.isLoading;
+    signOut = authContext.signOut;
+  } catch (error) {
+    console.error("Error accessing auth context in useAdminAuth:", error);
+  }
+  
   const [requirePasswordChange, setRequirePasswordChange] = useState<boolean>(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -37,7 +52,7 @@ export const useAdminAuth = (): UseAdminAuthReturn => {
   };
 
   return {
-    isAdmin: isAdminFromContext,
+    isAdmin,
     requirePasswordChange,
     loading: isLoading,
     adminEmail: user?.email || null,

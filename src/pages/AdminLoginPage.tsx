@@ -1,22 +1,13 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { useAuth } from "@/context/AuthContext";
 import AdminLoginCard from "@/components/admin/auth/AdminLoginCard";
 import AdminPasswordResetButton from "@/components/admin/auth/AdminPasswordResetButton";
 
 const AdminLoginPage = () => {
   const navigate = useNavigate();
-  const { user, isAdmin } = useAuth();
-
-  useEffect(() => {
-    // If user is already logged in and is admin, redirect to admin dashboard
-    if (user && isAdmin) {
-      navigate("/admin/dashboard");
-    }
-  }, [user, isAdmin, navigate]);
 
   const handleLoginSuccess = () => {
     navigate("/admin/dashboard");
