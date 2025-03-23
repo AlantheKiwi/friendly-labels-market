@@ -1,23 +1,31 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { useAuthService } from "@/hooks/useAuthService";
 import { supabase } from "@/integrations/supabase/client";
 
-export const useAdminLogin = (onLoginSuccess: () => void) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+interface UseAdminLoginAuthProps {
+  email: string;
+  password: string;
+  ADMIN_EMAIL: string;
+  DEFAULT_ADMIN_PASSWORD: string;
+  setIsLoading: (isLoading: boolean) => void;
+  setIsCreatingAdmin: (isCreatingAdmin: boolean) => void;
+  setErrorMessage: (errorMessage: string) => void;
+  authService: any; // Using any here since we don't have the exact type definition
+  onLoginSuccess: () => void;
+}
+
+export const useAdminLoginAuth = ({
+  email,
+  password,
+  ADMIN_EMAIL,
+  DEFAULT_ADMIN_PASSWORD,
+  setIsLoading,
+  setIsCreatingAdmin,
+  setErrorMessage,
+  authService,
+  onLoginSuccess
+}: UseAdminLoginAuthProps) => {
   const { toast } = useToast();
-  const authService = useAuthService();
-  
-  // Get these values directly from the service for consistency
-  const DEFAULT_ADMIN_PASSWORD = authService.DEFAULT_ADMIN_PASSWORD;
-  const ADMIN_EMAIL = authService.ADMIN_EMAIL;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,15 +129,6 @@ export const useAdminLogin = (onLoginSuccess: () => void) => {
     }
   };
 
-  const toggleShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const handleSetDefaultValues = () => {
-    setEmail(ADMIN_EMAIL);
-    setPassword(DEFAULT_ADMIN_PASSWORD);
-  };
-
   const handleForgotPassword = async () => {
     if (!email) {
       setErrorMessage("Please enter your email address first");
@@ -191,19 +190,7 @@ export const useAdminLogin = (onLoginSuccess: () => void) => {
   };
 
   return {
-    email,
-    setEmail,
-    password,
-    setPassword,
-    showPassword,
-    isLoading,
-    isCreatingAdmin,
-    errorMessage,
-    DEFAULT_ADMIN_PASSWORD,
-    ADMIN_EMAIL,
     handleLogin,
-    toggleShowPassword,
-    handleSetDefaultValues,
     handleForgotPassword
   };
 };

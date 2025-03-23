@@ -2,7 +2,7 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAdminLogin } from "@/hooks/useAdminLogin";
+import { useAdminLogin } from "@/hooks/admin";
 import PasswordVisibilityToggle from "./PasswordVisibilityToggle";
 import LoginErrorMessage from "./LoginErrorMessage";
 import AdminCredentialHints from "./AdminCredentialHints";
