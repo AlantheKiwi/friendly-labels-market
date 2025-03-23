@@ -55,6 +55,14 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address1: string | null
+          address2: string | null
+          billing_address1: string | null
+          billing_address2: string | null
+          billing_city: string | null
+          billing_postal_code: string | null
+          billing_state: string | null
+          city: string | null
           company: string | null
           created_at: string
           first_name: string | null
@@ -62,9 +70,19 @@ export type Database = {
           last_name: string | null
           notes: string | null
           phone: string | null
+          postal_code: string | null
+          state: string | null
           updated_at: string
         }
         Insert: {
+          address1?: string | null
+          address2?: string | null
+          billing_address1?: string | null
+          billing_address2?: string | null
+          billing_city?: string | null
+          billing_postal_code?: string | null
+          billing_state?: string | null
+          city?: string | null
           company?: string | null
           created_at?: string
           first_name?: string | null
@@ -72,9 +90,19 @@ export type Database = {
           last_name?: string | null
           notes?: string | null
           phone?: string | null
+          postal_code?: string | null
+          state?: string | null
           updated_at?: string
         }
         Update: {
+          address1?: string | null
+          address2?: string | null
+          billing_address1?: string | null
+          billing_address2?: string | null
+          billing_city?: string | null
+          billing_postal_code?: string | null
+          billing_state?: string | null
+          city?: string | null
           company?: string | null
           created_at?: string
           first_name?: string | null
@@ -82,6 +110,8 @@ export type Database = {
           last_name?: string | null
           notes?: string | null
           phone?: string | null
+          postal_code?: string | null
+          state?: string | null
           updated_at?: string
         }
         Relationships: []
