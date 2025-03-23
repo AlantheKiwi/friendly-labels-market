@@ -34,7 +34,7 @@ export const useLoginNotifications = ({
     setErrorMessage(`Could not log in. Please try again with the default password: ${DEFAULT_ADMIN_PASSWORD}`);
     toast({
       title: "Login failed",
-      description: `Could not log in. Please try with the default password: ${DEFAULT_ADMIN_PASSWORD}`,
+      description: `Could not log in. Try using the "Reset Admin Password" button below or use the default password: ${DEFAULT_ADMIN_PASSWORD}`,
       variant: "destructive",
     });
   };
@@ -65,7 +65,7 @@ export const useLoginNotifications = ({
     setErrorMessage(`An unexpected error occurred: ${errorMessage}`);
     toast({
       title: "Error",
-      description: "An unexpected error occurred. Please try again later.",
+      description: "An unexpected error occurred. Please try again later or use the reset button below.",
       variant: "destructive",
     });
   };
