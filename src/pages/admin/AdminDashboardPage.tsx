@@ -11,14 +11,14 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 
 const AdminDashboardPage = () => {
-  const { isAdmin, loading } = useAdminAuth();
+  const { isAdmin, isLoading } = useAdminAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("orders");
 
   // Redirect if not admin
   React.useEffect(() => {
-    if (!loading && !isAdmin) {
+    if (!isLoading && !isAdmin) {
       toast({
         title: "Access Denied",
         description: "You must be an admin to view this page",
@@ -26,9 +26,9 @@ const AdminDashboardPage = () => {
       });
       navigate("/admin/login");
     }
-  }, [isAdmin, loading, navigate, toast]);
+  }, [isAdmin, isLoading, navigate, toast]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>

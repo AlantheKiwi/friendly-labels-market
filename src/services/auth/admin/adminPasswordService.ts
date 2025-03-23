@@ -41,9 +41,9 @@ export const forceResetAdminPassword = async (): Promise<{ success: boolean; mes
   try {
     // Get the admin user ID
     const { data: users, error: userError } = await supabase.auth.admin.listUsers({
-      filter: {
-        email: ADMIN_EMAIL
-      }
+      page: 1,
+      perPage: 1,
+      query: ADMIN_EMAIL
     });
     
     if (userError || !users || users.users.length === 0) {

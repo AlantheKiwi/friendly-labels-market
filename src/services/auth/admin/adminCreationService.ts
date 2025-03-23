@@ -10,9 +10,9 @@ export const createAdminIfNotExists = async (): Promise<{ success: boolean; mess
   try {
     // Check if admin already exists
     const { data: existingUsers, error: searchError } = await supabase.auth.admin.listUsers({
-      filter: {
-        email: ADMIN_EMAIL
-      }
+      page: 1,
+      perPage: 1,
+      query: ADMIN_EMAIL
     });
     
     if (searchError) {
