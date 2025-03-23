@@ -27,9 +27,10 @@ export const createAdminIfNotExists = async (): Promise<{ success: boolean; mess
     const adminExists = data?.users?.some(
       user => {
         // Ensure user has an email property before comparing
-        if (user && typeof user === 'object' && 'email' in user) {
-          const userEmail = user.email as string | null | undefined;
-          return userEmail?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+        if (user && typeof user === 'object' && user.email !== undefined) {
+          // Cast email to string for safe comparison
+          const userEmail = user.email as string;
+          return userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase();
         }
         return false;
       }
