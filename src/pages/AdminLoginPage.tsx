@@ -17,6 +17,7 @@ const AdminLoginPage = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, isAdmin } = useAuth();
@@ -34,10 +35,37 @@ const AdminLoginPage = () => {
     setIsLoading(true);
 
     try {
-      // First, attempt to sign in
-      const { data, error } = await authService.signInWithPassword(email, password);
+      // Normalize email to lowercase for consistency
+      const normalizedEmail = email.toLowerCase();
+      
+      // Check if this is the admin email
+      const isAdminEmail = normalizedEmail === "alan@insight-ai-systems.com";
+      
+      if (isAdminEmail) {
+        console.log("Admin login attempt detected");
+        // Try to create admin account if it doesn't exist
+        setIsCreatingAdmin(true);
+        const { error: adminSetupError } = await authService.createAdminIfNotExists(normalizedEmail, "letmein1983!!");
+        setIsCreatingAdmin(false);
+        
+        if (adminSetupError) {
+          console.error("Admin setup error:", adminSetupError);
+          toast({
+            title: "Admin setup failed",
+            description: adminSetupError.message,
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // Now attempt to sign in
+      console.log("Attempting to sign in");
+      const { data, error } = await authService.signInWithPassword(normalizedEmail, password);
 
       if (error) {
+        console.error("Login error:", error);
         toast({
           title: "Login failed",
           description: error.message,
@@ -48,7 +76,7 @@ const AdminLoginPage = () => {
       }
 
       // Check if the email is the admin email
-      if (email.toLowerCase() !== "alan@insight-ai-systems.com") {
+      if (!isAdminEmail) {
         toast({
           title: "Access denied",
           description: "You do not have administrator privileges",
@@ -64,7 +92,7 @@ const AdminLoginPage = () => {
       await authService.checkUserRoles(data.user.id);
 
       // If initial password, require change
-      if (email.toLowerCase() === "alan@insight-ai-systems.com" && password === "letmein1983!!") {
+      if (normalizedEmail === "alan@insight-ai-systems.com" && password === "letmein1983!!") {
         localStorage.setItem("requirePasswordChange", "true");
       }
 
@@ -143,12 +171,12 @@ const AdminLoginPage = () => {
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={isLoading}
+                  disabled={isLoading || isCreatingAdmin}
                 >
-                  {isLoading ? (
+                  {isLoading || isCreatingAdmin ? (
                     <span className="flex items-center justify-center">
                       <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
-                      Signing in...
+                      {isCreatingAdmin ? "Setting up admin..." : "Signing in..."}
                     </span>
                   ) : (
                     <span className="flex items-center justify-center">
@@ -156,6 +184,11 @@ const AdminLoginPage = () => {
                     </span>
                   )}
                 </Button>
+                {email.toLowerCase() === "alan@insight-ai-systems.com" && (
+                  <p className="text-xs text-amber-600 mt-2">
+                    Default admin password: letmein1983!!
+                  </p>
+                )}
               </form>
             </CardContent>
             <CardFooter className="text-center text-sm text-gray-500">
