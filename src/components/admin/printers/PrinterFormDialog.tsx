@@ -1,13 +1,12 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Printer } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
+import { usePrinterFormState } from "./form-components/usePrinterFormState";
+import { usePrinterFormValidation } from "./form-components/usePrinterFormValidation";
+import PrinterFormFields from "./form-components/PrinterFormFields";
 
 interface PrinterFormDialogProps {
   isOpen: boolean;
@@ -16,93 +15,15 @@ interface PrinterFormDialogProps {
   printer?: Printer; // If provided, we're editing an existing printer
 }
 
-const defaultPrinter: Printer = {
-  id: 0,
-  name: "",
-  description: "",
-  price: 0,
-  gstIncluded: false,
-  imageUrl: "https://www.accuratelabels.co.nz/wp-content/uploads/2022/08/placeholder-300x300.png",
-  originalUrl: "",
-  contactForPrice: false
-};
-
 const PrinterFormDialog: React.FC<PrinterFormDialogProps> = ({
   isOpen,
   onClose,
   onSave,
   printer
 }) => {
-  const [formData, setFormData] = useState<Printer>({ ...defaultPrinter });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const { formData, handleChange, handleCheckboxChange } = usePrinterFormState(printer);
+  const { errors, setErrors, validateForm } = usePrinterFormValidation(formData);
   const { toast } = useToast();
-
-  // Initialize form data when printer prop changes
-  useEffect(() => {
-    if (printer) {
-      setFormData({ ...printer });
-    } else {
-      setFormData({ ...defaultPrinter });
-    }
-  }, [printer, isOpen]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    let parsedValue: any = value;
-
-    // Parse numeric values
-    if (name === "price" && value !== "") {
-      parsedValue = parseFloat(value);
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: parsedValue
-    }));
-
-    // Clear error for this field if it exists
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
-  };
-
-  const handleCheckboxChange = (name: string, checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: checked
-    }));
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!formData.name.trim()) {
-      newErrors.name = "Printer name is required";
-    }
-    
-    if (!formData.description.trim()) {
-      newErrors.description = "Description is required";
-    }
-    
-    if (!formData.contactForPrice && (isNaN(formData.price) || formData.price < 0)) {
-      newErrors.price = "Price must be a valid number greater than or equal to 0";
-    }
-    
-    if (!formData.imageUrl.trim()) {
-      newErrors.imageUrl = "Image URL is required";
-    }
-    
-    if (!formData.originalUrl.trim()) {
-      newErrors.originalUrl = "Original URL is required";
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,6 +50,11 @@ const PrinterFormDialog: React.FC<PrinterFormDialogProps> = ({
     }
   };
 
+  // Create a wrapped handleChange that also handles clearing errors
+  const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    handleChange(e, setErrors);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[600px]">
@@ -137,91 +63,12 @@ const PrinterFormDialog: React.FC<PrinterFormDialogProps> = ({
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          <div className="grid grid-cols-1 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Printer Name</Label>
-              <Input
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className={errors.name ? "border-red-500" : ""}
-              />
-              {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows={4}
-                className={errors.description ? "border-red-500" : ""}
-              />
-              {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="contactForPrice"
-                checked={formData.contactForPrice || false}
-                onCheckedChange={(checked) => handleCheckboxChange("contactForPrice", checked as boolean)}
-              />
-              <Label htmlFor="contactForPrice">Contact for Price (hide price field)</Label>
-            </div>
-            
-            {!formData.contactForPrice && (
-              <div className="space-y-2">
-                <Label htmlFor="price">Price (NZD)</Label>
-                <Input
-                  id="price"
-                  name="price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={handleChange}
-                  className={errors.price ? "border-red-500" : ""}
-                />
-                {errors.price && <p className="text-red-500 text-sm">{errors.price}</p>}
-              </div>
-            )}
-            
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="gstIncluded"
-                checked={formData.gstIncluded}
-                onCheckedChange={(checked) => handleCheckboxChange("gstIncluded", checked as boolean)}
-              />
-              <Label htmlFor="gstIncluded">GST Included</Label>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="imageUrl">Image URL</Label>
-              <Input
-                id="imageUrl"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleChange}
-                className={errors.imageUrl ? "border-red-500" : ""}
-              />
-              {errors.imageUrl && <p className="text-red-500 text-sm">{errors.imageUrl}</p>}
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="originalUrl">Original URL</Label>
-              <Input
-                id="originalUrl"
-                name="originalUrl"
-                value={formData.originalUrl}
-                onChange={handleChange}
-                className={errors.originalUrl ? "border-red-500" : ""}
-              />
-              {errors.originalUrl && <p className="text-red-500 text-sm">{errors.originalUrl}</p>}
-            </div>
-          </div>
+          <PrinterFormFields 
+            formData={formData}
+            errors={errors}
+            handleChange={handleFieldChange}
+            handleCheckboxChange={handleCheckboxChange}
+          />
           
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
