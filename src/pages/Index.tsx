@@ -6,7 +6,6 @@ import Hero from "@/components/Hero";
 import FeatureSection from "@/components/FeatureSection";
 import CallToAction from "@/components/CallToAction";
 import TestimonialSection from "@/components/TestimonialSection";
-import UserDebugInfo from "@/components/UserDebugInfo";
 import { useAuth } from "@/context/AuthContext";
 
 const Index = () => {
@@ -15,9 +14,6 @@ const Index = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      
-      {/* Debug info always shown during development */}
-      <UserDebugInfo />
       
       <main className="flex-grow">
         <Hero />
