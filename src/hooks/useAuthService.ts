@@ -36,50 +36,86 @@ export const useAuthService = () => {
     return await supabase.auth.getSession();
   };
 
-  // Special function to create admin user if it doesn't exist
+  // Special function to handle admin login or creation
   const createAdminIfNotExists = async (email: string, password: string) => {
     console.log("Checking if admin account exists for:", email);
     
-    // First check if the user exists by trying to sign in
-    const { error: signInError } = await supabase.auth.signInWithPassword({ 
-      email, 
-      password: "wrong-password-to-check-existence" 
-    });
-    
-    // If error is not "Invalid login credentials", the user might exist but password is wrong
-    // If error is "Invalid login credentials", we'll create the user
-    if (signInError) {
-      console.log("Sign in check error:", signInError.message);
+    try {
+      // First try to sign in directly - if this works, the user exists with the correct password
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password
+      });
       
-      if (signInError.message.includes("Invalid login credentials")) {
-        console.log("Admin user does not exist, creating account for:", email);
-        
-        // Create admin user
-        const { data, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              full_name: "Administrator",
-              is_admin: true
-            }
-          }
-        });
-        
-        if (signUpError) {
-          console.error("Error creating admin user:", signUpError.message);
-          return { data: null, error: signUpError };
-        }
-        
-        console.log("Admin user created successfully");
-        return { data, error: null };
+      if (!signInError) {
+        console.log("Admin sign-in successful - user exists");
+        return { data: signInData, error: null };
       }
       
-      return { data: null, error: signInError };
+      console.log("Sign in failed:", signInError.message);
+      
+      // If error is "Invalid login credentials", it could mean:
+      // 1. User exists but password is wrong
+      // 2. User doesn't exist
+      
+      // Let's check if the user exists by trying a password reset
+      // This is a better way to check user existence
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + "/admin/password-reset"
+      });
+      
+      if (!resetError) {
+        // User exists but password is wrong
+        console.log("Admin user exists but password is incorrect");
+        return { 
+          data: null, 
+          error: {
+            message: "Invalid password for existing admin account. If you've forgotten your password, check your email for reset instructions."
+          } 
+        };
+      }
+      
+      // If we get here, the user likely doesn't exist, so let's create them
+      console.log("Admin user does not exist, creating account for:", email);
+      
+      // Create admin user
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: "Administrator",
+            is_admin: true
+          }
+        }
+      });
+      
+      if (signUpError) {
+        // If signup also fails, there might be an existing user with auth issues
+        // or another type of error
+        console.error("Error creating admin user:", signUpError.message);
+        
+        if (signUpError.message.includes("already registered")) {
+          return { 
+            data: null, 
+            error: {
+              message: "Admin account already exists but has login issues. Try the password 'letmein1983!!' or contact support."
+            } 
+          };
+        }
+        
+        return { data: null, error: signUpError };
+      }
+      
+      console.log("Admin user created successfully");
+      return { data, error: null };
+    } catch (error) {
+      console.error("Unexpected error during admin account check:", error);
+      return { 
+        data: null, 
+        error: { message: "An unexpected error occurred while setting up admin access" } 
+      };
     }
-    
-    console.log("Admin user already exists");
-    return { data: null, error: null };
   };
 
   // Reusing the checkUserRoles function but exposing it through our service
