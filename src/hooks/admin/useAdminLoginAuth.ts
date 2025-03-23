@@ -46,7 +46,7 @@ export const useAdminLoginAuth = ({
         
         // Try first with default password regardless of entered password
         // This helps users who might be stuck
-        console.log("Trying login with default password:", DEFAULT_ADMIN_PASSWORD);
+        console.log("Trying login with default password:", DEFAULT_ADMIN_PASSWORD.replace(/./g, "*"));
         const { data: defaultData, error: defaultError } = await authService.signInWithPassword(
           ADMIN_EMAIL,
           DEFAULT_ADMIN_PASSWORD
