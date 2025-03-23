@@ -7,6 +7,9 @@ import ProductGrid from "@/components/ProductGrid";
 import CallToAction from "@/components/CallToAction";
 
 const ProductsPage = () => {
+  // Filter out suspended products
+  const activeProducts = products.filter(product => !product.suspended);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -23,7 +26,7 @@ const ProductsPage = () => {
         <div className="container-custom py-12">
           <div className="mb-12">
             <h2 className="text-2xl font-bold mb-6">All Products</h2>
-            <ProductGrid products={products} />
+            <ProductGrid products={activeProducts} />
           </div>
         </div>
 

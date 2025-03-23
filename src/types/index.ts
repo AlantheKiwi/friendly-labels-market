@@ -1,4 +1,3 @@
-
 export interface Printer {
   id: number;
   name: string;
@@ -38,6 +37,7 @@ export interface Product {
   quantities: ProductQuantity[];
   isCustom?: boolean;
   popularUses?: string[];
+  suspended?: boolean;
 }
 
 export interface ProductSize {
