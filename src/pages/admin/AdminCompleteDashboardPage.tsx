@@ -1,21 +1,21 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
-import { useToast } from "@/components/ui/use-toast";
-import AdminLogoutButton from "@/components/admin/AdminLogoutButton";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import AdminLogoutButton from "@/components/admin/AdminLogoutButton";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 const AdminCompleteDashboardPage = () => {
-  const { user, isAdmin, isLoading, refreshRoles } = useAuth();
+  const { isAdmin, loading, adminEmail, refreshAdminStatus } = useAdminAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     // Redirect non-admin users to login
-    if (!isLoading && (!user || !isAdmin)) {
+    if (!loading && !isAdmin) {
       console.log("User is not admin, redirecting to login page");
       toast({
         title: "Access Denied",
@@ -24,7 +24,7 @@ const AdminCompleteDashboardPage = () => {
       });
       navigate("/admin/login");
     }
-  }, [user, isAdmin, isLoading, navigate, toast]);
+  }, [isAdmin, loading, navigate, toast]);
 
   const handleManualRefresh = async () => {
     if (isRefreshing) return;
@@ -32,7 +32,7 @@ const AdminCompleteDashboardPage = () => {
     setIsRefreshing(true);
     try {
       console.log("Manually refreshing admin status");
-      await refreshRoles();
+      await refreshAdminStatus();
       
       toast({
         title: "Refreshed",
@@ -50,7 +50,7 @@ const AdminCompleteDashboardPage = () => {
     }
   };
 
-  if (isLoading || isRefreshing) {
+  if (loading || isRefreshing) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
@@ -59,7 +59,7 @@ const AdminCompleteDashboardPage = () => {
   }
 
   // Only render the dashboard if the user is admin
-  if (!user || !isAdmin) {
+  if (!isAdmin) {
     return null; // Will redirect in useEffect
   }
 
@@ -87,8 +87,7 @@ const AdminCompleteDashboardPage = () => {
           </p>
           <div className="mt-4 p-4 bg-amber-50 rounded border border-amber-200">
             <h2 className="font-semibold text-amber-800">Admin User Information</h2>
-            <p className="text-sm text-amber-700 mt-2">Email: {user.email}</p>
-            <p className="text-sm text-amber-700">User ID: {user.id}</p>
+            <p className="text-sm text-amber-700 mt-2">Email: {adminEmail}</p>
             <p className="text-sm text-amber-700">Admin Status: {isAdmin ? "Yes" : "No"}</p>
           </div>
         </div>

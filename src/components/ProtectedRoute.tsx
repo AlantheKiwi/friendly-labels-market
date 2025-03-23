@@ -1,8 +1,9 @@
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { ADMIN_EMAIL } from "@/services/auth/constants";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -15,143 +16,145 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireAdmin = false,
   requireClient = false 
 }) => {
-  // Try-catch to handle potential context errors
-  try {
-    const { user, isAdmin, isClient, isLoading, refreshRoles, lastRoleCheck } = useAuth();
-    const [isRefreshing, setIsRefreshing] = useState(false);
-    const [shouldRedirect, setShouldRedirect] = useState<boolean | null>(null);
-    const { toast } = useToast();
-    const redirectAttempted = useRef(false);
-    
-    const handleRefreshRoles = useCallback(async () => {
-      if (isRefreshing || !user) return;
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [shouldRedirect, setShouldRedirect] = useState<boolean | null>(null);
+  const { toast } = useToast();
+  const redirectAttempted = useRef(false);
+  
+  // Check auth status directly without relying on context
+  const checkAuthStatus = useCallback(async () => {
+    try {
+      console.log("Checking auth status in ProtectedRoute");
       
-      setIsRefreshing(true);
-      try {
-        console.log("Explicitly refreshing user roles");
-        await refreshRoles();
-      } catch (error) {
-        console.error("Auto-refresh roles error:", error);
-      } finally {
-        setIsRefreshing(false);
-      }
-    }, [user, refreshRoles, isRefreshing]);
-    
-    // Force role refresh on mount for admin pages
-    useEffect(() => {
-      if (requireAdmin && user && !isRefreshing && !isLoading) {
-        console.log("Admin page - forcing role refresh");
-        handleRefreshRoles();
-      }
-    }, [requireAdmin, user, handleRefreshRoles, isRefreshing, isLoading]);
-    
-    useEffect(() => {
-      if (isLoading || !user || isRefreshing) return;
+      // Get current session directly from Supabase
+      const { data: { session } } = await supabase.auth.getSession();
       
-      const shouldRefresh = 
-        lastRoleCheck && 
-        Date.now() - lastRoleCheck > 30000 && // Reduced to 30 seconds for more frequent checks
-        (requireAdmin || requireClient);
-        
-      if (shouldRefresh) {
-        console.log("Auto-refreshing roles - stale role data detected");
-        handleRefreshRoles();
+      if (!session) {
+        console.log("No session found in ProtectedRoute");
+        setIsAdmin(false);
+        setIsClient(false);
+        return false;
       }
-    }, [user, lastRoleCheck, handleRefreshRoles, requireAdmin, requireClient, isLoading, isRefreshing]);
-
-    useEffect(() => {
-      if (!isLoading && !isRefreshing) {
-        console.log("ProtectedRoute checking access:", { 
-          user: !!user, 
-          requireAdmin, 
-          isAdmin, 
-          requireClient, 
-          isClient 
-        });
-        
-        if (!user) {
-          setShouldRedirect(true);
-        } else if (
-          (requireAdmin && !isAdmin) || 
-          (requireClient && !isClient)
-        ) {
-          setShouldRedirect(true);
-        } else {
-          setShouldRedirect(false);
-        }
+      
+      const userEmail = session.user?.email?.toLowerCase();
+      
+      // Direct admin check by email
+      if (userEmail === ADMIN_EMAIL.toLowerCase()) {
+        console.log("Admin email match found in ProtectedRoute");
+        setIsAdmin(true);
+        setIsClient(true); // Admin has client privileges too
+        return true;
+      } else {
+        // Regular user, always set as client for now
+        setIsAdmin(false);
+        setIsClient(true);
+        return true;
       }
-    }, [user, isAdmin, isClient, isLoading, isRefreshing, requireAdmin, requireClient]);
-
-    if (isLoading || isRefreshing || shouldRedirect === null) {
-      return (
-        <div className="flex h-screen items-center justify-center">
-          <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
-        </div>
-      );
+      
+    } catch (error) {
+      console.error("Error checking auth in ProtectedRoute:", error);
+      return false;
     }
-
-    if (shouldRedirect && !redirectAttempted.current) {
-      redirectAttempted.current = true;
+  }, []);
+  
+  // Check auth on mount
+  useEffect(() => {
+    async function initialAuthCheck() {
+      setIsLoading(true);
+      await checkAuthStatus();
+      setIsLoading(false);
+    }
+    
+    initialAuthCheck();
+  }, [checkAuthStatus]);
+  
+  // Determine if redirect is needed when auth status changes
+  useEffect(() => {
+    if (!isLoading) {
+      console.log("ProtectedRoute checking access:", { 
+        hasSession: isAdmin || isClient, 
+        requireAdmin, 
+        isAdmin, 
+        requireClient, 
+        isClient 
+      });
       
-      if (!user) {
-        console.log("No user found, redirecting to login");
-        
-        const currentPath = window.location.pathname;
-        if (!currentPath.includes("/auth/")) {
-          // Use regular toast for non-error states to avoid state changes during rendering
-          setTimeout(() => {
-            toast({
-              title: "Authentication required",
-              description: "Please sign in to access this page",
-              variant: "destructive"
-            });
-          }, 0);
-        }
-        
-        if (requireAdmin && window.location.pathname.includes("/admin/")) {
-          return <Navigate to="/admin/login" replace />;
-        } else {
-          return <Navigate to="/auth/login" replace />;
-        }
-      }
-      
-      if (requireAdmin && !isAdmin) {
-        console.log("Admin access required but user is not admin");
-        // Use setTimeout to avoid updating state during rendering
-        setTimeout(() => {
-          toast({
-            title: "Access denied",
-            description: "You need administrator privileges to access this page",
-            variant: "destructive"
-          });
-        }, 0);
-        return <Navigate to="/" replace />;
-      }
-
-      if (requireClient && !isClient) {
-        console.log("Client access required but user is not client");
-        // Use setTimeout to avoid updating state during rendering
-        setTimeout(() => {
-          toast({
-            title: "Access denied",
-            description: "You need client privileges to access this page",
-            variant: "destructive"
-          });
-        }, 0);
-        return <Navigate to="/" replace />;
+      if (!isAdmin && !isClient) {
+        setShouldRedirect(true);
+      } else if ((requireAdmin && !isAdmin) || (requireClient && !isClient)) {
+        setShouldRedirect(true);
+      } else {
+        setShouldRedirect(false);
       }
     }
+  }, [isAdmin, isClient, isLoading, requireAdmin, requireClient]);
 
-    if (!shouldRedirect) {
-      redirectAttempted.current = false;
-    }
-
-    return <>{children}</>;
-  } catch (error) {
-    // If we can't access the auth context, redirect to login
-    console.error("Auth context error in ProtectedRoute:", error);
-    return <Navigate to="/admin/login" replace />;
+  // Show loading state
+  if (isLoading || shouldRedirect === null) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+      </div>
+    );
   }
+
+  // Handle redirects
+  if (shouldRedirect && !redirectAttempted.current) {
+    redirectAttempted.current = true;
+    
+    if (!isAdmin && !isClient) {
+      console.log("No user found, redirecting to login");
+      
+      const currentPath = window.location.pathname;
+      if (!currentPath.includes("/auth/")) {
+        setTimeout(() => {
+          toast({
+            title: "Authentication required",
+            description: "Please sign in to access this page",
+            variant: "destructive"
+          });
+        }, 0);
+      }
+      
+      if (requireAdmin && window.location.pathname.includes("/admin/")) {
+        return <Navigate to="/admin/login" replace />;
+      } else {
+        return <Navigate to="/auth/login" replace />;
+      }
+    }
+    
+    if (requireAdmin && !isAdmin) {
+      console.log("Admin access required but user is not admin");
+      setTimeout(() => {
+        toast({
+          title: "Access denied",
+          description: "You need administrator privileges to access this page",
+          variant: "destructive"
+        });
+      }, 0);
+      return <Navigate to="/" replace />;
+    }
+
+    if (requireClient && !isClient) {
+      console.log("Client access required but user is not client");
+      setTimeout(() => {
+        toast({
+          title: "Access denied",
+          description: "You need client privileges to access this page",
+          variant: "destructive"
+        });
+      }, 0);
+      return <Navigate to="/" replace />;
+    }
+  }
+
+  if (!shouldRedirect) {
+    redirectAttempted.current = false;
+  }
+
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;
