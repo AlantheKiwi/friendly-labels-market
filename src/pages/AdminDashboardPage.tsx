@@ -9,27 +9,63 @@ import AdminImageUpload from "@/components/admin/AdminImageUpload";
 import AdminPrinterPricing from "@/components/admin/AdminPrinterPricing";
 import AdminProductPricing from "@/components/admin/AdminProductPricing";
 import AdminPasswordChange from "@/components/admin/AdminPasswordChange";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { ADMIN_EMAIL } from "@/services/auth/constants";
 
 const AdminDashboardPage = () => {
-  const { isAdmin, requirePasswordChange, loading, adminEmail } = useAdminAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Set password change requirement based on auth
-    setShowPasswordChange(requirePasswordChange);
-    
-    if (!loading && !isAdmin) {
-      toast({
-        title: "Access Denied",
-        description: "Please log in to access the admin dashboard",
-        variant: "destructive",
-      });
-      navigate("/admin/login");
+  // Check if current user is admin
+  const checkAdminStatus = async () => {
+    try {
+      setLoading(true);
+      
+      // Get current session directly from Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.log("No session found");
+        setIsAdmin(false);
+        toast({
+          title: "Access Denied",
+          description: "You need to log in to access this page",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+      
+      const userEmail = session.user?.email?.toLowerCase();
+      
+      // Direct admin check by email
+      if (userEmail === ADMIN_EMAIL.toLowerCase()) {
+        console.log("Admin email match found");
+        setIsAdmin(true);
+        setShowPasswordChange(localStorage.getItem("requirePasswordChange") === "true");
+      } else {
+        setIsAdmin(false);
+        toast({
+          title: "Access Denied",
+          description: "You need admin privileges to access this page",
+          variant: "destructive",
+        });
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+      setIsAdmin(false);
+    } finally {
+      setLoading(false);
     }
-  }, [isAdmin, requirePasswordChange, loading, navigate, toast]);
+  };
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, [navigate, toast]);
 
   const handlePasswordChangeComplete = () => {
     setShowPasswordChange(false);

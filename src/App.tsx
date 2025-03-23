@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,7 +16,6 @@ import CustomQuotePage from "./pages/CustomQuotePage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import ContactPage from "./pages/ContactPage";
-import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminClientsPage from "./pages/admin/AdminClientsPage";
 import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
@@ -96,7 +94,6 @@ const App = () => {
                 } />
                 
                 {/* Protected Admin Routes */}
-                <Route path="/admin/login" element={<AdminLoginPage />} />
                 <Route path="/admin/dashboard" element={
                   <ProtectedRoute requireAdmin>
                     <AdminDashboardPage />

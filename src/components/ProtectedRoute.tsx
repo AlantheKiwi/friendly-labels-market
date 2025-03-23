@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Navigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +21,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [shouldRedirect, setShouldRedirect] = useState<boolean | null>(null);
   const { toast } = useToast();
-  const redirectAttempted = useRef(false);
   
   // Check auth status directly without relying on context
   const checkAuthStatus = useCallback(async () => {
@@ -101,28 +100,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Handle redirects
-  if (shouldRedirect && !redirectAttempted.current) {
-    redirectAttempted.current = true;
-    
+  if (shouldRedirect) {    
     if (!isAdmin && !isClient) {
       console.log("No user found, redirecting to login");
       
-      const currentPath = window.location.pathname;
-      if (!currentPath.includes("/auth/")) {
-        setTimeout(() => {
-          toast({
-            title: "Authentication required",
-            description: "Please sign in to access this page",
-            variant: "destructive"
-          });
-        }, 0);
-      }
+      setTimeout(() => {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to access this page",
+          variant: "destructive"
+        });
+      }, 0);
       
-      if (requireAdmin && window.location.pathname.includes("/admin/")) {
-        return <Navigate to="/admin/login" replace />;
-      } else {
-        return <Navigate to="/auth/login" replace />;
-      }
+      return <Navigate to="/auth/login" replace />;
     }
     
     if (requireAdmin && !isAdmin) {
@@ -148,10 +138,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       }, 0);
       return <Navigate to="/" replace />;
     }
-  }
-
-  if (!shouldRedirect) {
-    redirectAttempted.current = false;
   }
 
   return <>{children}</>;

@@ -5,26 +5,65 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import AdminLogoutButton from "@/components/admin/AdminLogoutButton";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { ADMIN_EMAIL } from "@/services/auth/constants";
 
 const AdminCompleteDashboardPage = () => {
-  const { isAdmin, loading, adminEmail, refreshAdminStatus } = useAdminAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [adminEmail, setAdminEmail] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Redirect non-admin users to login
-    if (!loading && !isAdmin) {
-      console.log("User is not admin, redirecting to login page");
-      toast({
-        title: "Access Denied",
-        description: "You need to log in as an administrator to access this page",
-        variant: "destructive",
-      });
-      navigate("/admin/login");
+  // Check if current user is admin
+  const checkAdminStatus = async () => {
+    try {
+      setLoading(true);
+      
+      // Get current session directly from Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.log("No session found");
+        setIsAdmin(false);
+        setAdminEmail(null);
+        toast({
+          title: "Access Denied",
+          description: "You need to log in to access this page",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+      
+      const userEmail = session.user?.email?.toLowerCase();
+      setAdminEmail(userEmail || null);
+      
+      // Direct admin check by email
+      if (userEmail === ADMIN_EMAIL.toLowerCase()) {
+        console.log("Admin email match found");
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+        toast({
+          title: "Access Denied",
+          description: "You need admin privileges to access this page",
+          variant: "destructive",
+        });
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+      setIsAdmin(false);
+    } finally {
+      setLoading(false);
     }
-  }, [isAdmin, loading, navigate, toast]);
+  };
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, [navigate, toast]);
 
   const handleManualRefresh = async () => {
     if (isRefreshing) return;
@@ -32,7 +71,7 @@ const AdminCompleteDashboardPage = () => {
     setIsRefreshing(true);
     try {
       console.log("Manually refreshing admin status");
-      await refreshAdminStatus();
+      await checkAdminStatus();
       
       toast({
         title: "Refreshed",
