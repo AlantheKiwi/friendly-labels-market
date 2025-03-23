@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -12,15 +12,20 @@ import CustomerInformationForm from "@/components/checkout/CustomerInformationFo
 import PaymentMethodSelector from "@/components/checkout/PaymentMethodSelector";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import EmptyCart from "@/components/checkout/EmptyCart";
-import { CustomerInfo } from "@/types/checkout";
+import { CustomerInfo, CheckoutFormData } from "@/types/checkout";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const CheckoutPage = () => {
   const { items, subtotal, clearCart } = useCart();
+  const { user, isClient } = useAuth();
   const navigate = useNavigate();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("stripe");
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentStep, setPaymentStep] = useState<"details" | "payment">("details");
+  const [initialFormData, setInitialFormData] = useState<CheckoutFormData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Shipping cost calculation (simplified)
   const shippingCost = 9.99;
@@ -31,6 +36,77 @@ const CheckoutPage = () => {
   
   // Total including GST
   const total = subtotal + shippingCost + gstAmount;
+
+  // Fetch user profile data when component mounts
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user && isClient) {
+        setIsLoading(true);
+        try {
+          // Fetch the user's profile from Supabase
+          const { data: profileData, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+            
+          if (error) {
+            console.error("Error fetching user profile:", error);
+            toast({
+              title: "Error fetching profile",
+              description: "We couldn't load your saved information.",
+              variant: "destructive"
+            });
+          } else if (profileData) {
+            // Prepare initial form data from profile
+            const formData: CheckoutFormData = {
+              contactInfo: {
+                firstName: profileData.first_name || "",
+                lastName: profileData.last_name || "",
+                email: user.email || "",
+                phone: profileData.phone || "",
+                company: profileData.company || "",
+              },
+              shippingAddress: {
+                fullName: `${profileData.first_name || ""} ${profileData.last_name || ""}`.trim(),
+                address1: profileData.address1 || "",
+                address2: profileData.address2 || "",
+                city: profileData.city || "",
+                state: profileData.state || "",
+                postalCode: profileData.postal_code || "",
+                country: "New Zealand",
+              },
+              billingAddress: {
+                fullName: `${profileData.first_name || ""} ${profileData.last_name || ""}`.trim(),
+                address1: profileData.billing_address1 || profileData.address1 || "",
+                address2: profileData.billing_address2 || profileData.address2 || "",
+                city: profileData.billing_city || profileData.city || "",
+                state: profileData.billing_state || profileData.state || "",
+                postalCode: profileData.billing_postal_code || profileData.postal_code || "",
+                country: "New Zealand",
+              },
+              billingSameAsShipping: !profileData.billing_address1,
+              notes: ""
+            };
+            
+            setInitialFormData(formData);
+            toast({
+              title: "Information loaded",
+              description: "Your saved information has been pre-filled.",
+            });
+          }
+        } catch (err) {
+          console.error("Error in profile fetch:", err);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUserProfile();
+  }, [user, isClient]);
 
   const handleCustomerInfoSubmit = (e: React.FormEvent, formData: CustomerInfo) => {
     e.preventDefault();
@@ -127,7 +203,16 @@ const CheckoutPage = () => {
             {/* Customer Information Form or Payment */}
             <div className="lg:col-span-2">
               {paymentStep === "details" ? (
-                <CustomerInformationForm onSubmit={handleCustomerInfoSubmit} />
+                isLoading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+                  </div>
+                ) : (
+                  <CustomerInformationForm 
+                    onSubmit={handleCustomerInfoSubmit}
+                    initialData={initialFormData} 
+                  />
+                )
               ) : (
                 <>
                   <div className="bg-gray-50 p-6 rounded-lg mb-6">

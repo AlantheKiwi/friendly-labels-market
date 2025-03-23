@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,9 +9,10 @@ import AddressForm from "./AddressForm";
 
 interface CustomerInformationFormProps {
   onSubmit: (e: React.FormEvent, formData: CustomerInfo) => void;
+  initialData?: CheckoutFormData | null;
 }
 
-const CustomerInformationForm: React.FC<CustomerInformationFormProps> = ({ onSubmit }) => {
+const CustomerInformationForm: React.FC<CustomerInformationFormProps> = ({ onSubmit, initialData }) => {
   const [formData, setFormData] = useState<CheckoutFormData>({
     contactInfo: {
       firstName: "",
@@ -42,6 +42,12 @@ const CustomerInformationForm: React.FC<CustomerInformationFormProps> = ({ onSub
     billingSameAsShipping: true,
     notes: ""
   });
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
 
   const handleContactChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -91,7 +97,6 @@ const CustomerInformationForm: React.FC<CustomerInformationFormProps> = ({ onSub
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Convert formData to CustomerInfo format for backwards compatibility
     const customerInfo: CustomerInfo = {
       firstName: formData.contactInfo.firstName,
       lastName: formData.contactInfo.lastName,
