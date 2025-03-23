@@ -1,4 +1,3 @@
-
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
@@ -51,17 +50,20 @@ export const usePrinterDialogs = (
   const confirmSuspendPrinter = () => {
     if (selectedPrinter) {
       // Suspend single printer
-      setPrinterData(prev => 
-        prev.map(p => {
-          if (p.id === selectedPrinter.id) {
-            return {
-              ...p,
-              suspended: true
-            };
-          }
-          return p;
-        })
-      );
+      const updatedPrinters = printerData.map(p => {
+        if (p.id === selectedPrinter.id) {
+          return {
+            ...p,
+            suspended: true
+          };
+        }
+        return p;
+      });
+      
+      setPrinterData(updatedPrinters);
+      
+      // Save to localStorage
+      localStorage.setItem('printers', JSON.stringify(updatedPrinters));
       
       toast({
         title: "Printer suspended",
@@ -84,17 +86,20 @@ export const usePrinterDialogs = (
   };
 
   const handleUndoSuspend = (printer: Printer) => {
-    setPrinterData(prev => 
-      prev.map(p => {
-        if (p.id === printer.id) {
-          return {
-            ...p,
-            suspended: false
-          };
-        }
-        return p;
-      })
-    );
+    const updatedPrinters = printerData.map(p => {
+      if (p.id === printer.id) {
+        return {
+          ...p,
+          suspended: false
+        };
+      }
+      return p;
+    });
+    
+    setPrinterData(updatedPrinters);
+    
+    // Save to localStorage
+    localStorage.setItem('printers', JSON.stringify(updatedPrinters));
     
     toast({
       title: "Suspension removed",
@@ -104,12 +109,15 @@ export const usePrinterDialogs = (
 
   // Keep this function for compatibility, but it won't be used anymore
   const handleUndoSuspendAll = () => {
-    setPrinterData(prev => 
-      prev.map(printer => ({
-        ...printer,
-        suspended: false
-      }))
-    );
+    const updatedPrinters = printerData.map(printer => ({
+      ...printer,
+      suspended: false
+    }));
+    
+    setPrinterData(updatedPrinters);
+    
+    // Save to localStorage
+    localStorage.setItem('printers', JSON.stringify(updatedPrinters));
     
     toast({
       title: "All suspensions removed",
@@ -124,22 +132,10 @@ export const usePrinterDialogs = (
     
     try {
       // Remove from local state
-      setPrinterData(prev => prev.filter(p => p.id !== selectedPrinter.id));
+      const updatedPrinters = printerData.filter(p => p.id !== selectedPrinter.id);
+      setPrinterData(updatedPrinters);
       
-      // Update the source data file to permanently delete
-      // Get current printers from localStorage or create new array if none exists
-      const storedPrinters = localStorage.getItem('printers');
-      let updatedPrinters = storedPrinters ? JSON.parse(storedPrinters) : [];
-      
-      // If there's no localStorage data yet, use the current printerData as base
-      if (!updatedPrinters.length) {
-        updatedPrinters = [...printerData];
-      }
-      
-      // Filter out the deleted printer
-      updatedPrinters = updatedPrinters.filter((p: Printer) => p.id !== selectedPrinter.id);
-      
-      // Save the updated printers list back to localStorage
+      // Store in localStorage - this is the key change to ensure deletions persist
       localStorage.setItem('printers', JSON.stringify(updatedPrinters));
       
       toast({
@@ -165,19 +161,11 @@ export const usePrinterDialogs = (
   const handleSavePrinter = (printer: Printer) => {
     if (selectedPrinter) {
       // Edit existing printer
-      setPrinterData(prev => 
-        prev.map(p => p.id === printer.id ? printer : p)
-      );
+      const updatedPrinters = printerData.map(p => p.id === printer.id ? printer : p);
+      setPrinterData(updatedPrinters);
       
       // Update localStorage
-      const storedPrinters = localStorage.getItem('printers');
-      if (storedPrinters) {
-        let updatedPrinters = JSON.parse(storedPrinters);
-        updatedPrinters = updatedPrinters.map((p: Printer) => 
-          p.id === printer.id ? printer : p
-        );
-        localStorage.setItem('printers', JSON.stringify(updatedPrinters));
-      }
+      localStorage.setItem('printers', JSON.stringify(updatedPrinters));
       
       setIsEditDialogOpen(false);
     } else {

@@ -20,6 +20,8 @@ const PrintersPage = () => {
     if (storedPrinters) {
       setPrinters(JSON.parse(storedPrinters));
     } else {
+      // Initialize localStorage if empty
+      localStorage.setItem('printers', JSON.stringify(defaultPrinters));
       setPrinters(defaultPrinters);
     }
   }, []);

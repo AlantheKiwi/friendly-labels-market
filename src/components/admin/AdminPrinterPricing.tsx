@@ -1,6 +1,6 @@
 
 import React, { useEffect } from "react";
-import { printers as initialPrinters } from "@/data/printerData";
+import { printers as defaultPrinters } from "@/data/printerData";
 import PrinterFormDialog from "./printers/PrinterFormDialog";
 import DeletePrinterDialog from "./printers/DeletePrinterDialog";
 import SuspendPrinterDialog from "./printers/SuspendPrinterDialog";
@@ -17,8 +17,8 @@ const AdminPrinterPricing = () => {
       return JSON.parse(storedPrinters);
     }
     // Initialize localStorage on first load
-    localStorage.setItem('printers', JSON.stringify(initialPrinters));
-    return initialPrinters;
+    localStorage.setItem('printers', JSON.stringify(defaultPrinters));
+    return defaultPrinters;
   };
 
   const {

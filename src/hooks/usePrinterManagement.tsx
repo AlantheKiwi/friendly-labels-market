@@ -3,6 +3,7 @@ import { Printer } from "@/types";
 import { usePrinterState } from "./printers/usePrinterState";
 import { usePriceActions } from "./printers/usePriceActions";
 import { usePrinterDialogs } from "./printers/usePrinterDialogs";
+import { useEffect } from "react";
 
 export const usePrinterManagement = (initialPrinters: Printer[]) => {
   const {
@@ -68,6 +69,11 @@ export const usePrinterManagement = (initialPrinters: Printer[]) => {
     isDeleting,
     setIsDeleting
   );
+
+  // Sync with localStorage whenever printerData changes
+  useEffect(() => {
+    localStorage.setItem('printers', JSON.stringify(printerData));
+  }, [printerData]);
 
   return {
     printerData,
