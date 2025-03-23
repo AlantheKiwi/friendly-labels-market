@@ -13,9 +13,6 @@ interface AdminLoginFormProps {
   onLoginSuccess: () => void;
 }
 
-const DEFAULT_ADMIN_PASSWORD = "letmein1983!!";
-const ADMIN_EMAIL = "alan@insight-ai-systems.com";
-
 const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,6 +23,10 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const authService = useAuthService();
+  
+  // Get these values directly from the service for consistency
+  const DEFAULT_ADMIN_PASSWORD = authService.DEFAULT_ADMIN_PASSWORD;
+  const ADMIN_EMAIL = authService.ADMIN_EMAIL;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,12 +43,13 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
       if (isAdminEmail) {
         console.log("Admin login attempt detected");
         
-        // Try direct login first with the provided password
+        // Try with entered password first
+        console.log("Trying with entered password");
         const { data, error } = await authService.signInWithPassword(normalizedEmail, password);
         
         if (!error) {
           // Direct login successful
-          console.log("Admin login successful");
+          console.log("Admin login successful with entered password");
           await authService.checkUserRoles(data.user.id);
           toast({
             title: "Login successful",
@@ -58,11 +60,11 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
           return;
         }
         
-        console.log("Direct login failed with error:", error.message);
+        console.log("Login with entered password failed:", error.message);
         
-        // Try the default password (for users who haven't changed it yet)
+        // If entered password failed and it's not the default password, try the default
         if (password !== DEFAULT_ADMIN_PASSWORD) {
-          console.log("Trying default admin password");
+          console.log("Trying default admin password:", DEFAULT_ADMIN_PASSWORD);
           const { data: defaultPassData, error: defaultPassError } = await authService.signInWithPassword(
             normalizedEmail, 
             DEFAULT_ADMIN_PASSWORD
@@ -83,16 +85,20 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
             return;
           }
           
-          console.log("Default password login failed with error:", defaultPassError.message);
+          console.log("Default password login failed:", defaultPassError.message);
         }
         
-        // If login failed, try our special admin setup function
+        // If login failed with both passwords, try our special admin setup function
         console.log("All direct logins failed, trying admin setup");
         setIsCreatingAdmin(true);
         
         // This will attempt to create the admin if it doesn't exist,
         // or return appropriate error messages if it does
-        const { error: adminSetupError } = await authService.createAdminIfNotExists(normalizedEmail, DEFAULT_ADMIN_PASSWORD);
+        const { data: adminData, error: adminSetupError } = await authService.createAdminIfNotExists(
+          normalizedEmail, 
+          DEFAULT_ADMIN_PASSWORD
+        );
+        
         setIsCreatingAdmin(false);
         
         if (adminSetupError) {
@@ -107,16 +113,29 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
           return;
         }
         
-        // If we get here, we successfully created the admin account or confirmed it exists
-        // Try to log in with default password
-        console.log("Attempting login with default admin password after setup");
+        if (adminData) {
+          // Admin was created or we got logged in through the setup process
+          console.log("Admin setup successful, user logged in");
+          await authService.checkUserRoles(adminData.user.id);
+          toast({
+            title: "Login successful",
+            description: "Welcome to the admin dashboard",
+          });
+          localStorage.setItem("requirePasswordChange", "true");
+          onLoginSuccess();
+          setIsLoading(false);
+          return;
+        }
+        
+        // If we get here, try one more login with default password
+        console.log("Final attempt with default admin password");
         const { data: loginData, error: loginError } = await authService.signInWithPassword(
           normalizedEmail, 
           DEFAULT_ADMIN_PASSWORD
         );
 
         if (loginError) {
-          console.error("Login with default password failed:", loginError);
+          console.error("Login with default password failed in final attempt:", loginError);
           setErrorMessage(`Login failed. Please try with the default password '${DEFAULT_ADMIN_PASSWORD}'`);
           toast({
             title: "Login failed",
@@ -160,6 +179,11 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleSetDefaultValues = () => {
+    setEmail(ADMIN_EMAIL);
+    setPassword(DEFAULT_ADMIN_PASSWORD);
   };
 
   return (
@@ -219,16 +243,30 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
           </span>
         )}
       </Button>
-      {email.toLowerCase() === ADMIN_EMAIL && (
-        <div>
-          <p className="text-xs text-amber-600 mt-2">
-            Default admin password: {DEFAULT_ADMIN_PASSWORD}
-          </p>
-          <p className="text-xs text-gray-500">
-            If you're having trouble logging in, try this default password.
-          </p>
-        </div>
-      )}
+      
+      <div className="pt-2">
+        <Button 
+          type="button" 
+          variant="outline" 
+          size="sm" 
+          className="w-full text-xs"
+          onClick={handleSetDefaultValues}
+        >
+          Fill with default admin credentials
+        </Button>
+      </div>
+      
+      <div>
+        <p className="text-xs text-amber-600 mt-2">
+          Default admin email: {ADMIN_EMAIL}
+        </p>
+        <p className="text-xs text-amber-600">
+          Default admin password: {DEFAULT_ADMIN_PASSWORD}
+        </p>
+        <p className="text-xs text-gray-500">
+          If you're having trouble logging in, try these default credentials.
+        </p>
+      </div>
     </form>
   );
 };

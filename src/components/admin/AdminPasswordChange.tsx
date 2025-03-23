@@ -5,12 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuthService } from "@/hooks/useAuthService";
 
 interface AdminPasswordChangeProps {
   onComplete: () => void;
 }
-
-const DEFAULT_ADMIN_PASSWORD = "letmein1983!!";
 
 const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete }) => {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -19,6 +18,10 @@ const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete })
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const authService = useAuthService();
+  
+  // Get the default password from the auth service for consistency
+  const DEFAULT_ADMIN_PASSWORD = authService.DEFAULT_ADMIN_PASSWORD;
 
   // Password strength validation
   const validatePassword = (password: string) => {
@@ -147,6 +150,17 @@ const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete })
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Updating..." : "Change Password"}
       </Button>
+      
+      <div className="text-center">
+        <Button 
+          type="button" 
+          variant="ghost" 
+          className="text-xs"
+          onClick={() => setCurrentPassword(DEFAULT_ADMIN_PASSWORD)}
+        >
+          Fill default password
+        </Button>
+      </div>
     </form>
   );
 };

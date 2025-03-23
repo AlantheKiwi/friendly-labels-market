@@ -43,29 +43,26 @@ export const useAuthService = () => {
   // Special function to handle admin login or creation
   const createAdminIfNotExists = async (email: string, password: string) => {
     console.log("Checking if admin account exists for:", email);
-    
-    // For debugging, explicitly log the attempted password
-    console.log("Using admin password:", password);
+    console.log("Using admin password:", DEFAULT_ADMIN_PASSWORD);
     
     try {
-      // Force using default password for admin creation
-      const adminPassword = DEFAULT_ADMIN_PASSWORD;
-      console.log("Using standard admin password for setup:", adminPassword);
+      // Always use the default admin password for consistency
+      console.log("Using standard admin password for setup:", DEFAULT_ADMIN_PASSWORD);
       
-      // First try to sign in directly - if this works, the user exists with the correct password
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ 
+      // First try to sign in with the default password
+      const { data: signInData, error: signInError } = await signInWithPassword(
         email, 
-        password: adminPassword 
-      });
+        DEFAULT_ADMIN_PASSWORD
+      );
       
       if (!signInError) {
-        console.log("Admin sign-in successful - user exists");
+        console.log("Admin sign-in successful with default password");
         return { data: signInData, error: null };
       }
       
-      console.log("Sign in failed:", signInError.message);
+      console.log("Sign in with default password failed:", signInError.message);
       
-      // Let's check if the user exists by trying a password reset
+      // Try password reset to see if user exists
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.origin + "/admin/password-reset"
       });
@@ -87,7 +84,7 @@ export const useAuthService = () => {
       // Create admin user with default password
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
-        password: adminPassword,
+        password: DEFAULT_ADMIN_PASSWORD,
         options: {
           data: {
             full_name: "Administrator",
@@ -100,10 +97,21 @@ export const useAuthService = () => {
         console.error("Error creating admin user:", signUpError.message);
         
         if (signUpError.message.includes("already registered")) {
+          // One more attempt to sign in with default password
+          const { data: finalSignInData, error: finalSignInError } = await signInWithPassword(
+            email, 
+            DEFAULT_ADMIN_PASSWORD
+          );
+          
+          if (!finalSignInError) {
+            console.log("Final sign in attempt successful");
+            return { data: finalSignInData, error: null };
+          }
+          
           return { 
             data: null, 
             error: {
-              message: "Admin account already exists but has login issues. Try the default password '" + DEFAULT_ADMIN_PASSWORD + "' or contact support."
+              message: "Admin account exists but has login issues. Please try resetting the password or contact support."
             } 
           };
         }
@@ -123,7 +131,6 @@ export const useAuthService = () => {
   };
 
   // Reusing the checkUserRoles function but exposing it through our service
-  // Also adding special handling for admin email
   const checkUserRoles = async (userId: string): Promise<UserRoles> => {
     // First get the user to check if it's our admin
     const { data: userData } = await supabase.auth.getUser();
@@ -144,6 +151,8 @@ export const useAuthService = () => {
     getUser,
     getSession,
     checkUserRoles,
-    createAdminIfNotExists
+    createAdminIfNotExists,
+    DEFAULT_ADMIN_PASSWORD,
+    ADMIN_EMAIL
   };
 };
