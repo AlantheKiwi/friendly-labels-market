@@ -34,6 +34,8 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
     setErrorMessage("");
 
     try {
+      console.log("Starting admin login process with email:", email);
+      
       // Normalize email to lowercase for consistency
       const normalizedEmail = email.toLowerCase().trim();
       
@@ -44,6 +46,7 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
         console.log("Admin login attempt detected");
         
         // First try with entered password
+        console.log("Trying login with provided password:", password);
         const { data, error } = await authService.signInWithPassword(
           ADMIN_EMAIL, // Always use the exact admin email
           password
@@ -64,68 +67,8 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
         
         console.log("Login with entered password failed:", error.message);
         
-        // If the password is already the default but still failed, try to create admin
-        if (password === DEFAULT_ADMIN_PASSWORD) {
-          console.log("Already using default password, trying admin setup");
-          setIsCreatingAdmin(true);
-          
-          const { data: adminData, error: setupError } = await authService.createAdminIfNotExists();
-          
-          setIsCreatingAdmin(false);
-          
-          if (setupError) {
-            console.error("Admin setup failed:", setupError);
-            setErrorMessage(setupError.message);
-            toast({
-              title: "Admin setup failed",
-              description: setupError.message,
-              variant: "destructive",
-            });
-            setIsLoading(false);
-            return;
-          }
-          
-          if (adminData) {
-            // Admin was created or we got logged in
-            console.log("Admin setup successful");
-            await authService.checkUserRoles(adminData.user.id);
-            toast({
-              title: "Login successful",
-              description: "Welcome to the admin dashboard. Please update your password.",
-            });
-            localStorage.setItem("requirePasswordChange", "true");
-            onLoginSuccess();
-            setIsLoading(false);
-            return;
-          }
-        } else {
-          // Try with default password
-          console.log("Trying with default admin password:", DEFAULT_ADMIN_PASSWORD);
-          
-          const { data: defaultData, error: defaultError } = await authService.signInWithPassword(
-            ADMIN_EMAIL,
-            DEFAULT_ADMIN_PASSWORD
-          );
-          
-          if (!defaultError) {
-            // Login with default password successful
-            console.log("Admin login successful with default password");
-            await authService.checkUserRoles(defaultData.user.id);
-            toast({
-              title: "Login successful",
-              description: "Welcome to the admin dashboard. Please change your default password.",
-            });
-            localStorage.setItem("requirePasswordChange", "true");
-            onLoginSuccess();
-            setIsLoading(false);
-            return;
-          }
-          
-          console.log("Login with default password failed:", defaultError.message);
-        }
-        
-        // If we're here, all normal login attempts failed, so try creating the admin
-        console.log("All login attempts failed, trying admin setup");
+        // If standard login failed, try the admin setup process
+        console.log("Starting admin account setup process");
         setIsCreatingAdmin(true);
         
         const { data: adminData, error: setupError } = await authService.createAdminIfNotExists();
@@ -133,7 +76,7 @@ const AdminLoginForm: React.FC<AdminLoginFormProps> = ({ onLoginSuccess }) => {
         setIsCreatingAdmin(false);
         
         if (setupError) {
-          console.error("Admin setup failed:", setupError);
+          console.error("Admin setup failed:", setupError.message);
           setErrorMessage(setupError.message);
           toast({
             title: "Admin setup failed",

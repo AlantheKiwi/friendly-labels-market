@@ -54,6 +54,8 @@ const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete })
     e.preventDefault();
     setError("");
     
+    console.log("Validating current password against:", DEFAULT_ADMIN_PASSWORD);
+    
     // Validate current password - compare with default password constant
     if (currentPassword !== DEFAULT_ADMIN_PASSWORD) {
       setError("Current password is incorrect");
@@ -84,6 +86,8 @@ const AdminPasswordChange: React.FC<AdminPasswordChangeProps> = ({ onComplete })
         setLoading(false);
         return;
       }
+      
+      console.log("Updating password in Supabase");
       
       // Actually update the password in Supabase
       const { error: updateError } = await supabase.auth.updateUser({
