@@ -26,7 +26,10 @@ const AdminProductPricing = () => {
     handlePriceChange,
     handleSave,
     isPriceEdited,
-    isSaving
+    isSaving,
+    handleSaveSize,
+    handleToggleSizeStatus,
+    handleSaveQuantity
   } = usePriceEditing(products, setProducts);
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);

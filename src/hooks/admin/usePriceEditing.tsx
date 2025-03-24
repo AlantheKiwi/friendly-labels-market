@@ -140,6 +140,60 @@ export const usePriceEditing = (
     });
   };
 
+  const handleSaveSize = (productId: string, sizeId: string, name: string, dimensions: string) => {
+    // In a real app, this would update the size in the database
+    setProducts(prev => 
+      prev.map(product => {
+        if (product.id === productId) {
+          return {
+            ...product,
+            sizes: product.sizes.map(size => 
+              size.id === sizeId ? { ...size, name, dimensions } : size
+            )
+          };
+        }
+        return product;
+      })
+    );
+
+    toast({
+      title: "Size updated",
+      description: `Size "${name}" has been updated successfully`,
+    });
+  };
+
+  const handleToggleSizeStatus = (productId: string, sizeId: string, suspended: boolean) => {
+    // In a real app, this would update the size status in the database
+    // For this demo, we'll just show a toast
+    
+    toast({
+      title: suspended ? "Size suspended" : "Size activated",
+      description: `Size has been ${suspended ? "suspended" : "activated"} successfully`,
+    });
+  };
+
+  const handleSaveQuantity = (productId: string, sizeId: string, quantityId: string, amount: number) => {
+    // In a real app, this would update the quantity in the database
+    setProducts(prev => 
+      prev.map(product => {
+        if (product.id === productId) {
+          return {
+            ...product,
+            quantities: product.quantities.map(qty => 
+              qty.id === quantityId ? { ...qty, amount } : qty
+            )
+          };
+        }
+        return product;
+      })
+    );
+
+    toast({
+      title: "Quantity updated",
+      description: `Quantity value updated to ${amount} units`,
+    });
+  };
+
   const isPriceEdited = (productId: string, sizeId: string, quantityId: string) => {
     return !!editedPrices[productId]?.[sizeId]?.[quantityId];
   };
@@ -155,6 +209,9 @@ export const usePriceEditing = (
     handleSave,
     isPriceEdited,
     isSaving,
-    handleRevertPrice
+    handleRevertPrice,
+    handleSaveSize,
+    handleToggleSizeStatus,
+    handleSaveQuantity
   };
 };
