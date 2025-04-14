@@ -39,7 +39,7 @@ const CartSidebar: React.FC = () => {
               Looks like you haven't added any labels to your cart yet.
             </p>
             <SheetClose asChild>
-              <Button onClick={() => navigate("/products")}>Browse Products</Button>
+              <Button onClick={() => navigate("/printers")}>Browse Printers</Button>
             </SheetClose>
           </div>
         ) : (
@@ -62,7 +62,7 @@ const CartSidebar: React.FC = () => {
                     <p className="ml-4">${item.price.toFixed(2)}</p>
                   </div>
                   <p className="mt-1 text-sm text-gray-500">{item.dimensions}</p>
-                  <p className="mt-1 text-sm text-gray-500">Qty: {item.quantity.amount}</p>
+                  <p className="mt-1 text-sm text-gray-500">Qty: {item.count}</p>
                   <div className="flex justify-end mt-2">
                     <Button
                       variant="ghost"
@@ -96,7 +96,7 @@ const CartSidebar: React.FC = () => {
           </SheetClose>
           <div className="mt-2">
             <SheetClose asChild>
-              <Button variant="outline" className="w-full" onClick={() => navigate("/products")}>
+              <Button variant="outline" className="w-full" onClick={() => navigate("/printers")}>
                 Continue Shopping
               </Button>
             </SheetClose>
