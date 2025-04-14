@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminImageUpload from "@/components/admin/AdminImageUpload";
 import AdminPrinterPricing from "@/components/admin/AdminPrinterPricing";
+import AdminProductPricing from "@/components/admin/AdminProductPricing";
 import AdminPasswordChange from "@/components/admin/AdminPasswordChange";
 import { supabase } from "@/integrations/supabase/client";
 import { ADMIN_EMAIL } from "@/services/auth/constants";
@@ -115,6 +116,7 @@ const AdminDashboardPage = () => {
               <TabsList className="mb-6">
                 <TabsTrigger value="images">Printer Images</TabsTrigger>
                 <TabsTrigger value="printers">Printer Pricing</TabsTrigger>
+                <TabsTrigger value="products">Product Pricing</TabsTrigger>
               </TabsList>
               
               <TabsContent value="images" className="bg-white p-6 rounded-lg shadow">
@@ -125,6 +127,11 @@ const AdminDashboardPage = () => {
               <TabsContent value="printers" className="bg-white p-6 rounded-lg shadow">
                 <h2 className="text-2xl font-bold mb-4">Manage Printer Pricing</h2>
                 <AdminPrinterPricing />
+              </TabsContent>
+              
+              <TabsContent value="products" className="bg-white p-6 rounded-lg shadow">
+                <h2 className="text-2xl font-bold mb-4">Manage Product Pricing</h2>
+                <AdminProductPricing />
               </TabsContent>
             </Tabs>
           </div>

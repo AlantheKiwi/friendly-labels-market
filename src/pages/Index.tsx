@@ -4,26 +4,24 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Hero from "@/components/Hero";
 import FeatureSection from "@/components/FeatureSection";
-import TestimonialSection from "@/components/TestimonialSection";
 import CallToAction from "@/components/CallToAction";
+import TestimonialSection from "@/components/TestimonialSection";
+import { useAuth } from "@/context/AuthContext";
 
 const Index = () => {
+  const { user } = useAuth();
+  
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-1">
+      
+      <main className="flex-grow">
         <Hero />
         <FeatureSection />
         <TestimonialSection />
-        <CallToAction 
-          title="Need Help With Your Printing Needs?" 
-          description="Our team of experts is ready to help you find the right printer for your business." 
-          buttonText="Contact Us" 
-          buttonLink="/contact" 
-          secondaryButtonText="View Printers" 
-          secondaryButtonLink="/printers" 
-        />
+        <CallToAction />
       </main>
+      
       <Footer />
     </div>
   );
