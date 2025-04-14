@@ -12,9 +12,6 @@ const MainNav: React.FC = () => {
       <Link to="/" className="font-medium hover:text-brand-blue transition-colors">
         Home
       </Link>
-      <Link to="/products" className="font-medium hover:text-brand-blue transition-colors">
-        Products
-      </Link>
       <Link to="/printers" className="font-medium hover:text-brand-blue transition-colors">
         Printers
       </Link>
