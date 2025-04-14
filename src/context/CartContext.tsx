@@ -1,7 +1,6 @@
 
 import React, { createContext, useContext, useReducer, useEffect } from "react";
-import { CartItem, Product, ProductQuantity, ProductSize } from "@/types";
-import { getProductById } from "@/data/products";
+import { CartItem } from "@/types";
 import { toast } from "@/hooks/use-toast";
 
 interface CartState {
@@ -85,11 +84,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 };
 
 interface CartContextValue extends CartState {
-  addToCart: (
-    product: Product,
-    selectedSize: ProductSize,
-    selectedQuantity: ProductQuantity
-  ) => void;
+  addToCart: (item: CartItem) => void;
   removeFromCart: (
     productId: string,
     sizeId: string,
@@ -125,32 +120,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem("cart", JSON.stringify(state));
   }, [state]);
 
-  const addToCart = (
-    product: Product,
-    selectedSize: ProductSize,
-    selectedQuantity: ProductQuantity
-  ) => {
-    const newItem: CartItem = {
-      // Nested objects
-      product: product,
-      size: selectedSize,
-      quantity: selectedQuantity,
-      count: 1,
-      // Flattened properties for backward compatibility
-      productId: product.id,
-      productName: product.name,
-      sizeId: selectedSize.id,
-      sizeName: selectedSize.name,
-      dimensions: selectedSize.dimensions,
-      quantityId: selectedQuantity.id,
-      price: selectedQuantity.price,
-      imageUrl: product.imageUrl,
-    };
-
-    dispatch({ type: "ADD_ITEM", payload: newItem });
+  const addToCart = (item: CartItem) => {
+    dispatch({ type: "ADD_ITEM", payload: item });
     toast({
       title: "Added to cart",
-      description: `${selectedQuantity.amount} ${product.name} (${selectedSize.dimensions})`,
+      description: `${item.productName} (${item.dimensions})`,
     });
   };
 
