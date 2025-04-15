@@ -36,10 +36,10 @@ const CartSidebar: React.FC = () => {
             <ShoppingBag className="h-12 w-12 text-gray-300 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-1">Your cart is empty</h3>
             <p className="text-gray-500 mb-4">
-              Looks like you haven't added any labels to your cart yet.
+              Looks like you haven't added any items to your cart yet.
             </p>
             <SheetClose asChild>
-              <Button onClick={() => navigate("/products")}>Browse Products</Button>
+              <Button onClick={() => navigate("/")}>Browse Products</Button>
             </SheetClose>
           </div>
         ) : (
@@ -96,7 +96,7 @@ const CartSidebar: React.FC = () => {
           </SheetClose>
           <div className="mt-2">
             <SheetClose asChild>
-              <Button variant="outline" className="w-full" onClick={() => navigate("/products")}>
+              <Button variant="outline" className="w-full" onClick={() => navigate("/")}>
                 Continue Shopping
               </Button>
             </SheetClose>

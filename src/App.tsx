@@ -8,8 +8,6 @@ import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/auth/AuthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import ProductsPage from "./pages/ProductsPage";
-import ProductPage from "./pages/ProductPage";
 import PrintersPage from "./pages/PrintersPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import ThankYouPage from "./pages/ThankYouPage";
@@ -48,8 +46,6 @@ const App = () => {
               <Sonner />
               <Routes>
                 <Route path="/" element={<Index />} />
-                <Route path="/products" element={<ProductsPage />} />
-                <Route path="/products/:slug" element={<ProductPage />} />
                 <Route path="/printers" element={<PrintersPage />} />
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/thank-you" element={<ThankYouPage />} />

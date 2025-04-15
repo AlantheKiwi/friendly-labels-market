@@ -134,7 +134,7 @@ const CheckoutPage = () => {
         orderDate,
         customerInfo: customerInfo!,
         items: items.map(item => ({
-          productId: item.product.id,
+          productId: item.productId,
           productName: item.productName,
           quantity: item.quantity.amount,
           price: item.price,

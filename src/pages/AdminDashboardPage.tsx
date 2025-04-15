@@ -1,142 +1,55 @@
 
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
 import AdminHeader from "@/components/admin/AdminHeader";
-import AdminImageUpload from "@/components/admin/AdminImageUpload";
 import AdminPrinterPricing from "@/components/admin/AdminPrinterPricing";
 import AdminProductPricing from "@/components/admin/AdminProductPricing";
-import AdminPasswordChange from "@/components/admin/AdminPasswordChange";
-import { supabase } from "@/integrations/supabase/client";
-import { ADMIN_EMAIL } from "@/services/auth/constants";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { useNavigate } from "react-router-dom";
 
 const AdminDashboardPage = () => {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const { isAdmin, isLoading } = useRoleCheck();
+  const [activeTab, setActiveTab] = useState("printers");
   const navigate = useNavigate();
-  const location = useLocation();
-  const { toast } = useToast();
-  
-  // Get tab from URL query params
-  const queryParams = new URLSearchParams(location.search);
-  const defaultTab = queryParams.get('tab') || 'images';
 
-  // Check if current user is admin
-  const checkAdminStatus = async () => {
-    try {
-      setLoading(true);
-      
-      // Get current session directly from Supabase
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        console.log("No session found");
-        setIsAdmin(false);
-        toast({
-          title: "Access Denied",
-          description: "You need to log in to access this page",
-          variant: "destructive",
-        });
-        navigate("/");
-        return;
-      }
-      
-      const userEmail = session.user?.email?.toLowerCase();
-      
-      // Direct admin check by email
-      if (userEmail === ADMIN_EMAIL.toLowerCase()) {
-        console.log("Admin email match found");
-        setIsAdmin(true);
-        setShowPasswordChange(localStorage.getItem("requirePasswordChange") === "true");
-      } else {
-        setIsAdmin(false);
-        toast({
-          title: "Access Denied",
-          description: "You need admin privileges to access this page",
-          variant: "destructive",
-        });
-        navigate("/");
-      }
-    } catch (error) {
-      console.error("Error checking admin status:", error);
-      setIsAdmin(false);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Redirect if not admin
+  if (!isLoading && !isAdmin) {
+    navigate("/auth/login");
+    return null;
+  }
 
-  useEffect(() => {
-    checkAdminStatus();
-  }, [navigate, toast]);
-
-  const handlePasswordChangeComplete = () => {
-    setShowPasswordChange(false);
-    localStorage.setItem("requirePasswordChange", "false");
-    toast({
-      title: "Password Updated",
-      description: "Your password has been changed successfully",
-    });
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 rounded-full border-4 border-brand-blue border-t-transparent animate-spin"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="h-12 w-12 border-4 border-t-transparent border-primary rounded-full animate-spin"></div>
       </div>
     );
   }
 
-  if (!isAdmin) {
-    return null; // Will redirect via useEffect
-  }
-
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-gray-50">
       <AdminHeader />
-      
-      {showPasswordChange ? (
-        <main className="flex-grow bg-gray-50 p-6">
-          <div className="max-w-4xl mx-auto bg-white rounded-lg shadow p-6">
-            <h2 className="text-2xl font-bold mb-6">Change Your Password</h2>
-            <p className="mb-4 text-red-600">
-              For security reasons, you must change your password before proceeding.
-            </p>
-            <AdminPasswordChange onComplete={handlePasswordChangeComplete} />
-          </div>
-        </main>
-      ) : (
-        <main className="flex-grow bg-gray-50 p-6">
-          <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
-            
-            <Tabs defaultValue={defaultTab}>
-              <TabsList className="mb-6">
-                <TabsTrigger value="images">Printer Images</TabsTrigger>
-                <TabsTrigger value="printers">Printer Pricing</TabsTrigger>
-                <TabsTrigger value="products">Product Pricing</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="images" className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-2xl font-bold mb-4">Manage Printer Images</h2>
-                <AdminImageUpload />
-              </TabsContent>
-              
-              <TabsContent value="printers" className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-2xl font-bold mb-4">Manage Printer Pricing</h2>
-                <AdminPrinterPricing />
-              </TabsContent>
-              
-              <TabsContent value="products" className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-2xl font-bold mb-4">Manage Product Pricing</h2>
-                <AdminProductPricing />
-              </TabsContent>
-            </Tabs>
-          </div>
-        </main>
-      )}
+      <main className="container py-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+          <p className="text-gray-500">Manage prices, products and printer settings</p>
+        </div>
+
+        <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="printers">Printer Pricing</TabsTrigger>
+            <TabsTrigger value="products">Product Pricing</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="printers" className="space-y-4">
+            <AdminPrinterPricing />
+          </TabsContent>
+          
+          <TabsContent value="products" className="space-y-4">
+            <AdminProductPricing />
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
   );
 };
