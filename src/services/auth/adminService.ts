@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from "./constants";
 import { checkPasswordDebugInfo } from "@/utils/passwordDebugUtils";
@@ -262,6 +261,61 @@ export const ensureAdminCanLogin = async (): Promise<AdminOperationResult> => {
     return { 
       success: false, 
       message: `Unexpected error: ${error?.message || String(error)}` 
+    };
+  }
+};
+
+export const assignAdminRole = async (email: string): Promise<{ success: boolean; message: string }> => {
+  try {
+    console.log("Attempting to assign admin role to:", email);
+    
+    // First get the user ID from their email
+    const { data: userData, error: userError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .single();
+      
+    if (userError) {
+      console.error("Error finding user:", userError);
+      return { 
+        success: false, 
+        message: `Failed to find user: ${userError.message}` 
+      };
+    }
+    
+    if (!userData) {
+      return {
+        success: false,
+        message: "User not found"
+      };
+    }
+    
+    // Add admin role to user_roles table
+    const { error: roleError } = await supabase
+      .from('user_roles')
+      .insert({
+        user_id: userData.id,
+        role: 'admin'
+      });
+      
+    if (roleError) {
+      console.error("Error assigning admin role:", roleError);
+      return { 
+        success: false, 
+        message: `Failed to assign admin role: ${roleError.message}` 
+      };
+    }
+    
+    return {
+      success: true,
+      message: `Admin role successfully assigned to ${email}`
+    };
+  } catch (error) {
+    console.error("Error in assignAdminRole:", error);
+    return {
+      success: false,
+      message: `Unexpected error: ${error?.message || String(error)}`
     };
   }
 };
