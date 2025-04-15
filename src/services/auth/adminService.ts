@@ -266,30 +266,33 @@ export const ensureAdminCanLogin = async (): Promise<AdminOperationResult> => {
   }
 };
 
-// Fixed version of assignAdminRole
+// Fixed version of assignAdminRole - replacing getUserByEmail with a proper approach
 export const assignAdminRole = async (email: string): Promise<AdminOperationResult> => {
   try {
     console.log("Attempting to assign admin role to:", email);
     
-    // First, get the user by email through auth API
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserByEmail(email);
+    // First, try to find user by email using a query instead of getUserByEmail
+    const { data: users, error: listError } = await supabase.auth.admin.listUsers();
     
-    if (userError) {
-      console.error("Error finding user:", userError);
+    if (listError) {
+      console.error("Error listing users:", listError);
       return { 
         success: false, 
-        message: `Failed to find user: ${userError.message}` 
+        message: `Failed to find users: ${listError.message}` 
       };
     }
     
-    if (!userData || !userData.user) {
+    // Find the user with matching email
+    const userWithEmail = users.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+    
+    if (!userWithEmail || !userWithEmail.id) {
       return {
         success: false,
         message: "User not found with email: " + email
       };
     }
     
-    const userId = userData.user.id;
+    const userId = userWithEmail.id;
     
     // Add admin role to user_roles table
     const { error: roleError } = await supabase
@@ -343,8 +346,8 @@ export const makeUserAdmin = async (email: string): Promise<AdminOperationResult
       userId = signUpData.user.id;
       console.log("Created new user with ID:", userId);
     } else {
-      // User likely exists, try to find them by email
-      const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers();
+      // User likely exists, try to find them by email using listUsers
+      const { data, error: getUserError } = await supabase.auth.admin.listUsers();
       
       if (getUserError) {
         console.error("Error listing users:", getUserError);
@@ -354,7 +357,7 @@ export const makeUserAdmin = async (email: string): Promise<AdminOperationResult
         };
       }
       
-      const user = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+      const user = data.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
       
       if (!user) {
         return {
