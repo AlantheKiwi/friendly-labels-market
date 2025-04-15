@@ -154,29 +154,111 @@ export const forceResetAdminPassword = async (): Promise<AdminOperationResult> =
   }
 };
 
-// Use admin credentials to sign in directly
-export const resetAdminPassword = async (): Promise<AdminOperationResult> => {
+// Direct admin setup - updated to ensure it works on existing accounts
+export const ensureAdminCanLogin = async (): Promise<AdminOperationResult> => {
   try {
-    // This is a direct approach - for development only
-    const { data, error } = await supabase.auth.admin.updateUserById(
-      ADMIN_EMAIL,
-      { password: DEFAULT_ADMIN_PASSWORD }
-    );
+    console.log("Ensuring admin can login with default credentials...");
     
-    if (error) {
-      console.error("Error updating admin password:", error);
-      return { 
-        success: false, 
-        message: `Failed to reset admin password: ${error.message}` 
+    // Try signing in with default credentials first
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      email: ADMIN_EMAIL,
+      password: DEFAULT_ADMIN_PASSWORD
+    });
+    
+    // If we can sign in, admin exists with default password
+    if (!signInError && signInData?.user) {
+      console.log("Admin login successful with default credentials");
+      
+      // Check for admin role
+      const { data: roleData, error: roleCheckError } = await supabase
+        .from('user_roles')
+        .select('*')
+        .eq('user_id', signInData.user.id)
+        .eq('role', 'admin');
+        
+      if (roleCheckError) {
+        console.error("Error checking admin role:", roleCheckError);
+      }
+      
+      // If role not found, add it
+      if (!roleData || roleData.length === 0) {
+        console.log("Admin user exists but role is missing, adding role");
+        
+        const { error: insertError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: signInData.user.id,
+            role: 'admin'
+          });
+          
+        if (insertError) {
+          console.error("Error adding admin role:", insertError);
+          return {
+            success: true,
+            message: "Admin login works but role assignment failed. You may have limited access."
+          };
+        }
+      }
+      
+      return {
+        success: true,
+        message: "Admin account exists and is configured correctly with default password"
       };
     }
     
-    return { 
-      success: true, 
-      message: `Admin password reset successfully` 
+    // If sign-in failed with "Invalid login credentials", try to update the password
+    if (signInError) {
+      console.log("Admin login failed:", signInError.message);
+      
+      // Look up user by email
+      const { data: userList, error: userLookupError } = await supabase.auth.admin.listUsers({
+        filter: {
+          email: ADMIN_EMAIL
+        }
+      });
+      
+      if (userLookupError) {
+        console.error("Error looking up admin user:", userLookupError);
+        // Fall back to creating a new admin
+        return await createAdminIfNotExists();
+      }
+      
+      const adminUser = userList?.users?.find(u => u.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+      
+      if (adminUser) {
+        console.log("Admin user found, attempting to reset password");
+        
+        // User exists but password doesn't match - try to update it
+        const { error: updateError } = await supabase.auth.updateUser({
+          password: DEFAULT_ADMIN_PASSWORD
+        });
+        
+        if (updateError) {
+          console.error("Error updating admin password:", updateError);
+          return {
+            success: false,
+            message: `Admin account exists but password reset failed: ${updateError.message}`
+          };
+        }
+        
+        return {
+          success: true,
+          message: "Admin password has been reset to the default password"
+        };
+      } else {
+        // Admin not found, create new one
+        console.log("Admin user not found, creating new admin");
+        return await createAdminIfNotExists();
+      }
+    }
+    
+    // If we got here, something unexpected happened
+    return {
+      success: false,
+      message: "Could not verify admin account status"
     };
   } catch (error) {
-    console.error("Error in resetAdminPassword:", error);
+    console.error("Error in ensureAdminCanLogin:", error);
     return { 
       success: false, 
       message: `Unexpected error: ${error?.message || String(error)}` 

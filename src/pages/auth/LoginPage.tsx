@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -10,7 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from "@/services/auth/constants";
-import { createAdminIfNotExists, forceResetAdminPassword } from "@/services/auth/adminService";
+import { createAdminIfNotExists, forceResetAdminPassword, ensureAdminCanLogin } from "@/services/auth/adminService";
 import { supabase } from "@/integrations/supabase/client";
 
 const LoginPage = () => {
@@ -123,72 +124,28 @@ const LoginPage = () => {
   };
   
   const createAdminWithDirect = async () => {
-    setAdminSetupStatus("Creating admin with direct signup...");
+    setAdminSetupStatus("Ensuring admin login works...");
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: ADMIN_EMAIL,
-        password: DEFAULT_ADMIN_PASSWORD
+      const result = await ensureAdminCanLogin();
+      
+      setAdminSetupStatus(result.message);
+      toast({
+        title: result.success ? "Success" : "Error",
+        description: result.message,
+        variant: result.success ? "default" : "destructive"
       });
       
-      if (!signInError) {
-        setAdminSetupStatus("Admin already exists with the default password. You can now log in.");
+      if (result.success) {
         fillAdminCredentials();
-        toast({
-          title: "Success",
-          description: "Admin already exists. You can now log in with the default credentials.",
-          variant: "default"
-        });
-        return;
-      }
-      
-      const { data, error } = await supabase.auth.signUp({
-        email: ADMIN_EMAIL,
-        password: DEFAULT_ADMIN_PASSWORD
-      });
-      
-      if (error) {
-        setAdminSetupStatus(`Direct signup failed: ${error.message}`);
-        toast({
-          title: "Setup Error",
-          description: error.message,
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      if (data.user) {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: data.user.id,
-            role: 'admin'
-          });
-          
-        if (roleError) {
-          setAdminSetupStatus(`User created but role assignment failed: ${roleError.message}`);
-          toast({
-            title: "Partial Success",
-            description: `Admin user created but role assignment failed. Please try again.`,
-            variant: "destructive"
-          });
-          return;
+        
+        // Attempt immediate login if we were successful
+        if (email === ADMIN_EMAIL && password === DEFAULT_ADMIN_PASSWORD) {
+          try {
+            await signIn(ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD);
+          } catch (loginError) {
+            console.error("Auto-login error:", loginError);
+          }
         }
-        
-        setAdminSetupStatus(`Admin created successfully with ID: ${data.user.id}`);
-        toast({
-          title: "Success",
-          description: "Admin user created successfully. You can now log in.",
-          variant: "default"
-        });
-        
-        fillAdminCredentials();
-      } else {
-        setAdminSetupStatus("User signup completed but no user was returned");
-        toast({
-          title: "Warning",
-          description: "Setup completed with unexpected result. Try logging in.",
-          variant: "destructive"
-        });
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -327,7 +284,7 @@ const LoginPage = () => {
                           className="text-xs h-7 bg-blue-50 hover:bg-blue-100 text-blue-700"
                           onClick={createAdminWithDirect}
                         >
-                          Direct Admin Setup
+                          Fix Admin Login
                         </Button>
                       </div>
                       {adminSetupStatus && (
