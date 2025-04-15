@@ -44,13 +44,6 @@ export const directLabels: Product = {
   ],
   quantities: [
     {
-      id: "qty-1",
-      amount: 500,
-      price: 12.99,
-      basePrice: 12.99,
-      discountPercent: 0
-    },
-    {
       id: "qty-2",
       amount: 1000,
       price: 25.98,
