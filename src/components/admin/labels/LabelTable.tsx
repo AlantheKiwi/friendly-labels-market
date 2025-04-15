@@ -56,7 +56,7 @@ const LabelTable: React.FC<LabelTableProps> = ({ labels, onEdit, onDelete }) => 
               <TableCell className="capitalize">{label.finish.replace('_', ' ')}</TableCell>
               <TableCell>{label.stock_quantity}</TableCell>
               <TableCell>
-                <Badge variant={label.active ? "success" : "secondary"}>
+                <Badge variant={label.active ? "default" : "secondary"} className={label.active ? "bg-green-500 hover:bg-green-600" : ""}>
                   {label.active ? "Active" : "Inactive"}
                 </Badge>
               </TableCell>
