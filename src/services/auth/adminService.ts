@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from "./constants";
 import { checkPasswordDebugInfo } from "@/utils/passwordDebugUtils";
@@ -270,29 +269,28 @@ export const assignAdminRole = async (email: string): Promise<{ success: boolean
   try {
     console.log("Attempting to assign admin role to:", email);
     
-    // First get the user ID from their email - using a simpler query approach
-    const { data: userData, error: userError } = await supabase
+    // Get the user ID by querying the profiles table
+    const { data, error } = await supabase
       .from('profiles')
       .select('id')
-      .eq('email', email)
-      .limit(1);
+      .eq('email', email);
       
-    if (userError) {
-      console.error("Error finding user:", userError);
+    if (error) {
+      console.error("Error finding user:", error);
       return { 
         success: false, 
-        message: `Failed to find user: ${userError.message}` 
+        message: `Failed to find user: ${error.message}` 
       };
     }
     
-    if (!userData || userData.length === 0) {
+    if (!data || data.length === 0) {
       return {
         success: false,
         message: "User not found"
       };
     }
     
-    const userId = userData[0].id;
+    const userId = data[0].id;
     
     // Add admin role to user_roles table
     const { error: roleError } = await supabase
