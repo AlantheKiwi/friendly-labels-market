@@ -103,15 +103,22 @@ export const forceResetAdminPassword = async (): Promise<AdminOperationResult> =
   try {
     console.log("Attempting to reset admin password...");
     
-    // First, find the admin user
-    const { data: adminEmails } = await supabase
-      .from('auth.users')
-      .select('email')
-      .eq('email', ADMIN_EMAIL)
-      .single();
-      
-    if (!adminEmails) {
-      // Create admin if not exists
+    // Check if admin user exists by email using getUser method
+    const { data: authUser, error: userCheckError } = await supabase.auth.getUser();
+    
+    if (userCheckError) {
+      console.error("Error checking user:", userCheckError);
+      return {
+        success: false,
+        message: `Failed to check current user: ${userCheckError.message}`
+      };
+    }
+    
+    // First check if current user is admin
+    const isCurrentUserAdmin = authUser?.user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    
+    if (!isCurrentUserAdmin) {
+      // Try to create admin if it doesn't exist
       const createResult = await createAdminIfNotExists();
       if (!createResult.success) {
         return createResult;

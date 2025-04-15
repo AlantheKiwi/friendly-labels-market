@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -27,7 +26,6 @@ const LoginPage = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Only redirect if user is logged in and we haven't already redirected
     if (user && !redirectedRef.current && !isLoading) {
       console.log("User logged in, redirecting based on role:", { isAdmin, isClient });
       redirectedRef.current = true;
@@ -90,7 +88,6 @@ const LoginPage = () => {
       });
       
       if (result.success) {
-        // If admin was created successfully, fill in the credentials
         fillAdminCredentials();
       }
     } catch (error) {
@@ -128,7 +125,22 @@ const LoginPage = () => {
   const createAdminWithDirect = async () => {
     setAdminSetupStatus("Creating admin with direct signup...");
     try {
-      // Attempt direct signup
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: ADMIN_EMAIL,
+        password: DEFAULT_ADMIN_PASSWORD
+      });
+      
+      if (!signInError) {
+        setAdminSetupStatus("Admin already exists with the default password. You can now log in.");
+        fillAdminCredentials();
+        toast({
+          title: "Success",
+          description: "Admin already exists. You can now log in with the default credentials.",
+          variant: "default"
+        });
+        return;
+      }
+      
       const { data, error } = await supabase.auth.signUp({
         email: ADMIN_EMAIL,
         password: DEFAULT_ADMIN_PASSWORD
@@ -145,7 +157,6 @@ const LoginPage = () => {
       }
       
       if (data.user) {
-        // Add admin role
         const { error: roleError } = await supabase
           .from('user_roles')
           .insert({
@@ -170,13 +181,12 @@ const LoginPage = () => {
           variant: "default"
         });
         
-        // Fill credentials
         fillAdminCredentials();
       } else {
         setAdminSetupStatus("User signup completed but no user was returned");
         toast({
           title: "Warning",
-          description: "Setup completed but with unexpected result. Try logging in.",
+          description: "Setup completed with unexpected result. Try logging in.",
           variant: "destructive"
         });
       }
@@ -266,7 +276,6 @@ const LoginPage = () => {
                 </Button>
               </form>
               
-              {/* Dev tools for easy login */}
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <button 
                   onClick={toggleDebug}
