@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogIn, LogOut, User } from "lucide-react";
+import { LogIn, LogOut, User, Settings } from "lucide-react";
 
 interface UserActionsProps {
   isOnClientDashboard?: boolean;
@@ -11,18 +11,27 @@ interface UserActionsProps {
 }
 
 const UserActions: React.FC<UserActionsProps> = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
 
   // If user is logged in, show user menu and logout button
   if (user) {
     return (
       <div className="flex items-center gap-2">
-        <Button variant="outline" className="flex items-center gap-2" size="sm" asChild>
-          <Link to="/client/dashboard">
-            <User className="h-4 w-4" />
-            <span className="hidden sm:inline">My Account</span>
-          </Link>
-        </Button>
+        {isAdmin ? (
+          <Button variant="outline" className="flex items-center gap-2 border-blue-500 text-blue-600" size="sm" asChild>
+            <Link to="/admin/dashboard">
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Admin</span>
+            </Link>
+          </Button>
+        ) : (
+          <Button variant="outline" className="flex items-center gap-2" size="sm" asChild>
+            <Link to="/client/dashboard">
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline">My Account</span>
+            </Link>
+          </Button>
+        )}
         
         <Button 
           variant="ghost" 

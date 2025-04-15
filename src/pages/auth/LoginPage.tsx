@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, EyeOff, Lock, Bug } from "lucide-react";
+import { Eye, EyeOff, Lock, Bug, ArrowRight } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -184,6 +184,33 @@ const LoginPage = () => {
               <CardDescription>
                 Sign in to your account
               </CardDescription>
+              
+              {/* Quick access buttons for admin */}
+              <div className="mt-2 flex justify-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => {
+                    fillAdminCredentials();
+                    toast({
+                      title: "Admin credentials filled",
+                      description: "You can now click Sign In to log in as admin",
+                    });
+                  }}
+                >
+                  Admin Login
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700"
+                  onClick={fixAdminLogin}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Working..." : "Fix Admin Login"}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleLogin} className="space-y-4">
@@ -241,10 +268,35 @@ const LoginPage = () => {
                 </Button>
               </form>
               
+              {/* Direct access links */}
               <div className="mt-4 pt-4 border-t border-gray-100">
+                <h3 className="text-sm font-medium mb-2">Quick access:</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link to="/admin/dashboard">
+                    <Button variant="ghost" size="sm" className="w-full justify-start">
+                      <ArrowRight className="h-3 w-3 mr-1" /> Admin Dashboard
+                    </Button>
+                  </Link>
+                  <Link to="/admin/orders">
+                    <Button variant="ghost" size="sm" className="w-full justify-start">
+                      <ArrowRight className="h-3 w-3 mr-1" /> Admin Orders
+                    </Button>
+                  </Link>
+                  <Link to="/admin/clients">
+                    <Button variant="ghost" size="sm" className="w-full justify-start">
+                      <ArrowRight className="h-3 w-3 mr-1" /> Admin Clients
+                    </Button>
+                  </Link>
+                  <Link to="/admin/labels">
+                    <Button variant="ghost" size="sm" className="w-full justify-start">
+                      <ArrowRight className="h-3 w-3 mr-1" /> Admin Labels
+                    </Button>
+                  </Link>
+                </div>
+                
                 <button 
                   onClick={toggleDebug}
-                  className="text-xs text-gray-500 hover:text-gray-700 flex items-center"
+                  className="mt-4 text-xs text-gray-500 hover:text-gray-700 flex items-center"
                   type="button"
                 >
                   <Bug className="h-3 w-3 mr-1" />

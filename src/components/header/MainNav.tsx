@@ -8,7 +8,7 @@ const MainNav: React.FC = () => {
   const { user, isAdmin } = useAuth();
 
   return (
-    <nav className="hidden md:flex items-center space-x-8">
+    <nav className="hidden md:flex items-center space-x-6">
       <Link to="/" className="font-medium hover:text-brand-blue transition-colors">
         Home
       </Link>
@@ -19,9 +19,17 @@ const MainNav: React.FC = () => {
         Printers
       </Link>
       {isAdmin && (
-        <Link to="/admin/labels" className="font-medium hover:text-brand-blue transition-colors">
-          Labels
-        </Link>
+        <>
+          <Link to="/admin/dashboard" className="font-medium text-blue-600 hover:text-blue-800 transition-colors">
+            Admin Dashboard
+          </Link>
+          <Link to="/admin/labels" className="font-medium hover:text-brand-blue transition-colors">
+            Labels
+          </Link>
+          <Link to="/admin/clients" className="font-medium hover:text-brand-blue transition-colors">
+            Clients
+          </Link>
+        </>
       )}
       <Link to="/contact" className="font-medium hover:text-brand-blue transition-colors">
         Contact
