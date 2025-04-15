@@ -210,23 +210,21 @@ export const ensureAdminCanLogin = async (): Promise<AdminOperationResult> => {
     if (signInError) {
       console.log("Admin login failed:", signInError.message);
       
-      // Look up user by email
-      const { data: userList, error: userLookupError } = await supabase.auth.admin.listUsers({
-        filter: {
-          email: ADMIN_EMAIL
-        }
-      });
+      // Look up user by email - we need to use a different approach here
+      // First let's check if we can find the admin user by getting all users in user_roles
+      const { data: adminRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
       
-      if (userLookupError) {
-        console.error("Error looking up admin user:", userLookupError);
+      if (rolesError) {
+        console.error("Error looking up admin roles:", rolesError);
         // Fall back to creating a new admin
         return await createAdminIfNotExists();
       }
       
-      const adminUser = userList?.users?.find(u => u.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
-      
-      if (adminUser) {
-        console.log("Admin user found, attempting to reset password");
+      if (adminRoles && adminRoles.length > 0) {
+        console.log("Found admin role, attempting to update password");
         
         // User exists but password doesn't match - try to update it
         const { error: updateError } = await supabase.auth.updateUser({

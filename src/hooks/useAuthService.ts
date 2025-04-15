@@ -16,7 +16,7 @@ export const useAuthService = () => {
     
     // Admin-specific methods
     createAdminIfNotExists: adminService.createAdminIfNotExists,
-    resetAdminPassword: adminService.resetAdminPassword,
+    forceResetAdminPassword: adminService.forceResetAdminPassword,
     
     // Export constants for use in UI
     DEFAULT_ADMIN_PASSWORD,
