@@ -11,7 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from "@/services/auth/constants";
-import { createAdminIfNotExists, forceResetAdminPassword, ensureAdminCanLogin } from "@/services/auth/adminService";
+import { useAuthService } from "@/hooks/useAuthService";
 import { supabase } from "@/integrations/supabase/client";
 
 const LoginPage = () => {
@@ -25,6 +25,7 @@ const LoginPage = () => {
   const { signIn, user, isClient, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const authService = useAuthService();
 
   useEffect(() => {
     if (user && !redirectedRef.current && !isLoading) {
@@ -80,7 +81,7 @@ const LoginPage = () => {
   const setupAdminUser = async () => {
     setAdminSetupStatus("Setting up admin user...");
     try {
-      const result = await createAdminIfNotExists();
+      const result = await authService.createAdminIfNotExists();
       setAdminSetupStatus(result.message);
       toast({
         title: result.success ? "Success" : "Error",
@@ -105,7 +106,7 @@ const LoginPage = () => {
   const resetAdmin = async () => {
     setAdminSetupStatus("Resetting admin password...");
     try {
-      const result = await forceResetAdminPassword();
+      const result = await authService.forceResetAdminPassword();
       setAdminSetupStatus(result.message);
       toast({
         title: result.success ? "Success" : "Error",
@@ -123,10 +124,11 @@ const LoginPage = () => {
     }
   };
   
-  const createAdminWithDirect = async () => {
+  const fixAdminLogin = async () => {
     setAdminSetupStatus("Ensuring admin login works...");
+    setIsLoading(true);
     try {
-      const result = await ensureAdminCanLogin();
+      const result = await authService.ensureAdminCanLogin();
       
       setAdminSetupStatus(result.message);
       toast({
@@ -138,12 +140,16 @@ const LoginPage = () => {
       if (result.success) {
         fillAdminCredentials();
         
-        // Attempt immediate login if we were successful
-        if (email === ADMIN_EMAIL && password === DEFAULT_ADMIN_PASSWORD) {
+        // Try immediate login if we were successful
+        if (result.success) {
           try {
+            console.log("Attempting direct login with admin credentials after fix");
             await signIn(ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD);
+            console.log("Successful auto-login");
+            return; // The redirect will happen in the useEffect
           } catch (loginError) {
             console.error("Auto-login error:", loginError);
+            // Continue to show the form if auto-login fails
           }
         }
       }
@@ -155,6 +161,8 @@ const LoginPage = () => {
         description: message,
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -282,9 +290,10 @@ const LoginPage = () => {
                           variant="outline"
                           size="sm"
                           className="text-xs h-7 bg-blue-50 hover:bg-blue-100 text-blue-700"
-                          onClick={createAdminWithDirect}
+                          onClick={fixAdminLogin}
+                          disabled={isLoading}
                         >
-                          Fix Admin Login
+                          {isLoading ? "Working..." : "Fix Admin Login"}
                         </Button>
                       </div>
                       {adminSetupStatus && (

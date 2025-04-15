@@ -154,7 +154,7 @@ export const forceResetAdminPassword = async (): Promise<AdminOperationResult> =
   }
 };
 
-// Direct admin setup - updated to ensure it works on existing accounts
+// Direct admin setup - improved to ensure it works
 export const ensureAdminCanLogin = async (): Promise<AdminOperationResult> => {
   try {
     console.log("Ensuring admin can login with default credentials...");
@@ -206,7 +206,7 @@ export const ensureAdminCanLogin = async (): Promise<AdminOperationResult> => {
       };
     }
     
-    // If sign-in failed with "Invalid login credentials", try to update the password
+    // If sign-in failed, try to update the password
     if (signInError) {
       console.log("Admin login failed:", signInError.message);
       
@@ -224,19 +224,21 @@ export const ensureAdminCanLogin = async (): Promise<AdminOperationResult> => {
       }
       
       if (adminRoles && adminRoles.length > 0) {
-        console.log("Found admin role, attempting to update password");
+        console.log("Found admin role, attempting to update password directly");
         
-        // User exists but password doesn't match - try to update it
+        // Try direct password update using admin APIs
+        // This is a workaround since we can't directly get the user ID by email
         const { error: updateError } = await supabase.auth.updateUser({
           password: DEFAULT_ADMIN_PASSWORD
         });
         
         if (updateError) {
           console.error("Error updating admin password:", updateError);
-          return {
-            success: false,
-            message: `Admin account exists but password reset failed: ${updateError.message}`
-          };
+          
+          // If direct update fails, try an alternative approach:
+          // Create a new admin account
+          console.log("Password update failed, attempting to create a new admin");
+          return await createAdminIfNotExists();
         }
         
         return {
