@@ -19,7 +19,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showDebug, setShowDebug] = useState(false);
+  const [showDebug, setShowDebug] = useState(true); // Set to true by default for easier access
   const [adminSetupStatus, setAdminSetupStatus] = useState("");
   const redirectedRef = useRef(false);
   const { signIn, user, isClient, isAdmin } = useAuth();
@@ -166,15 +166,78 @@ const LoginPage = () => {
     }
   };
 
+  // New function to specifically make alan@insight an admin
+  const makeAlanAdmin = async () => {
+    setAdminSetupStatus("Setting up admin account for alan@insight-ai-systems.com...");
+    setIsLoading(true);
+    try {
+      // First ensure the user exists
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: ADMIN_EMAIL,
+        password: DEFAULT_ADMIN_PASSWORD
+      });
+      
+      if (signUpError && !signUpError.message.includes("already registered")) {
+        throw new Error(`Failed to create user: ${signUpError.message}`);
+      }
+      
+      // Now directly insert admin role
+      const userId = signUpData?.user?.id;
+      if (userId) {
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: userId,
+            role: 'admin'
+          });
+          
+        if (roleError && !roleError.message.includes("unique constraint")) {
+          throw new Error(`Failed to assign admin role: ${roleError.message}`);
+        }
+      }
+      
+      // If we get here, try to sign in directly
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: ADMIN_EMAIL,
+        password: DEFAULT_ADMIN_PASSWORD
+      });
+      
+      if (signInError) {
+        throw new Error(`Failed to sign in: ${signInError.message}`);
+      }
+      
+      setAdminSetupStatus("Admin setup successful! You are now logged in as admin.");
+      toast({
+        title: "Success",
+        description: "Admin account set up and logged in successfully",
+      });
+      
+      // Fill the form with admin credentials
+      fillAdminCredentials();
+      
+      // Redirect will happen via the auth state listener
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setAdminSetupStatus(`Error: ${message}`);
+      toast({
+        title: "Setup Error",
+        description: message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow flex items-center justify-center bg-gray-50 py-12">
         <div className="w-full max-w-md px-4">
           <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-lg text-center shadow-sm">
-            <h2 className="text-xl font-semibold text-blue-700 mb-2">Welcome to Our Client Portal</h2>
+            <h2 className="text-xl font-semibold text-blue-700 mb-2">Admin Login</h2>
             <p className="text-blue-600">
-              Sign in to access your exclusive client dashboard
+              Sign in to access the admin dashboard
             </p>
           </div>
           
@@ -204,11 +267,11 @@ const LoginPage = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700"
-                  onClick={fixAdminLogin}
+                  className="text-xs bg-green-50 hover:bg-green-100 text-green-700"
+                  onClick={makeAlanAdmin}
                   disabled={isLoading}
                 >
-                  {isLoading ? "Working..." : "Fix Admin Login"}
+                  {isLoading ? "Working..." : "Make Alan Admin & Login"}
                 </Button>
               </div>
             </CardHeader>
@@ -268,104 +331,68 @@ const LoginPage = () => {
                 </Button>
               </form>
               
-              {/* Direct access links */}
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <h3 className="text-sm font-medium mb-2">Quick access:</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <Link to="/admin/dashboard">
-                    <Button variant="ghost" size="sm" className="w-full justify-start">
-                      <ArrowRight className="h-3 w-3 mr-1" /> Admin Dashboard
-                    </Button>
-                  </Link>
-                  <Link to="/admin/orders">
-                    <Button variant="ghost" size="sm" className="w-full justify-start">
-                      <ArrowRight className="h-3 w-3 mr-1" /> Admin Orders
-                    </Button>
-                  </Link>
-                  <Link to="/admin/clients">
-                    <Button variant="ghost" size="sm" className="w-full justify-start">
-                      <ArrowRight className="h-3 w-3 mr-1" /> Admin Clients
-                    </Button>
-                  </Link>
-                  <Link to="/admin/labels">
-                    <Button variant="ghost" size="sm" className="w-full justify-start">
-                      <ArrowRight className="h-3 w-3 mr-1" /> Admin Labels
-                    </Button>
-                  </Link>
+              {adminSetupStatus && (
+                <div className="mt-4 p-2 bg-blue-50 rounded">
+                  <p className="text-sm">{adminSetupStatus}</p>
                 </div>
-                
-                <button 
-                  onClick={toggleDebug}
-                  className="mt-4 text-xs text-gray-500 hover:text-gray-700 flex items-center"
-                  type="button"
-                >
-                  <Bug className="h-3 w-3 mr-1" />
-                  {showDebug ? "Hide Debug Info" : "Show Debug Info"}
-                </button>
-                
-                {showDebug && (
-                  <div className="mt-2 p-3 bg-gray-50 rounded-md text-xs">
-                    <div>
-                      <p className="font-semibold mb-1">Admin credentials:</p>
-                      <p>Email: {ADMIN_EMAIL}</p>
-                      <p>Password: {DEFAULT_ADMIN_PASSWORD}</p>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        <Button 
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="text-xs h-7"
-                          onClick={fillAdminCredentials}
-                        >
-                          Fill Admin Credentials
-                        </Button>
-                        <Button 
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="text-xs h-7"
-                          onClick={setupAdminUser}
-                        >
-                          Create Admin
-                        </Button>
-                        <Button 
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="text-xs h-7"
-                          onClick={resetAdmin}
-                        >
-                          Reset Admin
-                        </Button>
-                        <Button 
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="text-xs h-7 bg-blue-50 hover:bg-blue-100 text-blue-700"
-                          onClick={fixAdminLogin}
-                          disabled={isLoading}
-                        >
-                          {isLoading ? "Working..." : "Fix Admin Login"}
-                        </Button>
-                      </div>
-                      {adminSetupStatus && (
-                        <div className="mt-2 p-2 bg-blue-50 rounded">
-                          <p className="text-xs">{adminSetupStatus}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+              )}
+              
+              {/* Admin helpers */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <h3 className="text-sm font-medium mb-2">Admin tools:</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-9"
+                    onClick={fixAdminLogin}
+                    disabled={isLoading}
+                  >
+                    Fix Admin Login
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-9"
+                    onClick={setupAdminUser}
+                    disabled={isLoading}
+                  >
+                    Create Admin
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-9"
+                    onClick={fillAdminCredentials}
+                    disabled={isLoading}
+                  >
+                    Fill Admin Credentials
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-9"
+                    onClick={resetAdmin}
+                    disabled={isLoading}
+                  >
+                    Reset Admin Password
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Credential info */}
+              <div className="mt-4 p-3 bg-gray-50 rounded-md text-xs">
+                <div>
+                  <p className="font-semibold mb-1">Admin credentials:</p>
+                  <p>Email: {ADMIN_EMAIL}</p>
+                  <p>Password: {DEFAULT_ADMIN_PASSWORD}</p>
+                </div>
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col space-y-2">
-              <div className="text-center text-sm">
-                <span className="text-gray-500">Don't have an account? </span>
-                <Link to="/auth/register" className="text-blue-600 hover:underline">
-                  Register
-                </Link>
-              </div>
-            </CardFooter>
           </Card>
         </div>
       </main>

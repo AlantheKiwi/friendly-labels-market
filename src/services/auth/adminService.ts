@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from "./constants";
 import { checkPasswordDebugInfo } from "@/utils/passwordDebugUtils";
@@ -265,32 +266,30 @@ export const ensureAdminCanLogin = async (): Promise<AdminOperationResult> => {
   }
 };
 
-export const assignAdminRole = async (email: string): Promise<{ success: boolean; message: string }> => {
+// Fixed version of assignAdminRole
+export const assignAdminRole = async (email: string): Promise<AdminOperationResult> => {
   try {
     console.log("Attempting to assign admin role to:", email);
     
-    // Get the user ID by querying the profiles table
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('email', email);
-      
-    if (error) {
-      console.error("Error finding user:", error);
+    // First, get the user by email through auth API
+    const { data: userData, error: userError } = await supabase.auth.admin.getUserByEmail(email);
+    
+    if (userError) {
+      console.error("Error finding user:", userError);
       return { 
         success: false, 
-        message: `Failed to find user: ${error.message}` 
+        message: `Failed to find user: ${userError.message}` 
       };
     }
     
-    if (!data || data.length === 0) {
+    if (!userData || !userData.user) {
       return {
         success: false,
-        message: "User not found"
+        message: "User not found with email: " + email
       };
     }
     
-    const userId = data[0].id;
+    const userId = userData.user.id;
     
     // Add admin role to user_roles table
     const { error: roleError } = await supabase
@@ -314,6 +313,90 @@ export const assignAdminRole = async (email: string): Promise<{ success: boolean
     };
   } catch (error) {
     console.error("Error in assignAdminRole:", error);
+    return {
+      success: false,
+      message: `Unexpected error: ${error?.message || String(error)}`
+    };
+  }
+};
+
+// Simplified manual admin role assignment
+export const makeUserAdmin = async (email: string): Promise<AdminOperationResult> => {
+  try {
+    console.log("Making user admin:", email);
+    
+    // First try to sign up the user if they don't exist
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email: email,
+      password: DEFAULT_ADMIN_PASSWORD
+    });
+    
+    let userId;
+    
+    if (signUpError && !signUpError.message.includes("already registered")) {
+      console.error("Error creating user:", signUpError);
+      return {
+        success: false,
+        message: `Failed to create user: ${signUpError.message}`
+      };
+    } else if (signUpData?.user) {
+      userId = signUpData.user.id;
+      console.log("Created new user with ID:", userId);
+    } else {
+      // User likely exists, try to find them by email
+      const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers();
+      
+      if (getUserError) {
+        console.error("Error listing users:", getUserError);
+        return {
+          success: false,
+          message: `Failed to find existing user: ${getUserError.message}`
+        };
+      }
+      
+      const user = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+      
+      if (!user) {
+        return {
+          success: false,
+          message: `User with email ${email} not found`
+        };
+      }
+      
+      userId = user.id;
+      console.log("Found existing user with ID:", userId);
+    }
+    
+    // Now add the admin role
+    const { error: roleError } = await supabase
+      .from('user_roles')
+      .insert({
+        user_id: userId,
+        role: 'admin'
+      });
+      
+    if (roleError) {
+      // If the error is about unique violation, the role is already assigned
+      if (roleError.message.includes("unique constraint")) {
+        return {
+          success: true,
+          message: `Admin role was already assigned to ${email}`
+        };
+      }
+      
+      console.error("Error assigning admin role:", roleError);
+      return { 
+        success: false, 
+        message: `Failed to assign admin role: ${roleError.message}` 
+      };
+    }
+    
+    return {
+      success: true,
+      message: `Admin role successfully assigned to ${email}`
+    };
+  } catch (error) {
+    console.error("Error in makeUserAdmin:", error);
     return {
       success: false,
       message: `Unexpected error: ${error?.message || String(error)}`
