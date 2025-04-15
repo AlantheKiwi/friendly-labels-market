@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
 
 const MainNav: React.FC = () => {
-  const { user, isClient } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   return (
     <nav className="hidden md:flex items-center space-x-8">
@@ -18,6 +18,11 @@ const MainNav: React.FC = () => {
       <Link to="/printers" className="font-medium hover:text-brand-blue transition-colors">
         Printers
       </Link>
+      {isAdmin && (
+        <Link to="/admin/labels" className="font-medium hover:text-brand-blue transition-colors">
+          Labels
+        </Link>
+      )}
       <Link to="/contact" className="font-medium hover:text-brand-blue transition-colors">
         Contact
       </Link>

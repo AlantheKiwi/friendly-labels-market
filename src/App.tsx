@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,8 +32,8 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminCompleteDashboardPage from "./pages/admin/AdminCompleteDashboardPage";
+import AdminLabelsPage from "./pages/admin/AdminLabelsPage";
 
-// Create a client
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -123,6 +122,11 @@ const App = () => {
                 <Route path="/admin/clients/:id" element={
                   <ProtectedRoute requireAdmin>
                     <ClientDetailPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/labels" element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminLabelsPage />
                   </ProtectedRoute>
                 } />
                 

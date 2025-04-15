@@ -9,6 +9,78 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      labels: {
+        Row: {
+          active: boolean | null
+          allow_backorder: boolean | null
+          base_price: number
+          brand: string | null
+          core_size: number | null
+          created_at: string | null
+          description: string | null
+          finish: Database["public"]["Enums"]["label_finish"]
+          height_mm: number
+          id: string
+          labels_per_roll: number | null
+          low_stock_threshold: number | null
+          material: Database["public"]["Enums"]["label_material"]
+          name: string
+          print_technology: Database["public"]["Enums"]["print_technology"]
+          roll_length: number | null
+          sku: string | null
+          stock_quantity: number | null
+          updated_at: string | null
+          weight_grams: number | null
+          width_mm: number
+        }
+        Insert: {
+          active?: boolean | null
+          allow_backorder?: boolean | null
+          base_price: number
+          brand?: string | null
+          core_size?: number | null
+          created_at?: string | null
+          description?: string | null
+          finish: Database["public"]["Enums"]["label_finish"]
+          height_mm: number
+          id?: string
+          labels_per_roll?: number | null
+          low_stock_threshold?: number | null
+          material: Database["public"]["Enums"]["label_material"]
+          name: string
+          print_technology: Database["public"]["Enums"]["print_technology"]
+          roll_length?: number | null
+          sku?: string | null
+          stock_quantity?: number | null
+          updated_at?: string | null
+          weight_grams?: number | null
+          width_mm: number
+        }
+        Update: {
+          active?: boolean | null
+          allow_backorder?: boolean | null
+          base_price?: number
+          brand?: string | null
+          core_size?: number | null
+          created_at?: string | null
+          description?: string | null
+          finish?: Database["public"]["Enums"]["label_finish"]
+          height_mm?: number
+          id?: string
+          labels_per_roll?: number | null
+          low_stock_threshold?: number | null
+          material?: Database["public"]["Enums"]["label_material"]
+          name?: string
+          print_technology?: Database["public"]["Enums"]["print_technology"]
+          roll_length?: number | null
+          sku?: string | null
+          stock_quantity?: number | null
+          updated_at?: string | null
+          weight_grams?: number | null
+          width_mm?: number
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           client_id: string
@@ -196,6 +268,9 @@ export type Database = {
       }
     }
     Enums: {
+      label_finish: "matte" | "gloss" | "semi_gloss"
+      label_material: "paper" | "vinyl" | "polypropylene" | "polyester"
+      print_technology: "direct_thermal" | "thermal_transfer"
       user_role: "admin" | "client"
     }
     CompositeTypes: {
@@ -312,6 +387,9 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      label_finish: ["matte", "gloss", "semi_gloss"],
+      label_material: ["paper", "vinyl", "polypropylene", "polyester"],
+      print_technology: ["direct_thermal", "thermal_transfer"],
       user_role: ["admin", "client"],
     },
   },
