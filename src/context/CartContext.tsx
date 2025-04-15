@@ -1,7 +1,6 @@
 
 import React, { createContext, useContext, useReducer, useEffect } from "react";
-import { CartItem, Product, ProductQuantity, ProductSize } from "@/types";
-import { getProductById } from "@/data/products";
+import { CartItem } from "@/types";
 import { toast } from "@/hooks/use-toast";
 
 interface CartState {
@@ -32,7 +31,6 @@ const calculateItemCount = (items: CartItem[]): number => {
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case "ADD_ITEM": {
-      // Check if item already exists with same productId, sizeId, and quantityId
       const existingItemIndex = state.items.findIndex(
         (item) =>
           item.productId === action.payload.productId &&
@@ -43,11 +41,9 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       let updatedItems: CartItem[];
 
       if (existingItemIndex >= 0) {
-        // Replace existing item
         updatedItems = [...state.items];
         updatedItems[existingItemIndex] = action.payload;
       } else {
-        // Add new item
         updatedItems = [...state.items, action.payload];
       }
 
@@ -85,11 +81,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 };
 
 interface CartContextValue extends CartState {
-  addToCart: (
-    product: Product,
-    selectedSize: ProductSize,
-    selectedQuantity: ProductQuantity
-  ) => void;
+  addToCart: (item: CartItem) => void;
   removeFromCart: (
     productId: string,
     sizeId: string,
@@ -105,7 +97,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
-  // Initialize cart from localStorage
   useEffect(() => {
     const savedCart = localStorage.getItem("cart");
     if (savedCart) {
@@ -120,37 +111,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  // Save cart to localStorage when it changes
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(state));
   }, [state]);
 
-  const addToCart = (
-    product: Product,
-    selectedSize: ProductSize,
-    selectedQuantity: ProductQuantity
-  ) => {
-    const newItem: CartItem = {
-      // Nested objects
-      product: product,
-      size: selectedSize,
-      quantity: selectedQuantity,
-      count: 1,
-      // Flattened properties for backward compatibility
-      productId: product.id,
-      productName: product.name,
-      sizeId: selectedSize.id,
-      sizeName: selectedSize.name,
-      dimensions: selectedSize.dimensions,
-      quantityId: selectedQuantity.id,
-      price: selectedQuantity.price,
-      imageUrl: product.imageUrl,
-    };
-
-    dispatch({ type: "ADD_ITEM", payload: newItem });
+  const addToCart = (item: CartItem) => {
+    dispatch({ type: "ADD_ITEM", payload: item });
     toast({
       title: "Added to cart",
-      description: `${selectedQuantity.amount} ${product.name} (${selectedSize.dimensions})`,
+      description: `${item.productName} (${item.dimensions})`,
     });
   };
 
