@@ -12,6 +12,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from "@/services/auth/constants";
 import { createAdminIfNotExists, forceResetAdminPassword } from "@/services/auth/adminService";
+import { supabase } from "@/integrations/supabase/client";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -87,6 +88,11 @@ const LoginPage = () => {
         description: result.message,
         variant: result.success ? "default" : "destructive"
       });
+      
+      if (result.success) {
+        // If admin was created successfully, fill in the credentials
+        fillAdminCredentials();
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       setAdminSetupStatus(`Error: ${message}`);
@@ -113,6 +119,72 @@ const LoginPage = () => {
       setAdminSetupStatus(`Error: ${message}`);
       toast({
         title: "Reset Error",
+        description: message,
+        variant: "destructive"
+      });
+    }
+  };
+  
+  const createAdminWithDirect = async () => {
+    setAdminSetupStatus("Creating admin with direct signup...");
+    try {
+      // Attempt direct signup
+      const { data, error } = await supabase.auth.signUp({
+        email: ADMIN_EMAIL,
+        password: DEFAULT_ADMIN_PASSWORD
+      });
+      
+      if (error) {
+        setAdminSetupStatus(`Direct signup failed: ${error.message}`);
+        toast({
+          title: "Setup Error",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (data.user) {
+        // Add admin role
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: data.user.id,
+            role: 'admin'
+          });
+          
+        if (roleError) {
+          setAdminSetupStatus(`User created but role assignment failed: ${roleError.message}`);
+          toast({
+            title: "Partial Success",
+            description: `Admin user created but role assignment failed. Please try again.`,
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        setAdminSetupStatus(`Admin created successfully with ID: ${data.user.id}`);
+        toast({
+          title: "Success",
+          description: "Admin user created successfully. You can now log in.",
+          variant: "default"
+        });
+        
+        // Fill credentials
+        fillAdminCredentials();
+      } else {
+        setAdminSetupStatus("User signup completed but no user was returned");
+        toast({
+          title: "Warning",
+          description: "Setup completed but with unexpected result. Try logging in.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setAdminSetupStatus(`Error: ${message}`);
+      toast({
+        title: "Setup Error",
         description: message,
         variant: "destructive"
       });
@@ -211,7 +283,7 @@ const LoginPage = () => {
                       <p className="font-semibold mb-1">Admin credentials:</p>
                       <p>Email: {ADMIN_EMAIL}</p>
                       <p>Password: {DEFAULT_ADMIN_PASSWORD}</p>
-                      <div className="flex gap-2 mt-2">
+                      <div className="flex flex-wrap gap-2 mt-2">
                         <Button 
                           type="button"
                           variant="outline"
@@ -238,6 +310,15 @@ const LoginPage = () => {
                           onClick={resetAdmin}
                         >
                           Reset Admin
+                        </Button>
+                        <Button 
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="text-xs h-7 bg-blue-50 hover:bg-blue-100 text-blue-700"
+                          onClick={createAdminWithDirect}
+                        >
+                          Direct Admin Setup
                         </Button>
                       </div>
                       {adminSetupStatus && (

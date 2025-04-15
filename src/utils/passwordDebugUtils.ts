@@ -18,9 +18,9 @@ export const analyzePassword = (password: string) => {
 /**
  * Check if the default password in constants.ts has any encoding issues
  */
-export const checkDefaultPasswordEncoding = (defaultPassword: string) => {
-  const analysis = analyzePassword(defaultPassword);
-  console.log("Default password analysis:", analysis);
+export const checkPasswordDebugInfo = (password: string) => {
+  const analysis = analyzePassword(password);
+  console.log("Password analysis:", analysis);
   
   // Look for potential issues
   const issues = [];
